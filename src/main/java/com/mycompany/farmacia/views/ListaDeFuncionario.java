@@ -74,7 +74,9 @@ public class ListaDeFuncionario extends JPanel {
             dadosFuncionario[1] = funcionario.getNome();
             dadosFuncionario[2] = formatarTelefone(funcionario.getTelefone());
             dadosFuncionario[3] = funcionario.getEmail();
-            dadosFuncionario[4] = "Cargo não encontrado";
+            dadosFuncionario[4] = funcionario.getCargo() != null 
+            ? funcionario.getCargo().getNome()
+            : "Cargo não encontrado";
             dadosFuncionario[5] = ""; // Placeholder para ações Botões 
 
             funcionariosFiltrados.add(dadosFuncionario);
