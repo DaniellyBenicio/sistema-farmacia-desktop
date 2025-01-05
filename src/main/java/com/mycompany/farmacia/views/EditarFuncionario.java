@@ -1,4 +1,4 @@
-package com.mycompany.farmacia;
+package com.mycompany.farmacia.views;
 
 import java.awt.Color;
 import java.awt.Component;

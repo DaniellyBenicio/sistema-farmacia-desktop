@@ -1,4 +1,4 @@
-package com.mycompany.farmacia;
+package com.mycompany.farmacia.views;
 
 import java.awt.*;
 import java.sql.Connection;
