@@ -29,14 +29,12 @@ public class CadastroRepresentante extends JDialog {
 
     private JTextField representanteField;
     private JFormattedTextField numeroField;
-    private int idFornecedor;
-
+    
     public CadastroRepresentante(Frame parent, String nomeFornecedor, int idFornecedor) {
         super(parent, "Cadastro de Representante", true);
-        this.idFornecedor = idFornecedor;
         System.out.println(idFornecedor);
 
-        setSize(500, 300);
+        setSize(550, 300);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
@@ -64,29 +62,29 @@ public class CadastroRepresentante extends JDialog {
         numeroField = new JFormattedTextField(numeroFormatter);
         numeroField.setColumns(15);
 
-        Font font = new Font("Arial", Font.PLAIN, 16);
+        Font font = new Font("Arial", Font.PLAIN, 14);
         fornecedorField.setFont(font);
         fornecedorField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        fornecedorField.setPreferredSize(new Dimension(230, 30));
+        fornecedorField.setPreferredSize(new Dimension(400, 30));
 
         representanteField.setFont(font);
         representanteField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        representanteField.setPreferredSize(new Dimension(230, 30));
+        representanteField.setPreferredSize(new Dimension(400, 30));
 
         numeroField.setFont(font);
         numeroField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        numeroField.setPreferredSize(new Dimension(230, 30));
+        numeroField.setPreferredSize(new Dimension(400, 30));
 
         // Botões
         JButton cadastrarButton = new JButton("CADASTRAR");
         JButton cancelarButton = new JButton("CANCELAR");
 
-        Font botaoFont = new Font("Arial", Font.BOLD, 16);
+        Font botaoFont = new Font("Arial", Font.BOLD, 14);
 
         cancelarButton.setFont(botaoFont);
         cancelarButton.setBackground(Color.RED);
         cancelarButton.setForeground(Color.WHITE);
-        cancelarButton.setPreferredSize(new Dimension(150, 40));
+        cancelarButton.setPreferredSize(new Dimension(130, 30));
         cancelarButton.setFocusPainted(false);
 
         cancelarButton.addActionListener(e -> dispose());
@@ -95,7 +93,7 @@ public class CadastroRepresentante extends JDialog {
         cadastrarButton.setBackground(new Color(24, 39, 55));
         cadastrarButton.setForeground(Color.WHITE);
         cadastrarButton.setFocusPainted(false);
-        cadastrarButton.setPreferredSize(new Dimension(150, 40));
+        cadastrarButton.setPreferredSize(new Dimension(130, 30));
 
         cadastrarButton.addActionListener(e -> {
         String representante = representanteField.getText().trim();

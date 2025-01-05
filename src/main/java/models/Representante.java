@@ -31,8 +31,9 @@ public class Representante {
     }
 
     public void setTelefone(String telefone) {
-        if (telefone.length() != 11) {
-            throw new IllegalArgumentException("Telefone inválido. Deve conter 11 caracteres.");
+        // Verificação de comprimento e se contém apenas dígitos
+        if (telefone == null || !telefone.matches("\\d{11}")) {
+            throw new IllegalArgumentException("Telefone inválido. Deve conter 11 dígitos numéricos.");
         }
         this.telefone = telefone;
     }

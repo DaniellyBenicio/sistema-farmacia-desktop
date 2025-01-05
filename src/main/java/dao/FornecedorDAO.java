@@ -99,7 +99,7 @@ public class FornecedorDAO {
     }
 
     public static ArrayList<Fornecedor> listarFornecedores(Connection conn) throws SQLException {
-        String sql = "SELECT f.id, f.nome AS nomeFornecedor, f.email, f.telefone, f.cnpj, r.nome AS nomeRepresentante " +
+        String sql = "SELECT f.id, f.nome AS nomeFornecedor, f.email, f.telefone, f.cnpj, r.nome AS nomeRepresentante, r.telefone AS telefoneRepresentante " +
                     "FROM fornecedor f " +
                     "LEFT JOIN representante r ON f.id = r.fornecedor_id  " +
                     "ORDER BY f.nome ASC";
@@ -119,9 +119,16 @@ public class FornecedorDAO {
                 if (nomeRepresentante != null) {
                     Representante representante = new Representante();
                     representante.setNome(nomeRepresentante);
+                    
+                    // Aqui, vamos pegar o telefone do representante corretamente
+                    String telefoneRepresentante = rs.getString("telefoneRepresentante");
+                    if (telefoneRepresentante != null) {
+                        representante.setTelefone(telefoneRepresentante);
+                    }
+                    
                     fornecedor.setRepresentante(representante); 
                 }
-
+    
                 fornecedores.add(fornecedor);
             }
         } catch (SQLException e) {

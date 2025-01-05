@@ -55,7 +55,8 @@ public class ListaDeFornecedores extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(new Color(0, 0, 0, 0));
 
-        fornecedoresFiltrados = new ArrayList<>();  
+        fornecedoresFiltrados = new ArrayList<>(); 
+        fornecedoresIds = new ArrayList<>();  
 
         try {
             fornecedores = FornecedorDAO.listarFornecedores(conn); 
@@ -86,21 +87,27 @@ public class ListaDeFornecedores extends JPanel {
         }
     }
     
+    private List<Integer> fornecedoresIds; // Nova lista para armazenar IDs
+
     private void atualizarFornecedoresFiltrados(List<Fornecedor> fornecedores) {
-        fornecedoresFiltrados.clear(); 
+        fornecedoresFiltrados.clear();
+        fornecedoresIds.clear(); // Limpe a lista de IDs
 
         for (Fornecedor fornecedor : fornecedores) {
-            Object[] dadosFornecedor = new Object[7];
-            dadosFornecedor[0] = fornecedor.getId();
-            dadosFornecedor[1] = fornecedor.getNome();
-            dadosFornecedor[2] = formatarCNPJ(fornecedor.getCnpj());
-            dadosFornecedor[3] = fornecedor.getEmail();
-            dadosFornecedor[4] = formatarTelefone(fornecedor.getTelefone());
+            Object[] dadosFornecedor = new Object[7]; // Alterar para 7, pois não vamos armazenar o ID
+            dadosFornecedor[0] = fornecedor.getNome();
+            dadosFornecedor[1] = formatarCNPJ(fornecedor.getCnpj());
+            dadosFornecedor[2] = fornecedor.getEmail();
+            dadosFornecedor[3] = formatarTelefone(fornecedor.getTelefone());
             String representante = fornecedor.getNomeRepresentante();
-            dadosFornecedor[5] = (representante != null && !representante.isEmpty()) ? representante : "Sem Representante";
+            dadosFornecedor[4] = (representante != null && !representante.isEmpty()) ? representante : "Sem Representante";
+            dadosFornecedor[5] = fornecedor.getTelefoneRepresentante() != null 
+                            ? formatarTelefone(fornecedor.getTelefoneRepresentante()) 
+                            : "Sem Telefone"; // Caso não haja telefone
             dadosFornecedor[6] = ""; 
 
             fornecedoresFiltrados.add(dadosFornecedor);
+            fornecedoresIds.add(fornecedor.getId()); // Armazenar ID
         }
     }
 
@@ -159,7 +166,7 @@ public class ListaDeFornecedores extends JPanel {
         painelBuscaBotao.setBorder(BorderFactory.createEmptyBorder(0, 30, 30, 50)); 
 
         JTextField campoBusca = new JTextField();
-        campoBusca.setFont(new Font("Arial", Font.PLAIN, 16));
+        campoBusca.setFont(new Font("Arial", Font.PLAIN, 14));
         campoBusca.setPreferredSize(new Dimension(600, 30));
         campoBusca.setMaximumSize(new Dimension(600, 30));
         campoBusca.setText("Buscar");
@@ -240,7 +247,7 @@ public class ListaDeFornecedores extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = {"Código", "Nome", "CNPJ", "E-mail", "Telefone", "Representante", "Ações"};
+        String[] colunas = {"Nome", "CNPJ", "E-mail", "Telefone", "Representante", "Telefone Rep", "Ações"};
         
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
@@ -254,8 +261,8 @@ public class ListaDeFornecedores extends JPanel {
         tabela = new JTable(modeloTabela);
         tabela.setFillsViewportHeight(true);
         tabela.setRowHeight(35);
-        tabela.setFont(new Font("Arial", Font.PLAIN, 14));
-        tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 18));
+        tabela.setFont(new Font("Arial", Font.PLAIN, 12));
+        tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 15));
         tabela.getTableHeader().setReorderingAllowed(false);
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabela.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -270,13 +277,13 @@ public class ListaDeFornecedores extends JPanel {
         tabela.getColumnModel().getColumn(6).setCellRenderer(new ButtonRenderer());
         tabela.getColumnModel().getColumn(6).setCellEditor(new ButtonEditor(new JTextField()));        
     
-        tabela.getColumnModel().getColumn(0).setPreferredWidth(40);
-        tabela.getColumnModel().getColumn(1).setPreferredWidth(300);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(100);
-        tabela.getColumnModel().getColumn(3).setPreferredWidth(200);
-        tabela.getColumnModel().getColumn(4).setPreferredWidth(100);
-        tabela.getColumnModel().getColumn(5).setPreferredWidth(150);
-        tabela.getColumnModel().getColumn(6).setPreferredWidth(150);
+        tabela.getColumnModel().getColumn(0).setPreferredWidth(300);
+        tabela.getColumnModel().getColumn(1).setPreferredWidth(80);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(200);
+        tabela.getColumnModel().getColumn(3).setPreferredWidth(70);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(200);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(70);
+        tabela.getColumnModel().getColumn(6).setPreferredWidth(140);
         
         tabela.setCellSelectionEnabled(false);  
         tabela.setRowSelectionAllowed(false);   
@@ -296,26 +303,30 @@ public class ListaDeFornecedores extends JPanel {
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
             fornecedoresFiltrados = fornecedores.stream()
                     .map(fornecedor -> new Object[]{
-                        fornecedor.getId(),
                         fornecedor.getNome(),
                         formatarCNPJ(fornecedor.getCnpj()),
                         fornecedor.getEmail(),
                         formatarTelefone(fornecedor.getTelefone()),
                         fornecedor.getNomeRepresentante() != null && !fornecedor.getNomeRepresentante().isEmpty() 
-                        ? fornecedor.getNomeRepresentante() : "Sem Representante"
+                        ? fornecedor.getNomeRepresentante() : "Sem Representante",
+                        fornecedor.getTelefoneRepresentante() != null 
+                        ? formatarTelefone(fornecedor.getTelefoneRepresentante()) 
+                        : "Sem Telefone",
                     })
                     .collect(Collectors.toList());
         } else {
             fornecedoresFiltrados = fornecedores.stream()
                     .filter(fornecedor -> fornecedor.getNome().toLowerCase().startsWith(filtro.toLowerCase()))
                     .map(fornecedor -> new Object[]{
-                        fornecedor.getId(),
                         fornecedor.getNome(),
                         formatarCNPJ(fornecedor.getCnpj()),
                         fornecedor.getEmail(),
                         formatarTelefone(fornecedor.getTelefone()),
                         fornecedor.getNomeRepresentante() != null && !fornecedor.getNomeRepresentante().isEmpty() 
-                        ? fornecedor.getNomeRepresentante() : "Sem Representante"
+                        ? fornecedor.getNomeRepresentante() : "Sem Representante",
+                        fornecedor.getTelefoneRepresentante() != null 
+                        ? formatarTelefone(fornecedor.getTelefoneRepresentante()) 
+                        : "Sem Telefone",
                     })
                     .collect(Collectors.toList());
         }
@@ -327,7 +338,7 @@ public class ListaDeFornecedores extends JPanel {
         modeloTabela.setRowCount(0);
 
         if (fornecedoresFiltrados.isEmpty()) {
-            modeloTabela.addRow(new Object[]{"", "Fornecedor não encontrado.", "", "", "", "", ""});
+            modeloTabela.addRow(new Object[]{"Fornecedor não encontrado.", "", "", "", "", "", ""});
         } else {
             int inicio = paginaAtual * itensPorPagina;
             int fim = Math.min(inicio + itensPorPagina, fornecedoresFiltrados.size());
@@ -419,77 +430,77 @@ public class ListaDeFornecedores extends JPanel {
         }
     }
 
-    private class ButtonEditor extends DefaultCellEditor {
-        private final JButton editButton;
-        private final JButton deleteButton;
-        private int indiceLinha;
+   private class ButtonEditor extends DefaultCellEditor {
+    private final JButton editButton;
+    private final JButton deleteButton;
+    private int indiceLinha;
 
-        public ButtonEditor(JTextField textField) {
-            super(textField);
-            editButton = new JButton("EDITAR");
-            deleteButton = new JButton("EXCLUIR");
+    public ButtonEditor(JTextField textField) {
+        super(textField);
+        editButton = new JButton("EDITAR");
+        deleteButton = new JButton("EXCLUIR");
 
-            editButton.addActionListener(e -> {
-                indiceLinha = tabela.getSelectedRow();
-                if (indiceLinha >= 0) {
-                    int fornecedorId = (Integer) fornecedoresFiltrados.get(indiceLinha)[0];
+        editButton.addActionListener(e -> {
+            indiceLinha = tabela.getSelectedRow();
+            if (indiceLinha >= 0) {
+                int fornecedorId = fornecedoresIds.get(indiceLinha); // Obtém o ID diretamente da lista de IDs
 
-                    JDialog editarDialog = new JDialog();
-                    editarDialog.setTitle("Editar Fornecedor");
-                    editarDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                    editarDialog.setSize(1200, 650);
-                    editarDialog.setLocationRelativeTo(null); 
-                    editarDialog.setModal(true);
+                JDialog editarDialog = new JDialog();
+                editarDialog.setTitle("Editar Fornecedor");
+                editarDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                editarDialog.setSize(1200, 650);
+                editarDialog.setLocationRelativeTo(null); 
+                editarDialog.setModal(true);
 
-                    Point location = editarDialog.getLocation();
-                    location.y = 150; 
-                    editarDialog.setLocation(location);
+                Point location = editarDialog.getLocation();
+                location.y = 150; 
+                editarDialog.setLocation(location);
 
-                    EditarFornecedor editarPanel = new EditarFornecedor(fornecedorId);
-                    editarDialog.add(editarPanel);
+                EditarFornecedor editarPanel = new EditarFornecedor(fornecedorId);
+                editarDialog.add(editarPanel);
 
-                    editarDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                        @Override
-                        public void windowClosed(java.awt.event.WindowEvent windowEvent) {
-                            atualizarTabela();
-                        }
-                    });
+                editarDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                        atualizarTabela(); // Atualiza a tabela após fechar o editor
+                    }
+                });
 
-                    editarDialog.setVisible(true);
-                }
-                fireEditingStopped(); 
-            });
+                editarDialog.setVisible(true);
+            }
+            fireEditingStopped(); 
+        });
 
-            deleteButton.addActionListener(e -> {
-                indiceLinha = tabela.getSelectedRow();
-                if (indiceLinha >= 0) {
-                    int fornecedorId = (Integer) fornecedoresFiltrados.get(indiceLinha)[0];
-                    excluirFornecedor(fornecedorId);                    
-                }
-                fireEditingStopped(); 
-            });
+        deleteButton.addActionListener(e -> {
+            indiceLinha = tabela.getSelectedRow();
+            if (indiceLinha >= 0) {
+                int fornecedorId = fornecedoresIds.get(indiceLinha); // Obtém o ID a partir da lista de IDs
+                excluirFornecedor(fornecedorId);                    
+            }
+            fireEditingStopped(); 
+        });
+    }
+
+    private void excluirFornecedor(int idFornecedor) {
+        if (idFornecedor <= 0) {
+            JOptionPane.showMessageDialog(null, "ID do fornecedor inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
-        private void excluirFornecedor(int idFornecedor) {
-            if (idFornecedor <= 0) {
-                JOptionPane.showMessageDialog(null, "ID do fornecedor inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        
-            Fornecedor fornecedor = null;
-            try (Connection conn = ConexaoBD.getConnection()) {
-                fornecedor = FornecedorDAO.fornecedorPorId(conn, idFornecedor);
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(null, "Erro ao recuperar fornecedor: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-                return; 
-            }
-        
-            if (fornecedor == null) {
-                JOptionPane.showMessageDialog(null, "Fornecedor não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        
-            String mensagemConfirmacao = "Você realmente deseja excluir o fornecedor \"" + fornecedor.getNome() + "\"?";
+        Fornecedor fornecedor;
+        try (Connection conn = ConexaoBD.getConnection()) {
+            fornecedor = FornecedorDAO.fornecedorPorId(conn, idFornecedor);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao recuperar fornecedor: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            return; 
+        }
+
+        if (fornecedor == null) {
+            JOptionPane.showMessageDialog(null, "Fornecedor não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String mensagemConfirmacao = "Você realmente deseja excluir o fornecedor \"" + fornecedor.getNome() + "\"?";
         
             Object[] opcoes = {"Sim", "Não"};
 
@@ -517,30 +528,25 @@ public class ListaDeFornecedores extends JPanel {
                 System.out.println("Diálogo fechado sem seleção.");
             }
         }
+        
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
 
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            JPanel panel = new JPanel();
-            panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        
-            if (fornecedoresFiltrados.isEmpty()) {
-                return panel; 
-            }
-        
-            editButton.setBackground(new Color(24, 39, 55));
-            editButton.setForeground(Color.WHITE);
-        
-            deleteButton.setBackground(Color.RED);
-            deleteButton.setForeground(Color.WHITE);
-        
-            panel.add(editButton);
-            panel.add(deleteButton);
-        
-            return panel; 
-        }
+        editButton.setBackground(new Color(24, 39, 55));
+        editButton.setForeground(Color.WHITE);
+        deleteButton.setBackground(Color.RED);
+        deleteButton.setForeground(Color.WHITE);
 
-        @Override
-        public Object getCellEditorValue() {
-            return "";  
-        }
+        panel.add(editButton);
+        panel.add(deleteButton);
+
+        return panel; 
     }
+
+    @Override
+    public Object getCellEditorValue() {
+        return "";  
+    }
+}
 }

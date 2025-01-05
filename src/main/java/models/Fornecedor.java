@@ -109,6 +109,10 @@ public class Fornecedor{
         return this.representante != null ? this.representante.getNome() : null;
     }
 
+    public String getTelefoneRepresentante() {
+        return (this.representante != null) ? this.representante.getTelefone() : null;
+    }
+
     @Override
     public String toString() {
         return "Fornecedor{" +
