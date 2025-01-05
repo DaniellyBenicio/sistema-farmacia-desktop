@@ -13,6 +13,7 @@ import com.mycompany.farmacia.views.CadastrarFornecedor;
 import com.mycompany.farmacia.views.CadastrarFuncionario;
 import com.mycompany.farmacia.views.PainelSuperior;
 import com.mycompany.farmacia.views.ListaDeFornecedores;
+import com.mycompany.farmacia.views.ListaDeFuncionario;
 import com.mycompany.farmacia.views.RealizarVenda;
 
 public class Farmacia extends JFrame {
@@ -42,12 +43,13 @@ public class Farmacia extends JFrame {
         painelCentral.add(new CadastrarFornecedor(), "CadastrarFornecedor");
         painelCentral.add(new ListaDeFornecedores(conexão), "ListaDeFornecedores");
         painelCentral.add(new CadastrarFuncionario(), "CadastrarFuncionário");
+        painelCentral.add(new ListaDeFuncionario(conexão), "ListaDeFuncionario");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
         add(painelSuperior, BorderLayout.NORTH);
         add(painelCentral, BorderLayout.CENTER);
 
-        layoutCartao.show(painelCentral, "CadastrarFuncionário"); 
+        layoutCartao.show(painelCentral, "Vendas"); 
     }
 
     public static void main(String[] args) {

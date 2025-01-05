@@ -145,7 +145,7 @@ public class CadastrarFuncionario extends JPanel {
         cancelarButton.setBackground(Color.RED);
         cancelarButton.setForeground(Color.WHITE);
         cancelarButton.setFocusPainted(false);
-        cancelarButton.setPreferredSize(new Dimension(150, 40));
+        cancelarButton.setPreferredSize(new Dimension(140, 35));
         botoesPanel.add(cancelarButton);
 
         JButton cadastrarButton = new JButton("CADASTRAR");
@@ -153,7 +153,7 @@ public class CadastrarFuncionario extends JPanel {
         cadastrarButton.setBackground(new Color(24, 39, 55));
         cadastrarButton.setForeground(Color.WHITE);
         cadastrarButton.setFocusPainted(false);
-        cadastrarButton.setPreferredSize(new Dimension(150, 40));
+        cadastrarButton.setPreferredSize(new Dimension(140, 35));
         botoesPanel.add(cadastrarButton);
 
         cadastrarButton.addActionListener(e -> {

@@ -168,7 +168,7 @@ public class EditarFuncionario extends JPanel {
                 nomeField.setText(funcionario.getNome());
                 telefoneField.setText(funcionario.getTelefone());
                 emailField.setText(funcionario.getEmail());
-                cargoField.setText(funcionario.getCargo());
+//cargoField.setText(funcionario.getCargo());
             } else {
                 JOptionPane.showMessageDialog(null, "Funcionário não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
             }
@@ -227,7 +227,7 @@ public class EditarFuncionario extends JPanel {
             funcionarioAtualizado.setNome(nome);
             funcionarioAtualizado.setTelefone(telefone.replaceAll("[^0-9]", ""));
             funcionarioAtualizado.setEmail(email);
-            funcionarioAtualizado.setCargo(cargo);
+      //      funcionarioAtualizado.setCargo(cargo);
 
             FuncionarioDAO.atualizarFuncionario(conn, funcionarioAtualizado);
             JOptionPane.showMessageDialog(null, "Funcionário atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);

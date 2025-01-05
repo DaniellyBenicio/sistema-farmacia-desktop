@@ -177,7 +177,7 @@ public class CadastrarFornecedor extends JPanel {
         representanteButton.setPreferredSize(new Dimension(180, 35));
         botoesPanel.add(representanteButton);
 
-       int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
+        int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
 
         cadastrarButton.addActionListener(e -> {
         String nome = nomeField.getText().trim();
