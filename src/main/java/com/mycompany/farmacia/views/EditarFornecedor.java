@@ -166,7 +166,7 @@ public class EditarFornecedor extends JPanel {
         cancelarButton.setBackground(Color.RED);
         cancelarButton.setForeground(Color.WHITE);
         cancelarButton.setFocusPainted(false);
-        cancelarButton.setPreferredSize(new Dimension(150, 40));
+        cancelarButton.setPreferredSize(new Dimension(130, 35));
         cancelarButton.addActionListener(e -> {
             SwingUtilities.getWindowAncestor(this).dispose();
         });
@@ -177,7 +177,7 @@ public class EditarFornecedor extends JPanel {
         salvarButton.setBackground(new Color(24, 39, 55));
         salvarButton.setForeground(Color.WHITE);
         salvarButton.setFocusPainted(false);
-        salvarButton.setPreferredSize(new Dimension(150, 40));
+        salvarButton.setPreferredSize(new Dimension(130, 35));
         salvarButton.addActionListener(e -> salvarFornecedor(fornecedorId));
         botoesPanel.add(salvarButton);
     
@@ -187,7 +187,7 @@ public class EditarFornecedor extends JPanel {
         representanteButton.setForeground(Color.WHITE);
         representanteButton.setEnabled(true); // Inicialmente habilitado
         representanteButton.setFocusPainted(false);
-        representanteButton.setPreferredSize(new Dimension(180, 40));
+        representanteButton.setPreferredSize(new Dimension(180, 35));
         botoesPanel.add(representanteButton);
     
         representanteButton.addActionListener(e -> {

@@ -157,7 +157,7 @@ public class CadastrarFornecedor extends JPanel {
         cancelarButton.setBackground(Color.RED);
         cancelarButton.setForeground(Color.WHITE);
         cancelarButton.setFocusPainted(false);
-        cancelarButton.setPreferredSize(new Dimension(150, 40));
+        cancelarButton.setPreferredSize(new Dimension(140, 35));
         botoesPanel.add(cancelarButton);
     
         JButton cadastrarButton = new JButton("CADASTRAR");
@@ -165,7 +165,7 @@ public class CadastrarFornecedor extends JPanel {
         cadastrarButton.setBackground(new Color(24, 39, 55));
         cadastrarButton.setForeground(Color.WHITE);
         cadastrarButton.setFocusPainted(false);
-        cadastrarButton.setPreferredSize(new Dimension(150, 40));
+        cadastrarButton.setPreferredSize(new Dimension(140, 35));
         botoesPanel.add(cadastrarButton);
     
         JButton representanteButton = new JButton("REPRESENTANTE");
@@ -174,7 +174,7 @@ public class CadastrarFornecedor extends JPanel {
         representanteButton.setForeground(Color.WHITE);
         representanteButton.setEnabled(false);  // Inicialmente desabilitado
         representanteButton.setFocusPainted(false);
-        representanteButton.setPreferredSize(new Dimension(180, 40));
+        representanteButton.setPreferredSize(new Dimension(180, 35));
         botoesPanel.add(representanteButton);
 
        int idFuncionario = PainelSuperior.getIdFuncionarioAtual();

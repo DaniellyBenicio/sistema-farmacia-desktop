@@ -25,13 +25,11 @@ import models.Representante;
 public class EditarRepresentante extends JDialog {
     private JTextField representanteField;
     private JFormattedTextField numeroField;
-    private Representante representante;
 
     public EditarRepresentante(java.awt.Frame parent, Representante representante, Connection conn) {
         super(parent, "Editar Representante", true);
-        this.representante = representante;
 
-        setSize(500, 300);
+        setSize(550, 300);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
@@ -101,13 +99,13 @@ public class EditarRepresentante extends JDialog {
         JButton salvarButton = new JButton("SALVAR");
         JButton cancelarButton = new JButton("CANCELAR");
 
-        Font botaoFont = new Font("Arial", Font.BOLD, 16);
+        Font botaoFont = new Font("Arial", Font.BOLD, 14);
 
         // Configuração do botão cancelar
         cancelarButton.setFont(botaoFont);
         cancelarButton.setBackground(Color.RED);
         cancelarButton.setForeground(Color.WHITE);
-        cancelarButton.setPreferredSize(new Dimension(150, 40));
+        cancelarButton.setPreferredSize(new Dimension(120, 35));
         cancelarButton.setFocusPainted(false);
         cancelarButton.addActionListener(e -> dispose()); // Fechar o dialog
 
@@ -116,40 +114,51 @@ public class EditarRepresentante extends JDialog {
         salvarButton.setBackground(new Color(24, 39, 55));
         salvarButton.setForeground(Color.WHITE);
         salvarButton.setFocusPainted(false);
-        salvarButton.setPreferredSize(new Dimension(150, 40));
+        salvarButton.setPreferredSize(new Dimension(120, 35));
         
         salvarButton.addActionListener(e -> {
             String nomeRepresentante = representanteField.getText().trim();
-            String telefoneFormatado = numeroField.getText().replaceAll("[^0-9]", "");
-
-            // Validação dos campos
-            if (nomeRepresentante.isEmpty() || telefoneFormatado.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos!", "Erro", JOptionPane.ERROR_MESSAGE);
+            String telefoneOriginal = numeroField.getText().trim(); // Captura o texto original
+            String telefoneFormatado = telefoneOriginal.replaceAll("[^0-9]", ""); // Remove caracteres não numéricos
+        
+            // Validação do campo nome
+            if (nomeRepresentante.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, informe o nome do representante.", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            // Valida telefone
-            if (telefoneFormatado.length() != 11) {
-                JOptionPane.showMessageDialog(this, "Telefone inválido. Certifique-se de que contém 11 dígitos.", "Erro", JOptionPane.ERROR_MESSAGE);
+        
+            // Validação do campo telefone
+            if (telefoneOriginal.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, informe o telefone.", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
+        
+            if (telefoneFormatado.length() < 11) {
+                JOptionPane.showMessageDialog(this, "Telefone incompleto. Certifique-se de que contém exatamente 11 dígitos.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        
+            if (telefoneFormatado.length() > 11) {
+                JOptionPane.showMessageDialog(this, "Telefone inválido. Contém mais de 11 dígitos.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        
             // Atualiza o representante
             try (Connection connection = ConexaoBD.getConnection()) {
                 Representante representanteAtualizado = new Representante();
                 representanteAtualizado.setNome(nomeRepresentante);
                 representanteAtualizado.setTelefone(telefoneFormatado);
-                representanteAtualizado.setFornecedor(representante.getFornecedor());
-
+                representanteAtualizado.setFornecedor(representante.getFornecedor()); // Presume-se que o fornecedor já esteja definido
+        
                 // Atualizar no banco de dados
                 RepresentanteController.atualizarRepresentante(connection, representanteAtualizado);
                 JOptionPane.showMessageDialog(this, "Representante editado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                
+        
                 dispose(); // Fecha o JDialog
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(this, "Erro ao editar representante: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
-        });
+        });        
 
         // Layout do painel de botões
         JPanel botoesPanel = new JPanel();

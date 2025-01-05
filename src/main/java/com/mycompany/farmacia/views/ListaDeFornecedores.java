@@ -247,7 +247,7 @@ public class ListaDeFornecedores extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = {"Nome", "CNPJ", "E-mail", "Telefone", "Representante", "Telefone Rep", "Ações"};
+        String[] colunas = {"Nome", "CNPJ", "E-mail", "Telefone", "Representante", "Telefone Rep.", "Ações"};
         
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override

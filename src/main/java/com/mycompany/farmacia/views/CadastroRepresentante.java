@@ -84,7 +84,7 @@ public class CadastroRepresentante extends JDialog {
         cancelarButton.setFont(botaoFont);
         cancelarButton.setBackground(Color.RED);
         cancelarButton.setForeground(Color.WHITE);
-        cancelarButton.setPreferredSize(new Dimension(130, 30));
+        cancelarButton.setPreferredSize(new Dimension(130, 35));
         cancelarButton.setFocusPainted(false);
 
         cancelarButton.addActionListener(e -> dispose());
@@ -93,15 +93,19 @@ public class CadastroRepresentante extends JDialog {
         cadastrarButton.setBackground(new Color(24, 39, 55));
         cadastrarButton.setForeground(Color.WHITE);
         cadastrarButton.setFocusPainted(false);
-        cadastrarButton.setPreferredSize(new Dimension(130, 30));
+        cadastrarButton.setPreferredSize(new Dimension(130, 35));
 
         cadastrarButton.addActionListener(e -> {
         String representante = representanteField.getText().trim();
         String telefone = numeroField.getText().replaceAll("[^0-9]", "");
 
         // Verificação dos campos de entrada
-        if (representante.isEmpty() || telefone.isEmpty()) {
+        if (representante.isEmpty() && telefone.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos!", "Erro", JOptionPane.ERROR_MESSAGE);
+        } else if (representante.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, informe o nome do representante.", "Erro", JOptionPane.ERROR_MESSAGE);
+        } else if (telefone.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, informe o telefone.", "Erro", JOptionPane.ERROR_MESSAGE);
         } else if (telefone.length() != 11) {
             JOptionPane.showMessageDialog(this, "Telefone inválido. Certifique-se de que contém 11 dígitos.", "Erro", JOptionPane.ERROR_MESSAGE);
         } else if (idFornecedor <= 0) { // Validando se o idFornecedor é válido
