@@ -20,6 +20,7 @@ public class PainelSuperior extends JPanel {
     private JPanel painelDeVisualizacao;
     private String cargoFuncionario;
     private static int idFuncionarioAtual;
+    private static String cargoFuncionarioAtual;
 
     public PainelSuperior(CardLayout layoutAlternativo, JPanel painelDeVisualizacao) {
         this.layoutAlternativo = layoutAlternativo;
@@ -114,37 +115,45 @@ public class PainelSuperior extends JPanel {
         botao.setFont(new Font("Arial", Font.BOLD, 14));
     }
 
+    public static String getCargoFuncionarioAtual() {
+        return cargoFuncionarioAtual; 
+    }
+
     public static int getIdFuncionarioAtual() {
         return idFuncionarioAtual;
     }
 
     private void buscarFuncionario(String codigoFuncionarioDigitado, JDialog dialogo) {
-
         if (codigoFuncionarioDigitado == null || codigoFuncionarioDigitado.trim().isEmpty()) {
             mostrarMensagemErro(dialogo, "Por favor, insira o código do funcionário.");
             return;
         }
-
+    
         Connection conexao = null;
         try {
             int codigo = Integer.parseInt(codigoFuncionarioDigitado);
             conexao = ConexaoBD.getConnection();
             String resultado = new FuncionarioDAO().verificarFuncionarioPorCodigo(conexao, codigo);
-
+    
             if (resultado.startsWith("Código:")) {
                 String[] partes = resultado.split(", ");
                 String codigoFuncionario = partes[0].replace("Código: ", "");
                 String nomeFuncionario = partes[1].replace("Nome: ", "");
                 cargoFuncionario = partes[2].replace("Cargo: ", "");
-
+                String statusFuncionario = partes[3].replace("Status: ", ""); 
+            
                 idFuncionarioAtual = Integer.parseInt(codigoFuncionario);
-
+                cargoFuncionarioAtual = cargoFuncionario; 
+        
+                if ("Gerente".equalsIgnoreCase(cargoFuncionario) && "Inativo".equalsIgnoreCase(statusFuncionario)) {
+                    mostrarMensagemErro(dialogo, "O gerente " + nomeFuncionario + " está inativo.\nPor favor, identifique outro funcionário.");
+                    return; 
+                }
+            
                 labelFuncionario.setText("Funcionário: " + codigoFuncionario + " - " + nomeFuncionario);
-
                 dialogo.dispose();
-
                 atualizarEstadoDosBotoesDeAcordoComCargo();
-
+            
                 if (!"Gerente".equalsIgnoreCase(cargoFuncionario)) {
                     selecionarOpcaoMenu(botoesMenu[0]);
                     mostrarPainel("Vendas");
@@ -153,7 +162,7 @@ public class PainelSuperior extends JPanel {
                 mostrarMensagemErro(dialogo, "Funcionário não encontrado!");
             }
         } catch (SQLException ex) {
-            mostrarMensagemErro(dialogo, "Erro ao verificar o funcionário: ");
+            mostrarMensagemErro(dialogo, "Erro ao verificar o funcionário: " + ex.getMessage());
         } catch (NumberFormatException ex) {
             mostrarMensagemErro(dialogo, "Código inválido. Por favor, insira um número.");
         } finally {

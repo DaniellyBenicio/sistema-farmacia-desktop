@@ -34,14 +34,15 @@ public class FuncionarioDAO {
             throw new SQLException("Erro: Cargo não atribuído. O cargo é obrigatório.");
         }
     
-        String sql = "UPDATE funcionario SET nome = ?, telefone = ?, email = ?, cargo_id = ? WHERE id = ?";
+        String sql = "UPDATE funcionario SET nome = ?, telefone = ?, email = ?, cargo_id = ?, status = ? WHERE id = ?";
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, f.getNome());
             pstmt.setString(2, f.getTelefone());
             pstmt.setString(3, f.getEmail());
-            pstmt.setInt(4, f.getCargo().getId()); 
-            pstmt.setInt(5, f.getId());
+            pstmt.setInt(4, f.getCargo().getId());
+            pstmt.setBoolean(5, true); 
+            pstmt.setInt(6, f.getId());
             pstmt.executeUpdate();
             System.out.println("Dados atualizados com sucesso!");
         } catch (SQLException e) {
@@ -169,6 +170,22 @@ public class FuncionarioDAO {
         } catch (SQLException e) {
             System.err.println("Erro ao verificar cargo do funcionário ou ao tentar excluir: " + e.getMessage());
             throw e;
+        }
+    }
+
+    public static void desativarGerente(Connection conn, Funcionario funcionario) throws SQLException {
+        String sql = "UPDATE funcionario SET status = 0 WHERE id = ?"; // ou outro campo status que você tenha
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, funcionario.getId());
+            stmt.executeUpdate();
+        }
+    }
+
+    public static void ativarGerente(Connection conn, Funcionario funcionario) throws SQLException {
+        String sql = "UPDATE funcionario SET status = 1 WHERE id = ?"; // ou outro campo status que você tenha
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, funcionario.getId());
+            stmt.executeUpdate();
         }
     }
         

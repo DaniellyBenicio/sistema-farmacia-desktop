@@ -419,7 +419,8 @@ public class ListaDeFornecedores extends JPanel {
             add(deleteButton);
         }
 
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+                int row, int column) {
             setBackground(Color.WHITE); // Define o fundo como branco
             if (fornecedoresFiltrados.isEmpty()) {
                 editButton.setVisible(false);
@@ -471,7 +472,6 @@ public class ListaDeFornecedores extends JPanel {
                             atualizarTabela();
                         }
                     });
-
                     editarDialog.setVisible(true);
                 }
                 fireEditingStopped();
@@ -479,7 +479,7 @@ public class ListaDeFornecedores extends JPanel {
 
             deleteButton.addActionListener(e -> {
                 if (fornecedoresFiltrados.isEmpty()) {
-                    return; // Se não houver fornecedores, não faz nada
+                    return;
                 }
 
                 indiceLinha = tabela.getSelectedRow();
@@ -542,11 +542,12 @@ public class ListaDeFornecedores extends JPanel {
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
+                int column) {
             JPanel panel = new JPanel();
             panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
             panel.setBackground(Color.WHITE); // Define como fundo branco
-        
+
             if (fornecedoresFiltrados.isEmpty()) {
                 editButton.setVisible(false);
                 deleteButton.setVisible(false);
@@ -558,10 +559,10 @@ public class ListaDeFornecedores extends JPanel {
                 deleteButton.setForeground(Color.WHITE);
                 deleteButton.setVisible(true);
             }
-        
+
             panel.add(editButton);
             panel.add(deleteButton);
-        
+
             return panel;
         }
 

@@ -239,12 +239,12 @@ public class CadastrarFornecedor extends JPanel {
                 Funcionario funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
 
                 if (funcionario == null) {
-                    JOptionPane.showMessageDialog(null,
-                            "A identificação do funcionário é obrigatória.\n" +
-                                    "Por favor, identifique-se antes de cadastrar um fornecedor.",
-                            "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
+                    JOptionPane.showMessageDialog(null, 
+                        "A identificação do funcionário é obrigatória.\n" + 
+                        "Somente o gerente pode cadastrar os fornecedores.", 
+                        "Acesso Negado", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
                 }
 
                 Fornecedor fornecedor = new Fornecedor(nome, cnpj, email, telefone, funcionario);

@@ -30,6 +30,7 @@ import dao.Funcionario.FuncionarioDAO;
 import main.ConexaoBD;
 import models.Cargo.Cargo;
 import models.Funcionario.Funcionario;
+import views.BarrasSuperiores.PainelSuperior;
 
 public class CadastrarFuncionario extends JPanel {
 
@@ -151,8 +152,21 @@ public class CadastrarFuncionario extends JPanel {
         cadastrarButton.setFocusPainted(false);
         cadastrarButton.setPreferredSize(new Dimension(140, 35));
         botoesPanel.add(cadastrarButton);
-
+            
         cadastrarButton.addActionListener(e -> {
+            int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
+            String cargoFuncionario = PainelSuperior.getCargoFuncionarioAtual();
+
+            if (idFuncionario <= 0 || !"Gerente".equalsIgnoreCase(cargoFuncionario)) {
+                System.out.println("Teste front" + cargoFuncionario);
+                JOptionPane.showMessageDialog(null, 
+                    "A identificação do funcionário é obrigatória.\n" + 
+                    "Somente o gerente pode cadastrar os funcionário.", 
+                    "Acesso Negado", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             String nome = nomeField.getText().trim();
             String telefone = telefoneField.getText().trim();
             String email = emailField.getText().trim();
@@ -188,6 +202,7 @@ public class CadastrarFuncionario extends JPanel {
                 Cargo cargo = new Cargo();
                 cargo.setNome(cargoNome);
 
+            
                 Funcionario funcionario = new Funcionario(nome, telefone, email, cargo, true);
                 FuncionarioDAO.cadastrarFuncionario(conn, funcionario);
 

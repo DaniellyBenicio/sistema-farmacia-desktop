@@ -232,6 +232,7 @@ public class ListaDeFuncionarios extends JPanel {
             tabela.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
+        tabela.getColumnModel().getColumn(5).setCellRenderer(new StatusCellRenderer());
         tabela.getColumnModel().getColumn(6).setCellRenderer(new ButtonRenderer());
         tabela.getColumnModel().getColumn(6).setCellEditor(new ButtonEditor(new JTextField()));
 
@@ -360,22 +361,66 @@ public class ListaDeFuncionarios extends JPanel {
             editButton.setBorderPainted(false);
             editButton.setFocusPainted(false);
             editButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            editButton.setPreferredSize(new Dimension(100, 27));
 
             deleteButton = new JButton("EXCLUIR");
             deleteButton.setBackground(Color.RED);
             deleteButton.setForeground(Color.WHITE);
             deleteButton.setBorderPainted(false);
             deleteButton.setFocusPainted(false);
+            deleteButton.setPreferredSize(new Dimension(100, 27));
             deleteButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             add(editButton);
             add(deleteButton);
         }
 
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,int row, int column) {
+            setBackground(Color.WHITE);
+
+            Funcionario funcionario = funcionarios.get(row); 
+
+            if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
+                editButton.setEnabled(funcionario.isStatus());
+            } else {
+                deleteButton.setText("EXCLUIR");
+                editButton.setEnabled(true);
+            }
+
+            if (funcionariosFiltrados.isEmpty()) {
+                editButton.setVisible(false);
+                deleteButton.setVisible(false);
+            } else {
+                editButton.setVisible(true);
+                deleteButton.setVisible(true);
+            }
+            return this;
+        }
+    }
+
+    private class StatusCellRenderer extends DefaultTableCellRenderer {
+        public StatusCellRenderer() {
+            setHorizontalAlignment(SwingConstants.CENTER); 
+        }
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
                 int row, int column) {
-            return this;
+            JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+                    column);
+
+            if (value != null) {
+                String status = value.toString();
+                if (status.equals("Ativo")) {
+                    label.setForeground(Color.GREEN);
+                } else if (status.equals("Inativo")) {
+                    label.setForeground(Color.RED);
+                } else {
+                    label.setForeground(Color.BLACK); 
+                }
+            }
+
+            return label;
         }
     }
 
@@ -387,9 +432,13 @@ public class ListaDeFuncionarios extends JPanel {
         public ButtonEditor(JTextField textField) {
             super(textField);
             editButton = new JButton("EDITAR");
-            deleteButton = new JButton("EXCLUIR");
+            deleteButton = new JButton("");
 
             editButton.addActionListener(e -> {
+                if (funcionariosFiltrados.isEmpty()) {
+                    return;
+                }
+
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
                     int idFuncionario = (int) modeloTabela.getValueAt(indiceLinha, 0);
@@ -414,20 +463,23 @@ public class ListaDeFuncionarios extends JPanel {
                             atualizarTabela();
                         }
                     });
-                    atualizarTabela();
                     editarDialog.setVisible(true);
                 }
                 fireEditingStopped();
             });
 
             deleteButton.addActionListener(e -> {
+                if (funcionariosFiltrados.isEmpty()) {
+                    return;
+                }
+
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
                     int idFuncionario = (int) modeloTabela.getValueAt(indiceLinha, 0);
+
                     excluirFuncionario(idFuncionario);
                     atualizarTabela();
                 }
-                atualizarTabela();
                 fireEditingStopped();
             });
         }
@@ -452,8 +504,16 @@ public class ListaDeFuncionarios extends JPanel {
                 return;
             }
 
-            String mensagemConfirmacao = "Você realmente deseja excluir o funcionário \"" + funcionario.getNome()
-                    + "\"?";
+            String mensagemConfirmacao;
+            if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
+                if (funcionario.isStatus()) {
+                    mensagemConfirmacao = "Deseja desativar o gerente \"" + funcionario.getNome() + "\"?";
+                } else {
+                    mensagemConfirmacao = "Deseja ativar o gerente \"" + funcionario.getNome() + "\"?";
+                }
+            } else {
+                mensagemConfirmacao = "Você realmente deseja excluir o funcionário \"" + funcionario.getNome() + "\"?";
+            }
 
             Object[] opcoes = { "Sim", "Não" };
 
@@ -468,17 +528,32 @@ public class ListaDeFuncionarios extends JPanel {
 
             if (resposta == JOptionPane.YES_OPTION) {
                 try {
-                    FuncionarioDAO.deletarFuncionario(conn, funcionario);
-                    JOptionPane.showMessageDialog(null, "Funcionário excluído com sucesso!", "Sucesso",
-                            JOptionPane.INFORMATION_MESSAGE);
+                    if (funcionario.getCargo() != null
+                            && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
+                        if (funcionario.isStatus()) {
+                            // Desativar o gerente
+                            FuncionarioDAO.desativarGerente(conn, funcionario);
+                            JOptionPane.showMessageDialog(null, "Gerente desativado com sucesso!", "Sucesso",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            // Ativar o gerente
+                            FuncionarioDAO.ativarGerente(conn, funcionario);
+                            JOptionPane.showMessageDialog(null, "Gerente ativado com sucesso!", "Sucesso",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    } else {
+                        FuncionarioDAO.deletarFuncionario(conn, funcionario);
+                        JOptionPane.showMessageDialog(null, "Funcionário excluído com sucesso!", "Sucesso",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    }
                     atualizarFuncionariosFiltrados(funcionarios);
                     atualizarTabela();
                 } catch (SQLException e) {
-                    JOptionPane.showMessageDialog(null, "Erro ao excluir funcionário.", "Erro",
+                    JOptionPane.showMessageDialog(null, "Erro ao processar a operação.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                 }
             } else if (resposta == 1) {
-                System.out.println("Exclusão cancelada.");
+                System.out.println("Operação cancelada.");
             } else {
                 System.out.println("Diálogo fechado sem seleção.");
             }
@@ -486,15 +561,40 @@ public class ListaDeFuncionarios extends JPanel {
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
-                int column) {
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+           
             JPanel panel = new JPanel();
             panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
+            panel.setBackground(Color.WHITE); 
 
-            editButton.setBackground(new Color(24, 39, 55));
-            editButton.setForeground(Color.WHITE);
-            deleteButton.setBackground(Color.RED);
-            deleteButton.setForeground(Color.WHITE);
+            indiceLinha = row;
+            Funcionario funcionario = funcionarios.get(row); 
+
+            if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
+                deleteButton.setText("DESATIVAR");
+                editButton.setEnabled(funcionario.isStatus());                
+            } else {
+                deleteButton.setText("EXCLUIR");
+                editButton.setEnabled(true); 
+            }
+
+            if (funcionariosFiltrados.isEmpty()) {
+                editButton.setVisible(false);
+                deleteButton.setVisible(false);
+            } else {
+                editButton.setVisible(true);
+                editButton.setBackground(new Color(24, 39, 55));
+                editButton.setForeground(Color.WHITE);
+                deleteButton.setBackground(Color.RED);
+                deleteButton.setForeground(Color.WHITE);
+                deleteButton.setVisible(true);
+            }
+
+            editButton.setPreferredSize(new Dimension(100, 27)); 
+            editButton.setMaximumSize(new Dimension(100, 27));
+    
+            deleteButton.setPreferredSize(new Dimension(100, 27)); 
+            deleteButton.setMaximumSize(new Dimension(100, 27));
 
             panel.add(editButton);
             panel.add(deleteButton);

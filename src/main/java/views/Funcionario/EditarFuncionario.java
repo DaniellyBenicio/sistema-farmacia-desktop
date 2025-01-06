@@ -28,6 +28,7 @@ import javax.swing.text.MaskFormatter;
 
 import dao.Funcionario.FuncionarioDAO;
 import main.ConexaoBD;
+import models.Cargo.Cargo;
 import models.Funcionario.Funcionario;
 
 public class EditarFuncionario extends JPanel {
@@ -182,9 +183,9 @@ public class EditarFuncionario extends JPanel {
                 if (funcionario.getCargo() != null) {
                     cargoField.setText(funcionario.getCargo().getNome());
                 } else {
-                    cargoField.setText(""); 
+                    cargoField.setText("");
                 }
-                
+
             } else {
                 JOptionPane.showMessageDialog(null, "Funcionário não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
             }
@@ -198,7 +199,7 @@ public class EditarFuncionario extends JPanel {
         String nome = nomeField.getText().trim();
         String telefone = telefoneField.getText().trim();
         String email = emailField.getText().trim();
-        String cargo = cargoField.getText().trim();
+        String cargoNome = cargoField.getText().trim(); // Renomeado para evitar confusão
 
         StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
         boolean hasError = false;
@@ -227,7 +228,7 @@ public class EditarFuncionario extends JPanel {
             hasError = true;
         }
 
-        if (cargo.isEmpty()) {
+        if (cargoNome.isEmpty()) {
             errorMessage.append("- Cargo deve ser preenchido.\n");
             hasError = true;
         }
@@ -244,13 +245,29 @@ public class EditarFuncionario extends JPanel {
             funcionarioAtualizado.setNome(nome);
             funcionarioAtualizado.setTelefone(telefone.replaceAll("[^0-9]", ""));
             funcionarioAtualizado.setEmail(email);
-            // funcionarioAtualizado.setCargo(cargo);
+
+            // Criação do objeto Cargo
+            Cargo cargo = new Cargo();
+            cargo.setNome(cargoNome); // Defina o nome do cargo
+
+            // Verifique se o cargo é válido
+            if (cargo.getNome() == null || cargo.getNome().trim().isEmpty()) {
+                throw new IllegalArgumentException("Cargo deve ter um nome válido.");
+            }
+
+            funcionarioAtualizado.setCargo(cargo); // Defina o cargo no funcionário
 
             FuncionarioDAO.atualizarFuncionario(conn, funcionarioAtualizado);
             JOptionPane.showMessageDialog(null, "Funcionário atualizado com sucesso!", "Sucesso",
                     JOptionPane.INFORMATION_MESSAGE);
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erro ao atualizar funcionário.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar funcionário: " + e.getMessage(), "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro inesperado: " + e.getMessage(), "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
