@@ -8,16 +8,19 @@ public class Funcionario {
     private String telefone;
     private String email;
     private Cargo cargo;
+    private boolean status;
 	
-    public Funcionario(String nome, String telefone, String email, Cargo cargo){
+    public Funcionario(String nome, String telefone, String email, Cargo cargo, boolean status){
         this.nome = nome;
         this.email = email;
         this.telefone = telefone;
         this.cargo = cargo;
+        this.status = status;
     }
 
     public Funcionario(){
 		super();
+        this.status = true;
 	}
 
     public int getId() {
@@ -76,6 +79,15 @@ public class Funcionario {
         this.cargo = cargo;
     }
 
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+
     @Override
     public String toString() {
         return "Funcionario{" +
@@ -84,6 +96,7 @@ public class Funcionario {
                 ", email='" + email + '\'' +
                 ", telefone='" + telefone + '\'' +
                 ", cargo=" + cargo.getNome() +
+                ", status=" + status +
                 '}';
     }
 }

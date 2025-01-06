@@ -15,12 +15,13 @@ public class FuncionarioDAO {
     public static void cadastrarFuncionario(Connection conn, Funcionario f) throws SQLException {
         int cargoId = CargoDAO.criarCargo(conn, f.getCargo());
         
-        String sql = "INSERT INTO funcionario(nome, telefone, email, cargo_id) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO funcionario(nome, telefone, email, cargo_id, status) VALUES (?,?,?,?,?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, f.getNome());
             pstmt.setString(2, f.getTelefone().replaceAll("[^0-9]", ""));
             pstmt.setString(3, f.getEmail());
             pstmt.setInt(4, cargoId);
+            pstmt.setBoolean(5, f.isStatus());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Erro ao cadastrar funcionário: " + e.getMessage());
@@ -29,13 +30,14 @@ public class FuncionarioDAO {
     }
 
     public static void atualizarFuncionario(Connection conn, Funcionario f) throws SQLException{
-	    String sql = "UPDATE funcionario SET nome = ?, telefone = ?, email = ?, cargo_id = ? WHERE id = ?";
+	    String sql = "UPDATE funcionario SET nome = ?, telefone = ?, email = ?, cargo_id = ?, status = ? WHERE id = ?";
 	    try(PreparedStatement pstmt = conn.prepareStatement(sql)){
 	        pstmt.setString(1, f.getNome());
 	        pstmt.setString(2, f.getTelefone());
             pstmt.setString(3, f.getEmail());
             pstmt.setInt(4, f.getCargo().getId());
             pstmt.setInt(5, f.getId()); 
+            pstmt.setBoolean(5, f.isStatus());
 	        pstmt.executeUpdate();
 	        System.out.println("Dados atualizados com sucesso!");
 	    }catch (SQLException e) {
@@ -45,7 +47,7 @@ public class FuncionarioDAO {
 	}
 
     public String verificarFuncionarioPorCodigo(Connection conn, int codigo) throws SQLException {
-        String query = "SELECT f.nome, c.nome AS cargo_nome FROM funcionario f " +
+        String query = "SELECT f.nome, c.nome AS cargo_nome,  f.status FROM funcionario f " +
                        "JOIN cargo c ON f.cargo_id = c.id WHERE f.id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(query)) { 
             pstmt.setInt(1, codigo); 
@@ -53,7 +55,8 @@ public class FuncionarioDAO {
     
             if (rs.next()) {
                 return "Código: " + codigo + ", Nome: " + rs.getString("nome") + 
-                       ", Cargo: " + rs.getString("cargo_nome"); 
+                       ", Cargo: " + rs.getString("cargo_nome") + 
+                       ", Status: " + (rs.getBoolean("status") ? "Ativo" : "Inativo"); 
             } else {
                 return "Funcionário não encontrado.";
             }
@@ -64,7 +67,7 @@ public class FuncionarioDAO {
     }    
 
     public static Funcionario funcionarioPorId(Connection conn, int id) throws SQLException {
-        String sql = "SELECT f.id, f.nome, f.email, f.telefone, c.nome AS cargo " +
+        String sql = "SELECT f.id, f.nome, f.email, f.telefone, c.nome AS cargo, f.status " +
                      "FROM funcionario f " +
                      "JOIN cargo c ON f.cargo_id = c.id WHERE f.id = ?";
         
@@ -82,6 +85,8 @@ public class FuncionarioDAO {
                     Cargo cargo = new Cargo();
                     cargo.setNome(rs.getString("cargo"));
                     f.setCargo(cargo);
+
+                    f.setStatus(rs.getBoolean("status")); 
     
                     return f;
                 }
@@ -95,7 +100,7 @@ public class FuncionarioDAO {
     }
     
     public static List<Funcionario> listarTodosFuncionarios(Connection conn) throws SQLException {
-        String sql = "SELECT f.id, f.nome, f.email, f.telefone, c.nome AS cargo FROM funcionario f " +
+        String sql = "SELECT f.id, f.nome, f.email, f.telefone, c.nome AS cargo, f.status FROM funcionario f " +
                      "JOIN cargo c ON f.cargo_id = c.id";
         
         List<Funcionario> funcionarios = new ArrayList<>(); 
@@ -114,6 +119,8 @@ public class FuncionarioDAO {
                 Cargo cargo = new Cargo();
                 cargo.setNome(rs.getString("cargo"));
                 f.setCargo(cargo);
+                
+                f.setStatus(rs.getBoolean("status"));
                 
                 funcionarios.add(f);  
             }
