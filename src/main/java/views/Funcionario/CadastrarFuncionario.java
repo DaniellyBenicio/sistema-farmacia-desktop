@@ -188,7 +188,7 @@ public class CadastrarFuncionario extends JPanel {
                 Cargo cargo = new Cargo();
                 cargo.setNome(cargoNome);
 
-                Funcionario funcionario = new Funcionario(nome, telefone, email, cargo);
+                Funcionario funcionario = new Funcionario(nome, telefone, email, cargo, true);
                 FuncionarioDAO.cadastrarFuncionario(conn, funcionario);
 
                 JOptionPane.showMessageDialog(null, "Funcionário cadastrado com sucesso!", "Sucesso",

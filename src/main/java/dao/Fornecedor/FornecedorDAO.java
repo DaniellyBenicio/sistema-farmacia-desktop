@@ -12,34 +12,73 @@ import models.Represetante.Representante;
 
 public class FornecedorDAO {
     public static void cadastrarFornecedor(Connection conn, Fornecedor forn) throws SQLException {
-        String sql = "INSERT INTO fornecedor(nome, cnpj, email, telefone, funcionario_id) VALUES (?,?,?,?,?)";
-        System.out.println("SQL Query: " + sql);
-        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) { 
-            System.out.println("PreparedStatement criado com sucesso.");
-            pstmt.setString(1, forn.getNome());
-            pstmt.setString(2, forn.getCnpj().replaceAll("[^0-9]", ""));
-            pstmt.setString(3, forn.getEmail());
-            pstmt.setString(4, forn.getTelefone().replaceAll("[^0-9]", ""));
-            pstmt.setInt(5, forn.getFuncionario().getId());
-            pstmt.executeUpdate(); 
-    
-            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    forn.setId(generatedKeys.getInt(1)); 
-                } else {
-                    throw new SQLException("Erro ao obter ID do fornecedor.");
+        String sqlFuncionario = "SELECT f.status, c.nome AS cargo FROM funcionario f " +
+                                "JOIN cargo c ON f.cargo_id = c.id " +
+                                "WHERE f.id = ?";
+        try (PreparedStatement pstmtFuncionario = conn.prepareStatement(sqlFuncionario)) {
+            pstmtFuncionario.setInt(1, forn.getFuncionario().getId());
+            ResultSet rsFuncionario = pstmtFuncionario.executeQuery();
+
+            if (rsFuncionario.next()) {
+                boolean funcionarioAtivo = rsFuncionario.getBoolean("status");
+                String cargo = rsFuncionario.getString("cargo");
+
+                if ("gerente".equalsIgnoreCase(cargo) && !funcionarioAtivo) {
+                    throw new SQLException("Não é possível cadastrar o fornecedor, pois o gerente está inativo.");
                 }
+            } else {
+                throw new SQLException("Funcionário não encontrado.");
             }
-    
-        } catch (SQLException e) {
-            System.err.println("Erro ao executar o SQL: " + e.getMessage());
-            throw new SQLException("Erro ao cadastrar fornecedor.", e);  
         }
+    
+        String sql = "INSERT INTO fornecedor(nome, cnpj, email, telefone, funcionario_id) VALUES (?,?,?,?,?)";
+            System.out.println("SQL Query: " + sql);
+            try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) { 
+                System.out.println("PreparedStatement criado com sucesso.");
+                pstmt.setString(1, forn.getNome());
+                pstmt.setString(2, forn.getCnpj().replaceAll("[^0-9]", ""));
+                pstmt.setString(3, forn.getEmail());
+                pstmt.setString(4, forn.getTelefone().replaceAll("[^0-9]", ""));
+                pstmt.setInt(5, forn.getFuncionario().getId());
+                pstmt.executeUpdate(); 
+        
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        forn.setId(generatedKeys.getInt(1)); 
+                    } else {
+                        throw new SQLException("Erro ao obter ID do fornecedor.");
+                    }
+                }
+        
+            } catch (SQLException e) {
+                System.err.println("Erro ao executar o SQL: " + e.getMessage());
+                throw new SQLException("Erro ao cadastrar fornecedor.", e);  
+            }
     }  
 
     public static void atualizarFornecedor(Connection conn, Fornecedor forn) throws SQLException {
         if (forn.getId() <= 0) {
             throw new IllegalArgumentException("ID do fornecedor inválido para atualização.");
+        }
+
+        String sqlFuncionario = "SELECT f.status, c.nome AS cargo FROM funcionario f " +
+                                "JOIN cargo c ON f.cargo_id = c.id " +
+                                "WHERE f.id = ?";
+
+        try (PreparedStatement pstmtFuncionario = conn.prepareStatement(sqlFuncionario)) {
+            pstmtFuncionario.setInt(1, forn.getFuncionario().getId());
+            ResultSet rsFuncionario = pstmtFuncionario.executeQuery();
+
+            if (rsFuncionario.next()) {
+                boolean funcionarioAtivo = rsFuncionario.getBoolean("status");
+                String cargo = rsFuncionario.getString("cargo");
+
+                if ("gerente".equalsIgnoreCase(cargo) && !funcionarioAtivo) {
+                    throw new SQLException("Não é possível atualizar o fornecedor, pois o gerente está inativo.");
+                }
+            } else {
+                throw new SQLException("Funcionário não encontrado.");
+            }
         }
     
         String sql = "UPDATE Fornecedor SET nome = ?, cnpj = ?, email = ?, telefone = ? WHERE id = ?";
@@ -121,7 +160,6 @@ public class FornecedorDAO {
                     Representante representante = new Representante();
                     representante.setNome(nomeRepresentante);
                     
-                    // Aqui, vamos pegar o telefone do representante corretamente
                     String telefoneRepresentante = rs.getString("telefoneRepresentante");
                     if (telefoneRepresentante != null) {
                         representante.setTelefone(telefoneRepresentante);
@@ -140,6 +178,25 @@ public class FornecedorDAO {
     }
     
     public static void deletarFornecedor(Connection conn, Fornecedor forn) throws SQLException {
+        String sqlFuncionario = "SELECT f.status, c.nome AS cargo FROM funcionario f " +
+                                "JOIN cargo c ON f.cargo_id = c.id " +
+                                "WHERE f.id = ?";
+
+        try (PreparedStatement pstmtFuncionario = conn.prepareStatement(sqlFuncionario)) {
+        pstmtFuncionario.setInt(1, forn.getFuncionario().getId());
+        ResultSet rsFuncionario = pstmtFuncionario.executeQuery();
+
+        if (rsFuncionario.next()) {
+        boolean funcionarioAtivo = rsFuncionario.getBoolean("status");
+        String cargo = rsFuncionario.getString("cargo");
+
+            if ("gerente".equalsIgnoreCase(cargo) && !funcionarioAtivo) {
+            throw new SQLException("Não é possível excluir o fornecedor, pois o gerente está inativo.");
+            }
+        } else {
+            throw new SQLException("Funcionário não encontrado.");
+         }
+    }
         String sql = "DELETE FROM fornecedor WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
         pstmt.setInt(1, forn.getId());

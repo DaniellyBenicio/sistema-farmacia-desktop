@@ -77,7 +77,7 @@ public class ListaDeFuncionarios extends JPanel {
             dadosFuncionario[4] = funcionario.getCargo() != null
                     ? funcionario.getCargo().getNome()
                     : "Cargo não encontrado";
-            dadosFuncionario[5] = "Sem Status";
+            dadosFuncionario[5] = funcionario.isStatus() ? "Ativo" : "Inativo";
             dadosFuncionario[6] = "";
 
             funcionariosFiltrados.add(dadosFuncionario);
@@ -266,7 +266,7 @@ public class ListaDeFuncionarios extends JPanel {
                             formatarTelefone(funcionario.getTelefone()),
                             funcionario.getEmail(),
                             funcionario.getCargo() != null ? funcionario.getCargo().getNome() : "Cargo não encontrado",
-                            "Sem Status",
+                            funcionario.isStatus() ? "Ativo" : "Inativo",
                     })
                     .collect(Collectors.toList());
         } else {
@@ -278,7 +278,7 @@ public class ListaDeFuncionarios extends JPanel {
                             formatarTelefone(funcionario.getTelefone()),
                             funcionario.getEmail(),
                             funcionario.getCargo() != null ? funcionario.getCargo().getNome() : "Cargo não encontrado",
-                            "Sem Status",
+                            funcionario.isStatus() ? "Ativo" : "Inativo",
                     })
                     .collect(Collectors.toList());
         }

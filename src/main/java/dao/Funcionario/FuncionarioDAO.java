@@ -29,22 +29,27 @@ public class FuncionarioDAO {
         }  
     }
 
-    public static void atualizarFuncionario(Connection conn, Funcionario f) throws SQLException{
-	    String sql = "UPDATE funcionario SET nome = ?, telefone = ?, email = ?, cargo_id = ?, status = ? WHERE id = ?";
-	    try(PreparedStatement pstmt = conn.prepareStatement(sql)){
-	        pstmt.setString(1, f.getNome());
-	        pstmt.setString(2, f.getTelefone());
+    public static void atualizarFuncionario(Connection conn, Funcionario f) throws SQLException {
+        if (f.getCargo() == null) {
+            throw new SQLException("Erro: Cargo não atribuído. O cargo é obrigatório.");
+        }
+    
+        String sql = "UPDATE funcionario SET nome = ?, telefone = ?, email = ?, cargo_id = ? WHERE id = ?";
+    
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, f.getNome());
+            pstmt.setString(2, f.getTelefone());
             pstmt.setString(3, f.getEmail());
-            pstmt.setInt(4, f.getCargo().getId());
-            pstmt.setInt(5, f.getId()); 
-            pstmt.setBoolean(5, f.isStatus());
-	        pstmt.executeUpdate();
-	        System.out.println("Dados atualizados com sucesso!");
-	    }catch (SQLException e) {
+            pstmt.setInt(4, f.getCargo().getId()); 
+            pstmt.setInt(5, f.getId());
+            pstmt.executeUpdate();
+            System.out.println("Dados atualizados com sucesso!");
+        } catch (SQLException e) {
             System.err.println("Erro ao atualizar o funcionário: " + e.getMessage());
             throw e;
         }
-	}
+    }
+    
 
     public String verificarFuncionarioPorCodigo(Connection conn, int codigo) throws SQLException {
         String query = "SELECT f.nome, c.nome AS cargo_nome,  f.status FROM funcionario f " +
@@ -121,7 +126,7 @@ public class FuncionarioDAO {
                 f.setCargo(cargo);
                 
                 f.setStatus(rs.getBoolean("status"));
-                
+
                 funcionarios.add(f);  
             }
         }
@@ -130,20 +135,41 @@ public class FuncionarioDAO {
     }
 
     public static void deletarFuncionario(Connection conn, Funcionario f) throws SQLException {
-        String sql = "DELETE FROM Funcionario WHERE id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, f.getId());
-            int rowsAffected = pstmt.executeUpdate();
+       String sqlCargo = "SELECT c.nome FROM cargo c JOIN funcionario f ON f.cargo_id = c.id WHERE f.id = ?";
+        try (PreparedStatement pstmtCargo = conn.prepareStatement(sqlCargo)) {
+            pstmtCargo.setInt(1, f.getId());
             
-            if (rowsAffected > 0) {
-                System.out.println("Funcionário excluído com sucesso!");
-            } else {
-                System.out.println("Nenhum funcionário encontrado para o ID " + f.getId());
+            try (ResultSet rs = pstmtCargo.executeQuery()) {
+                if (rs.next()) {
+                    String cargoNome = rs.getString("nome");
+                    
+                    if ("Gerente".equalsIgnoreCase(cargoNome)) {
+                        String updateStatusSQL = "UPDATE funcionario SET status = ? WHERE id = ?";
+                        try (PreparedStatement pstmtUpdate = conn.prepareStatement(updateStatusSQL)) {
+                            pstmtUpdate.setBoolean(1, false); 
+                            pstmtUpdate.setInt(2, f.getId());
+                            pstmtUpdate.executeUpdate();
+                            System.out.println("Funcionário do tipo Gerente não pode ser excluído, seu status foi alterado para inativo.");
+                        }
+                    } else {
+                        String deleteSQL = "DELETE FROM funcionario WHERE id = ?";
+                        try (PreparedStatement pstmtDelete = conn.prepareStatement(deleteSQL)) {
+                            pstmtDelete.setInt(1, f.getId());
+                            int rowsAffected = pstmtDelete.executeUpdate();
+                            
+                            if (rowsAffected > 0) {
+                                System.out.println("Funcionário excluído com sucesso!");
+                            } else {
+                                System.out.println("Nenhum funcionário encontrado para o ID " + f.getId());
+                            }
+                        }
+                    }
+                }
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao excluir funcionário: " + e.getMessage());
-            throw e;  
+            System.err.println("Erro ao verificar cargo do funcionário ou ao tentar excluir: " + e.getMessage());
+            throw e;
         }
     }
-    
+        
 }
