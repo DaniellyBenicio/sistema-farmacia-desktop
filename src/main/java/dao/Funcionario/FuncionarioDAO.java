@@ -108,8 +108,10 @@ public class FuncionarioDAO {
     }
     
     public static List<Funcionario> listarTodosFuncionarios(Connection conn) throws SQLException {
-        String sql = "SELECT f.id, f.nome, f.email, f.telefone, c.nome AS cargo, f.status FROM funcionario f " +
-                     "JOIN cargo c ON f.cargo_id = c.id";
+        String sql = "SELECT f.id, f.nome, f.email, f.telefone, c.nome AS cargo, f.status " +
+             "FROM funcionario f " +
+             "JOIN cargo c ON f.cargo_id = c.id " +
+             "ORDER BY f.status DESC, f.nome ASC";
         
         List<Funcionario> funcionarios = new ArrayList<>(); 
         
