@@ -147,6 +147,7 @@ public class EditarFornecedor extends JPanel {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+        
         telefoneField = new JFormattedTextField(telefoneFormatter);
         telefoneField.setPreferredSize(fieldSize);
         estilizarCampo(telefoneField, fieldFont);

@@ -10,6 +10,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
@@ -17,11 +18,13 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.text.MaskFormatter;
 
 import dao.FuncionarioDAO;
 import main.ConexaoBD;
@@ -98,7 +101,15 @@ public class EditarFuncionario extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(telefoneLabel, gbc);
 
-        telefoneField = new JTextField();
+        MaskFormatter telefoneFormatter = null;
+        try {
+            telefoneFormatter = new MaskFormatter("(##) #####-####");
+            telefoneFormatter.setValidCharacters("0123456789");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        telefoneField = new JFormattedTextField(telefoneFormatter);
         telefoneField.setPreferredSize(fieldSize);
         estilizarCampo(telefoneField, fieldFont);
         gbc.gridx = 1;
@@ -168,7 +179,7 @@ public class EditarFuncionario extends JPanel {
                 nomeField.setText(funcionario.getNome());
                 telefoneField.setText(funcionario.getTelefone());
                 emailField.setText(funcionario.getEmail());
-//cargoField.setText(funcionario.getCargo());
+                //cargoField.setText(funcionario.getCargo());
             } else {
                 JOptionPane.showMessageDialog(null, "Funcionário não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
             }
@@ -227,7 +238,7 @@ public class EditarFuncionario extends JPanel {
             funcionarioAtualizado.setNome(nome);
             funcionarioAtualizado.setTelefone(telefone.replaceAll("[^0-9]", ""));
             funcionarioAtualizado.setEmail(email);
-      //      funcionarioAtualizado.setCargo(cargo);
+           // funcionarioAtualizado.setCargo(cargo);
 
             FuncionarioDAO.atualizarFuncionario(conn, funcionarioAtualizado);
             JOptionPane.showMessageDialog(null, "Funcionário atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);

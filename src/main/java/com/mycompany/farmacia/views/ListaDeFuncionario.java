@@ -234,11 +234,11 @@ public class ListaDeFuncionario extends JPanel {
         tabela.getColumnModel().getColumn(5).setCellRenderer(new ButtonRenderer());
         tabela.getColumnModel().getColumn(5).setCellEditor(new ButtonEditor(new JTextField()));
 
-        tabela.getColumnModel().getColumn(0).setPreferredWidth(50);
+        tabela.getColumnModel().getColumn(0).setPreferredWidth(20);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(270);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(40);
-        tabela.getColumnModel().getColumn(3).setPreferredWidth(180);
-        tabela.getColumnModel().getColumn(4).setPreferredWidth(70);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(50);
+        tabela.getColumnModel().getColumn(3).setPreferredWidth(210);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(90);
         tabela.getColumnModel().getColumn(5).setPreferredWidth(160);
 
         tabela.setCellSelectionEnabled(false);  
@@ -250,7 +250,7 @@ public class ListaDeFuncionario extends JPanel {
         }
 
         JScrollPane scrollPane = new JScrollPane(tabela);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 53, 30));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 56, 30));
 
         return scrollPane;
     }
@@ -393,13 +393,24 @@ public class ListaDeFuncionario extends JPanel {
                     JDialog editarDialog = new JDialog();
                     editarDialog.setTitle("Editar Funcionário");
                     editarDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                    editarDialog.setSize(800, 400); // tamanho do dialog
+                    editarDialog.setSize(1200, 650); // tamanho do dialog
                     editarDialog.setLocationRelativeTo(null);
                     editarDialog.setModal(true);
     
-                    // Aqui você deve adicionar seu painel de edição
-                    // editarDialog.add(new EditarFuncionario(idFuncionario, conn));
-    
+                    Point location = editarDialog.getLocation();
+                    location.y = 150; 
+                    editarDialog.setLocation(location);
+
+                    EditarFuncionario editarPanel = new EditarFuncionario(idFuncionario);
+                    editarDialog.add(editarPanel);
+
+                    editarDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                        @Override
+                        public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                            atualizarTabela(); // Atualiza a tabela após fechar o editor
+                        }
+                    });
+
                     editarDialog.setVisible(true);
                 }
                 fireEditingStopped();
@@ -410,6 +421,7 @@ public class ListaDeFuncionario extends JPanel {
                 if (indiceLinha >= 0) {
                     int idFuncionario = (int) modeloTabela.getValueAt(indiceLinha, 0); // Obtém o ID da coluna 0
                     excluirFuncionario(idFuncionario); // Chama o método de exclusão
+                    atualizarTabela();
                 }
                 fireEditingStopped();
             });

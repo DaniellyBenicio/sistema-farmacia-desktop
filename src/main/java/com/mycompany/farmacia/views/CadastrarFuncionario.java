@@ -73,7 +73,6 @@ public class CadastrarFuncionario extends JPanel {
         Font fieldFont = new Font("Arial", Font.PLAIN, 18);
         Dimension fieldSize = new Dimension(300, 40);
 
-        // Nome
         JLabel nomeLabel = new JLabel("Nome");
         nomeLabel.setFont(labelFont);
         gbc.gridx = 0;
@@ -89,48 +88,45 @@ public class CadastrarFuncionario extends JPanel {
 
         gbc.gridx = 0;
         gbc.gridy = 2;
-        camposPanel.add(Box.createRigidArea(new Dimension(0, 15)), gbc);  // Espaço entre os campos
+        camposPanel.add(Box.createRigidArea(new Dimension(0, 15)), gbc);
 
-        // Telefone
         JLabel telefoneLabel = new JLabel("Telefone");
         telefoneLabel.setFont(labelFont);
-        gbc.gridx = 1;  // Segunda coluna
+        gbc.gridx = 1;
         gbc.gridy = 0;
         camposPanel.add(telefoneLabel, gbc);
 
         telefoneField = criarCampoFormatado("(##) #####-####");
         telefoneField.setPreferredSize(fieldSize);
         estilizarCampo(telefoneField, fieldFont);
-        gbc.gridx = 1;  // Segunda coluna
+        gbc.gridx = 1;
         gbc.gridy = 1;
         camposPanel.add(telefoneField, gbc);
 
-        // E-mail
         JLabel emailLabel = new JLabel("E-mail");
         emailLabel.setFont(labelFont);
-        gbc.gridx = 0;  // Primeira coluna
-        gbc.gridy = 3;  // Segunda linha (abaixo do nome)
+        gbc.gridx = 0;
+        gbc.gridy = 3;
         camposPanel.add(emailLabel, gbc);
 
         emailField = new JTextField();
         emailField.setPreferredSize(new Dimension(300, 40));
         estilizarCampo(emailField, fieldFont);
-        gbc.gridx = 0;  // Primeira coluna
-        gbc.gridy = 4;  // Para o campo E-mail
+        gbc.gridx = 0;
+        gbc.gridy = 4;
         camposPanel.add(emailField, gbc);
 
-        // Cargo
         JLabel cargoLabel = new JLabel("Cargo");
         cargoLabel.setFont(labelFont);
-        gbc.gridx = 1;  // Segunda coluna (ao lado do E-mail)
-        gbc.gridy = 3;  // Mesma linha que E-mail
+        gbc.gridx = 1;
+        gbc.gridy = 3;
         camposPanel.add(cargoLabel, gbc);
 
         cargoField = new JTextField();
         cargoField.setPreferredSize(fieldSize);
         estilizarCampo(cargoField, fieldFont);
-        gbc.gridx = 1;  // Segunda coluna (ao lado do E-mail)
-        gbc.gridy = 4;  // Mesma linha que o campo E-mail
+        gbc.gridx = 1;
+        gbc.gridy = 4;
         camposPanel.add(cargoField, gbc);
 
         return camposPanel;
@@ -144,7 +140,7 @@ public class CadastrarFuncionario extends JPanel {
         cancelarButton.setFont(new Font("Arial", Font.BOLD, 17));
         cancelarButton.setBackground(Color.RED);
         cancelarButton.setForeground(Color.WHITE);
-        cancelarButton.setFocusPainted(false);
+        cancelarButton.setFocusPainted (false);
         cancelarButton.setPreferredSize(new Dimension(140, 35));
         botoesPanel.add(cancelarButton);
 
@@ -162,30 +158,25 @@ public class CadastrarFuncionario extends JPanel {
             String email = emailField.getText().trim();
             String cargoNome = cargoField.getText().trim();
 
-            // Verifica se todos os campos estão vazios
             if (nome.isEmpty() || telefone.isEmpty() || email.isEmpty() || cargoNome.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Por favor, preencha todos os campos!", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // Validações
             boolean hasError = false;
             StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
 
-            // Verificação do E-mail
             if (!validarEmail(email)) {
                 errorMessage.append("- E-mail inválido.\n");
                 hasError = true;
             }
 
-            // Verificação do Telefone
-            String telefoneLimpo = telefone.replaceAll("[^0-9]", ""); // Remove a máscara para validação
-            if (telefoneLimpo.length() != 11) { // Telefone deve ter 11 dígitos (incluindo DDD e o número)
+            String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
+            if (telefoneLimpo.length() != 11) {
                 errorMessage.append("- Telefone inválido (certifique-se de que contém 11 dígitos numéricos).\n");
                 hasError = true;
             }
 
-            // Se houve algum erro, exibe a mensagem de erro acumulada
             if (hasError) {
                 JOptionPane.showMessageDialog(null, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -193,14 +184,13 @@ public class CadastrarFuncionario extends JPanel {
 
             try (Connection conn = ConexaoBD.getConnection()) {
                 Cargo cargo = new Cargo();
-                cargo.setNome(cargoNome); // Adicione lógica para lidar com Cargos
+                cargo.setNome(cargoNome);
 
                 Funcionario funcionario = new Funcionario(nome, telefone, email, cargo);
                 FuncionarioDAO.cadastrarFuncionario(conn, funcionario);
                 
                 JOptionPane.showMessageDialog(null, "Funcionário cadastrado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
 
-                // Limpar os campos após o cadastro
                 nomeField.setText("");
                 telefoneField.setText("");
                 emailField.setText("");

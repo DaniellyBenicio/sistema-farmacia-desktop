@@ -294,7 +294,7 @@ public class ListaDeFornecedores extends JPanel {
         }
     
         JScrollPane scrollPane = new JScrollPane(tabela);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 53, 30));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 57, 30));
     
         return scrollPane;
     }
@@ -475,7 +475,8 @@ public class ListaDeFornecedores extends JPanel {
             indiceLinha = tabela.getSelectedRow();
             if (indiceLinha >= 0) {
                 int fornecedorId = fornecedoresIds.get(indiceLinha); // Obtém o ID a partir da lista de IDs
-                excluirFornecedor(fornecedorId);                    
+                excluirFornecedor(fornecedorId);  
+                atualizarTabela();                  
             }
             fireEditingStopped(); 
         });
