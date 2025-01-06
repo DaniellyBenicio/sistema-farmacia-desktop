@@ -30,9 +30,12 @@ public class FuncionarioDAO {
     }
 
     public static void atualizarFuncionario(Connection conn, Funcionario f) throws SQLException {
-        if (f.getCargo() == null) {
-            throw new SQLException("Erro: Cargo não atribuído. O cargo é obrigatório.");
+        if (f.getCargo() == null || f.getCargo().getNome() == null || f.getCargo().getNome().isEmpty()) {
+            throw new SQLException("Erro: Cargo não pode ser nulo ou vazio.");
         }
+    
+        int cargoId = CargoDAO.criarCargo(conn, f.getCargo());
+        f.getCargo().setId(cargoId);
     
         String sql = "UPDATE funcionario SET nome = ?, telefone = ?, email = ?, cargo_id = ?, status = ? WHERE id = ?";
     
@@ -40,7 +43,7 @@ public class FuncionarioDAO {
             pstmt.setString(1, f.getNome());
             pstmt.setString(2, f.getTelefone());
             pstmt.setString(3, f.getEmail());
-            pstmt.setInt(4, f.getCargo().getId());
+            pstmt.setInt(4, cargoId);
             pstmt.setBoolean(5, true); 
             pstmt.setInt(6, f.getId());
             pstmt.executeUpdate();
@@ -51,7 +54,6 @@ public class FuncionarioDAO {
         }
     }
     
-
     public String verificarFuncionarioPorCodigo(Connection conn, int codigo) throws SQLException {
         String query = "SELECT f.nome, c.nome AS cargo_nome,  f.status FROM funcionario f " +
                        "JOIN cargo c ON f.cargo_id = c.id WHERE f.id = ?";
@@ -174,7 +176,7 @@ public class FuncionarioDAO {
     }
 
     public static void desativarGerente(Connection conn, Funcionario funcionario) throws SQLException {
-        String sql = "UPDATE funcionario SET status = 0 WHERE id = ?"; // ou outro campo status que você tenha
+        String sql = "UPDATE funcionario SET status = 0 WHERE id = ?"; 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, funcionario.getId());
             stmt.executeUpdate();
@@ -182,7 +184,7 @@ public class FuncionarioDAO {
     }
 
     public static void ativarGerente(Connection conn, Funcionario funcionario) throws SQLException {
-        String sql = "UPDATE funcionario SET status = 1 WHERE id = ?"; // ou outro campo status que você tenha
+        String sql = "UPDATE funcionario SET status = 1 WHERE id = ?"; 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, funcionario.getId());
             stmt.executeUpdate();
