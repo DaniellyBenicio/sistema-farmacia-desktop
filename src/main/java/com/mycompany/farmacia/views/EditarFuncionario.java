@@ -179,7 +179,11 @@ public class EditarFuncionario extends JPanel {
                 nomeField.setText(funcionario.getNome());
                 telefoneField.setText(funcionario.getTelefone());
                 emailField.setText(funcionario.getEmail());
-                //cargoField.setText(funcionario.getCargo());
+                if (funcionario.getCargo() != null) {
+                    cargoField.setText(funcionario.getCargo().getNome());
+                } else {
+                    cargoField.setText(""); 
+                }
             } else {
                 JOptionPane.showMessageDialog(null, "Funcionário não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
             }
