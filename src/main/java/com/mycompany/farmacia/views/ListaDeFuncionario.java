@@ -263,7 +263,7 @@ public class ListaDeFuncionario extends JPanel {
                             funcionario.getNome(),
                             formatarTelefone(funcionario.getTelefone()),
                             funcionario.getEmail(),
-                            "", // Placeholder para ações
+                            funcionario.getCargo() != null ? funcionario.getCargo().getNome() : "Cargo não encontrado",
                     })
                     .collect(Collectors.toList());
         } else {
@@ -274,7 +274,7 @@ public class ListaDeFuncionario extends JPanel {
                             funcionario.getNome(),
                             formatarTelefone(funcionario.getTelefone()),
                             funcionario.getEmail(),
-                            "", // Placeholder para ações
+                            funcionario.getCargo() != null ? funcionario.getCargo().getNome() : "Cargo não encontrado",
                     })
                     .collect(Collectors.toList());
         }
@@ -378,16 +378,17 @@ public class ListaDeFuncionario extends JPanel {
         private final JButton editButton;
         private final JButton deleteButton;
         private int indiceLinha;
-
+    
         public ButtonEditor(JTextField textField) {
             super(textField);
             editButton = new JButton("EDITAR");
             deleteButton = new JButton("EXCLUIR");
-
+    
             editButton.addActionListener(e -> {
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
                     // Obtemos o ID diretamente da lista de IDs
+                    int idFuncionario = (int) modeloTabela.getValueAt(indiceLinha, 0); // Obtém o ID da coluna 0
                     // Abra a janela de edição do funcionário
                     JDialog editarDialog = new JDialog();
                     editarDialog.setTitle("Editar Funcionário");
@@ -395,30 +396,31 @@ public class ListaDeFuncionario extends JPanel {
                     editarDialog.setSize(800, 400); // tamanho do dialog
                     editarDialog.setLocationRelativeTo(null);
                     editarDialog.setModal(true);
-
+    
                     // Aqui você deve adicionar seu painel de edição
-                    // editarDialog.add(new EditarFuncionario(funcionarioId, conn));
-
+                    // editarDialog.add(new EditarFuncionario(idFuncionario, conn));
+    
                     editarDialog.setVisible(true);
                 }
                 fireEditingStopped();
             });
-
+    
             deleteButton.addActionListener(e -> {
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
-                    //
+                    int idFuncionario = (int) modeloTabela.getValueAt(indiceLinha, 0); // Obtém o ID da coluna 0
+                    excluirFuncionario(idFuncionario); // Chama o método de exclusão
                 }
                 fireEditingStopped();
             });
         }
-
+    
         private void excluirFuncionario(int idFuncionario) {
             if (idFuncionario <= 0) {
                 JOptionPane.showMessageDialog(null, "ID do funcionário inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
+    
             Funcionario funcionario;
             try {
                 funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
@@ -426,37 +428,57 @@ public class ListaDeFuncionario extends JPanel {
                 JOptionPane.showMessageDialog(null, "Erro ao recuperar funcionário: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
+    
             if (funcionario == null) {
                 JOptionPane.showMessageDialog(null, "Funcionário não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
+    
             String mensagemConfirmacao = "Você realmente deseja excluir o funcionário \"" + funcionario.getNome() + "\"?";
-            int resposta = JOptionPane.showConfirmDialog(null, mensagemConfirmacao, "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
-
+           
+            Object[] opcoes = {"Sim", "Não"};
+    
+            int resposta = JOptionPane.showOptionDialog(null,
+                    mensagemConfirmacao,
+                    "Confirmar Exclusão",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,
+                    opcoes, 
+                    opcoes[0]
+            );
+    
             if (resposta == JOptionPane.YES_OPTION) {
                 try {
                     FuncionarioDAO.deletarFuncionario(conn, funcionario);
                     JOptionPane.showMessageDialog(null, "Funcionário excluído com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
                     atualizarFuncionariosFiltrados(funcionarios); // Atualiza a lista de funcionários
-                    carregarDados(); // Recarrega a tabela
+                    atualizarTabela();
                 } catch (SQLException e) {
                     JOptionPane.showMessageDialog(null, "Erro ao excluir funcionário: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
+            } else if (resposta == 1) { // A opção "Não" foi escolhida
+                System.out.println("Exclusão cancelada."); 
+            } else {
+                System.out.println("Diálogo fechado sem seleção.");
             }
         }
-
+    
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             JPanel panel = new JPanel();
             panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-
+    
+            editButton.setBackground(new Color(24, 39, 55));
+            editButton.setForeground(Color.WHITE);
+            deleteButton.setBackground(Color.RED);
+            deleteButton.setForeground(Color.WHITE);
+    
             panel.add(editButton);
             panel.add(deleteButton);
-
+    
             return panel;
-        }
+        }    
 
         @Override
         public Object getCellEditorValue() {
