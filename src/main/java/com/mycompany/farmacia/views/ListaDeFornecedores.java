@@ -283,7 +283,7 @@ public class ListaDeFornecedores extends JPanel {
         tabela.getColumnModel().getColumn(3).setPreferredWidth(70);
         tabela.getColumnModel().getColumn(4).setPreferredWidth(200);
         tabela.getColumnModel().getColumn(5).setPreferredWidth(70);
-        tabela.getColumnModel().getColumn(6).setPreferredWidth(140);
+        tabela.getColumnModel().getColumn(6).setPreferredWidth(160);
         
         tabela.setCellSelectionEnabled(false);  
         tabela.setRowSelectionAllowed(false);   

@@ -239,7 +239,7 @@ public class ListaDeFuncionario extends JPanel {
         tabela.getColumnModel().getColumn(2).setPreferredWidth(40);
         tabela.getColumnModel().getColumn(3).setPreferredWidth(180);
         tabela.getColumnModel().getColumn(4).setPreferredWidth(70);
-        tabela.getColumnModel().getColumn(5).setPreferredWidth(140);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(160);
 
         tabela.setCellSelectionEnabled(false);  
         tabela.setRowSelectionAllowed(false);   
