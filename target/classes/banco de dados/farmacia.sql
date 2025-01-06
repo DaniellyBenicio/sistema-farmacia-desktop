@@ -12,6 +12,7 @@ create table funcionario(
     telefone char(11) not null unique,
     email varchar(100) not null unique,
     cargo_id int not null,
+    status BOOLEAN NOT NULL DEFAULT TRUE,
     foreign key (cargo_id) references cargo(id)
 );
 
@@ -66,16 +67,4 @@ create table fornecedorMedicamento(
 );
 
 drop database farmacia;
-
-INSERT INTO cargo (nome) VALUES ('Operador de caixa');
-INSERT INTO cargo (nome) VALUES ('Gerente');
-
-INSERT INTO funcionario (nome, email, telefone, cargo_id) 
-VALUES ('Amanda', 'a@gmail.com', '88912345678', 1);
-
-INSERT INTO funcionario (nome, email, telefone, cargo_id) 
-VALUES ('Danielly', 'd@teste.com', '88998654321', 2);
-
-INSERT INTO funcionario (nome, email, telefone, cargo_id)  VALUES('Daniel', 'daniel@gmail.com', '88999274169', 1);
-
 
