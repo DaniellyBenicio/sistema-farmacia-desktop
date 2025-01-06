@@ -419,13 +419,14 @@ public class ListaDeFornecedores extends JPanel {
             add(deleteButton);
         }
 
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-                int row, int column) {
-            setBackground(Color.WHITE);
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            setBackground(Color.WHITE); // Define o fundo como branco
             if (fornecedoresFiltrados.isEmpty()) {
-                setBackground(Color.WHITE);
-                return new JPanel();
+                editButton.setVisible(false);
+                deleteButton.setVisible(false);
+            } else {
+                editButton.setVisible(true);
+                deleteButton.setVisible(true);
             }
             return this;
         }
@@ -442,6 +443,10 @@ public class ListaDeFornecedores extends JPanel {
             deleteButton = new JButton("EXCLUIR");
 
             editButton.addActionListener(e -> {
+                if (fornecedoresFiltrados.isEmpty()) {
+                    return; // Se não houver fornecedores, não faz nada
+                }
+
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
                     int fornecedorId = fornecedoresIds.get(indiceLinha);
@@ -473,6 +478,10 @@ public class ListaDeFornecedores extends JPanel {
             });
 
             deleteButton.addActionListener(e -> {
+                if (fornecedoresFiltrados.isEmpty()) {
+                    return; // Se não houver fornecedores, não faz nada
+                }
+
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
                     int fornecedorId = fornecedoresIds.get(indiceLinha);
@@ -532,19 +541,27 @@ public class ListaDeFornecedores extends JPanel {
             }
         }
 
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
-                int column) {
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             JPanel panel = new JPanel();
             panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-
-            editButton.setBackground(new Color(24, 39, 55));
-            editButton.setForeground(Color.WHITE);
-            deleteButton.setBackground(Color.RED);
-            deleteButton.setForeground(Color.WHITE);
-
+            panel.setBackground(Color.WHITE); // Define como fundo branco
+        
+            if (fornecedoresFiltrados.isEmpty()) {
+                editButton.setVisible(false);
+                deleteButton.setVisible(false);
+            } else {
+                editButton.setVisible(true);
+                editButton.setBackground(new Color(24, 39, 55));
+                editButton.setForeground(Color.WHITE);
+                deleteButton.setBackground(Color.RED);
+                deleteButton.setForeground(Color.WHITE);
+                deleteButton.setVisible(true);
+            }
+        
             panel.add(editButton);
             panel.add(deleteButton);
-
+        
             return panel;
         }
 
