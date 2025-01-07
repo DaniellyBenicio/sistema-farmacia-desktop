@@ -39,8 +39,8 @@ public class Funcionario {
     }
 
     public void setNome(String nome) {
-        if (nome == null || nome.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nome não pode ser vazio.");
+        if (nome == null || !nome.matches("^[A-Za-zÀ-ÿ\\s]+$")) {
+            throw new IllegalArgumentException("O nome deve conter apenas letras e espaços.");
         }
         this.nome = nome;
     }

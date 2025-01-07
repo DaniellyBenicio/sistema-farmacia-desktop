@@ -24,6 +24,9 @@ public class Cargo {
     }
 
     public void setNome(String nome) {
+        if (nome == null || !nome.matches("^[A-Za-zÀ-ÿ\\s]+$")) {
+            throw new IllegalArgumentException("O nome deve conter apenas letras e espaços.");
+        }
         this.nome = nome;
     }
 
