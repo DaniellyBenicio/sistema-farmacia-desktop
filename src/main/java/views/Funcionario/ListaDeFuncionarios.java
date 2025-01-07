@@ -378,6 +378,13 @@ public class ListaDeFuncionarios extends JPanel {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,int row, int column) {
             setBackground(Color.WHITE);
 
+            if (row < 0 || row >= funcionarios.size()) {
+                // Lidar com o caso em que a linha está fora dos limites
+                editButton.setVisible(false);
+                deleteButton.setVisible(false);
+                return this; // ou retornar um componente padrão
+            }
+
             Funcionario funcionario = funcionarios.get(row); 
 
             if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
