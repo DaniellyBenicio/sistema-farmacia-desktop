@@ -182,7 +182,7 @@ public class CadastrarFuncionario extends JPanel {
             StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
 
             if (!validarEmail(email)) {
-                errorMessage.append("- E-mail inválido.\n");
+                errorMessage.append("- E-mail inválido. Por favor, insira um e-mail válido.\n");
                 hasError = true;
             }
 
@@ -192,8 +192,18 @@ public class CadastrarFuncionario extends JPanel {
                 hasError = true;
             }
 
+            if (!nome.matches("[a-zA-Zà-úÀ-Ú ]+")) {
+                errorMessage.append("- Nome inválido (apenas letras e espaços são permitidos).\n");
+                hasError = true;
+            }
+
+            if (cargoNome.isEmpty() || !cargoNome.matches("[a-zA-Zà-úÀ-Ú ]+")) {
+                errorMessage.append("- Cargo inválido (somente letras e espaços são permitidos).\n");
+                hasError = true;
+            }
+
             if (hasError) {
-                JOptionPane.showMessageDialog(null, "Erro ao cadastrar funcionário.", "Erro",
+                JOptionPane.showMessageDialog(null, errorMessage.toString(), "Erro",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
