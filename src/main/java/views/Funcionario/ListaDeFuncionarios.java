@@ -236,13 +236,13 @@ public class ListaDeFuncionarios extends JPanel {
         tabela.getColumnModel().getColumn(6).setCellRenderer(new ButtonRenderer());
         tabela.getColumnModel().getColumn(6).setCellEditor(new ButtonEditor(new JTextField()));
 
-        tabela.getColumnModel().getColumn(0).setPreferredWidth(20);
+        tabela.getColumnModel().getColumn(0).setPreferredWidth(10);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(270);
         tabela.getColumnModel().getColumn(2).setPreferredWidth(50);
         tabela.getColumnModel().getColumn(3).setPreferredWidth(210);
         tabela.getColumnModel().getColumn(4).setPreferredWidth(90);
-        tabela.getColumnModel().getColumn(5).setPreferredWidth(90);
-        tabela.getColumnModel().getColumn(6).setPreferredWidth(160);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(50);
+        tabela.getColumnModel().getColumn(6).setPreferredWidth(170);
 
         tabela.setCellSelectionEnabled(false);
         tabela.setRowSelectionAllowed(false);
@@ -385,13 +385,30 @@ public class ListaDeFuncionarios extends JPanel {
 
             Funcionario funcionario = funcionarios.get(row); 
 
-            if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
-                editButton.setEnabled(funcionario.isStatus());
+            if (funcionario.getCargo() != null) {
+                String cargo = funcionario.getCargo().getNome();
+                
+                if ("Gerente".equalsIgnoreCase(cargo)) {
+                    // Se for gerente
+                    if (funcionario.isStatus()) {
+                        deleteButton.setText("DESATIVAR");
+                        editButton.setEnabled(true);
+                    } else {
+                        deleteButton.setText("ATIVAR");
+                        editButton.setEnabled(false);
+                    }
+                } else {
+                    // Se não for gerente
+                    deleteButton.setText("EXCLUIR");
+                    editButton.setEnabled(true);
+                }
             } else {
+                // Se o cargo for nulo, você pode definir um comportamento padrão
                 deleteButton.setText("EXCLUIR");
                 editButton.setEnabled(true);
             }
-
+            
+            // Verifica se a lista de funcionários filtrados está vazia
             if (funcionariosFiltrados.isEmpty()) {
                 editButton.setVisible(false);
                 deleteButton.setVisible(false);
@@ -399,6 +416,7 @@ public class ListaDeFuncionarios extends JPanel {
                 editButton.setVisible(true);
                 deleteButton.setVisible(true);
             }
+            
             return this;
         }
     }
@@ -437,7 +455,7 @@ public class ListaDeFuncionarios extends JPanel {
         public ButtonEditor(JTextField textField) {
             super(textField);
             editButton = new JButton("EDITAR");
-            deleteButton = new JButton("");
+            deleteButton = new JButton("EXCLUIR");
 
             editButton.addActionListener(e -> {
                 if (funcionariosFiltrados.isEmpty()) {
@@ -576,11 +594,16 @@ public class ListaDeFuncionarios extends JPanel {
             Funcionario funcionario = funcionarios.get(row); 
 
             if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
-                deleteButton.setText("DESATIVAR");
-                editButton.setEnabled(funcionario.isStatus());                
+                if (funcionario.isStatus()) {
+                    deleteButton.setText("DESATIVAR");
+                    editButton.setEnabled(true);                
+                } else {
+                    deleteButton.setText("ATIVAR");
+                    editButton.setEnabled(false);
+                }
             } else {
                 deleteButton.setText("EXCLUIR");
-                editButton.setEnabled(true); 
+                editButton.setEnabled(true);
             }
 
             if (funcionariosFiltrados.isEmpty()) {
