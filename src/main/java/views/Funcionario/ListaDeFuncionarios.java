@@ -379,10 +379,9 @@ public class ListaDeFuncionarios extends JPanel {
             setBackground(Color.WHITE);
 
             if (row < 0 || row >= funcionarios.size()) {
-                // Lidar com o caso em que a linha está fora dos limites
                 editButton.setVisible(false);
                 deleteButton.setVisible(false);
-                return this; // ou retornar um componente padrão
+                return this; 
             }
 
             Funcionario funcionario = funcionarios.get(row); 
