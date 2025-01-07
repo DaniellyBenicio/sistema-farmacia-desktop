@@ -381,7 +381,6 @@ public class ListaDeFuncionarios extends JPanel {
             if (row < 0 || row >= funcionarios.size()) {
                 editButton.setVisible(false);
                 deleteButton.setVisible(false);
-                return this; 
             }
 
             Funcionario funcionario = funcionarios.get(row); 
