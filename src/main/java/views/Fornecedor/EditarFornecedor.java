@@ -91,7 +91,7 @@ public class EditarFornecedor extends JPanel {
 
         nomeField = new JTextField();
         nomeField.setPreferredSize(new Dimension(600, 40));
-        estilizarCampo(nomeField, fieldFont);
+        estilizarCamposFormulario(nomeField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
         camposPanel.add(nomeField, gbc);
@@ -116,7 +116,7 @@ public class EditarFornecedor extends JPanel {
 
         cnpjField = new JFormattedTextField(cnpjFormatter);
         cnpjField.setPreferredSize(fieldSize);
-        estilizarCampo(cnpjField, fieldFont);
+        estilizarCamposFormulario(cnpjField, fieldFont);
         gbc.gridx = 1;
         gbc.gridy = 1;
         camposPanel.add(cnpjField, gbc);
@@ -129,7 +129,7 @@ public class EditarFornecedor extends JPanel {
 
         emailField = new JTextField();
         emailField.setPreferredSize(new Dimension(300, 40));
-        estilizarCampo(emailField, fieldFont);
+        estilizarCamposFormulario(emailField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 4;
         camposPanel.add(emailField, gbc);
@@ -147,14 +147,12 @@ public class EditarFornecedor extends JPanel {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
         telefoneField = new JFormattedTextField(telefoneFormatter);
         telefoneField.setPreferredSize(fieldSize);
-        estilizarCampo(telefoneField, fieldFont);
+        estilizarCamposFormulario(telefoneField, fieldFont);
         gbc.gridx = 1;
         gbc.gridy = 4;
         camposPanel.add(telefoneField, gbc);
-
         return camposPanel;
     }
 
@@ -238,55 +236,38 @@ public class EditarFornecedor extends JPanel {
         String email = emailField.getText().trim();
         String telefone = telefoneField.getText().trim();
 
-        StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
         boolean hasError = false;
+        StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
 
-        try (Connection conn = ConexaoBD.getConnection()) {
-            Fornecedor fornecedorExistente = FornecedorDAO.fornecedorPorId(conn, idFornecedor);
-            if (fornecedorExistente == null) {
-                JOptionPane.showMessageDialog(null, "Fornecedor não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (nome.isEmpty()) {
-                errorMessage.append("- Nome/Razão Social deve ser preenchido.\n");
+        if (nome.isEmpty()) {
+            errorMessage.append("- Nome/Razão Social deve ser preenchido.\n");
+            hasError = true;
+        } else {
+            if (!nome.matches("^[\\p{L}\\s&\\-\\.,']+$")) {
+                errorMessage.append(
+                        "- Nome/Razão Social deve conter apenas letras, espaços, caracteres acentuados e alguns caracteres especiais permitidos (&, -, ., ').\n");
                 hasError = true;
             }
+        }
 
-            if (cnpj.isEmpty()) {
-                errorMessage.append("- CNPJ deve ser preenchido.\n");
-                hasError = true;
-            } else {
-                String cnpjLimpo = cnpj.replaceAll("[^0-9]", "");
-                if (cnpjLimpo.length() != 14) {
-                    errorMessage.append("- CNPJ inválido (certifique-se de que contém 14 dígitos numéricos).\n");
-                    hasError = true;
-                }
-            }
+        String cnpjLimpo = cnpj.replaceAll("[^0-9]", "");
+        if (cnpj.trim().isEmpty() && cnpjLimpo.trim().isEmpty() && cnpjLimpo.length() != 14) {
+            errorMessage.append("- CNPJ deve ser preenchido.\n");
+            hasError = true;
+        } else if (cnpjLimpo.length() != 14) {
+            errorMessage.append("- CNPJ inválido (certifique-se de que contém 14 dígitos numéricos).\n");
+            hasError = true;
+        }
 
-            if (email.isEmpty()) {
-                errorMessage.append("- E-mail deve ser preenchido.\n");
-                hasError = true;
-            } else if (!validarEmail(email)) {
-                errorMessage.append("- E-mail inválido.\n");
-                hasError = true;
-            }
+        if (email.isEmpty() || !validarEmail(email)) {
+            errorMessage.append("- E-mail deve ser preenchido e válido.\n");
+            hasError = true;
+        }
 
-            if (telefone.isEmpty()) {
-                errorMessage.append("- Telefone deve ser preenchido.\n");
-                hasError = true;
-            } else {
-                String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
-                if (telefoneLimpo.length() != 11) {
-                    errorMessage.append("- Telefone inválido (certifique-se de que contém 11 dígitos numéricos).\n");
-                    hasError = true;
-                }
-            }
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erro ao buscar dados do fornecedor.", "Erro",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
+        String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
+        if (telefoneLimpo.isEmpty() || telefoneLimpo.length() != 11) {
+            errorMessage.append("- Telefone deve conter 11 dígitos numéricos.\n");
+            hasError = true;
         }
 
         if (hasError) {
@@ -296,17 +277,22 @@ public class EditarFornecedor extends JPanel {
 
         try (Connection conn = ConexaoBD.getConnection()) {
             Fornecedor fornecedorExistente = FornecedorDAO.fornecedorPorId(conn, idFornecedor);
+            if (fornecedorExistente == null) {
+                JOptionPane.showMessageDialog(null, "Fornecedor não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             fornecedorExistente.setNome(nome);
-            fornecedorExistente.setCnpj(cnpj.replaceAll("[^0-9]", ""));
+            fornecedorExistente.setCnpj(cnpjLimpo);
             fornecedorExistente.setEmail(email);
-            fornecedorExistente.setTelefone(telefone.replaceAll("[^0-9]", ""));
+            fornecedorExistente.setTelefone(telefoneLimpo);
 
             FornecedorDAO.atualizarFornecedor(conn, fornecedorExistente);
             JOptionPane.showMessageDialog(null, "Fornecedor atualizado com sucesso!", "Sucesso",
                     JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erro ao atualizar fornecedor.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar fornecedor: " + e.getMessage(), "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -315,7 +301,7 @@ public class EditarFornecedor extends JPanel {
         return Pattern.matches(emailRegex, email);
     }
 
-    private void estilizarCampo(JComponent campo, Font font) {
+    private void estilizarCamposFormulario(JComponent campo, Font font) {
         campo.setBackground(Color.WHITE);
         campo.setForeground(Color.BLACK);
         campo.setFont(font);

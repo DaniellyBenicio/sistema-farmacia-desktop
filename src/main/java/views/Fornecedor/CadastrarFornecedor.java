@@ -186,44 +186,47 @@ public class CadastrarFornecedor extends JPanel {
             String email = emailField.getText().trim();
             String telefone = telefoneField.getText().trim();
 
-            if (nome.isEmpty() && cnpj.isEmpty() && email.isEmpty() && telefone.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Por favor, preencha todos os campos!", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
             boolean hasError = false;
             StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
 
             if (nome.isEmpty()) {
                 errorMessage.append("- Nome/Razão Social deve ser preenchido.\n");
                 hasError = true;
-            }
-
-            if (cnpj.isEmpty()) {
-                errorMessage.append("- CNPJ deve ser preenchido.\n");
-                hasError = true;
             } else {
-                String cnpjLimpo = cnpj.replaceAll("[^0-9]", "");
-                if (cnpjLimpo.length() != 14) {
-                    errorMessage.append("- CNPJ inválido (certifique-se de que contém 14 dígitos numéricos).\n");
+                if (!nome.matches("^[\\p{L}\\s&\\-\\.,']+$")) {
+                    errorMessage.append(
+                            "- Nome/Razão Social deve conter apenas letras, espaços, caracteres acentuados e alguns caracteres especiais permitidos (&, -, ., ').\n");
                     hasError = true;
                 }
+            }
+
+            String cnpjLimpo = cnpj.replaceAll("[^0-9]", "");
+            if (cnpjLimpo.trim().isEmpty() && cnpjLimpo.length() != 14) {
+                errorMessage.append("- CNPJ deve ser preenchido.\n");
+                hasError = true;
+            }
+
+            if (!cnpj.trim().isEmpty() && cnpjLimpo.length() != 14) {
+                errorMessage.append(
+                        "- CNPJ está incorreto ou faltando dígitos (certifique-se de que contém 14 dígitos numéricos).\n");
+                hasError = true;
             }
 
             if (email.isEmpty()) {
                 errorMessage.append("- E-mail deve ser preenchido.\n");
                 hasError = true;
-            } else if (!validarEmail(email)) {
-                errorMessage.append("- E-mail inválido.\n");
-                hasError = true;
+            } else {
+                if (!validarEmail(email)) {
+                    errorMessage.append("- E-mail inválido.\n");
+                    hasError = true;
+                }
             }
 
-            if (telefone.isEmpty()) {
+            String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
+            if (telefoneLimpo.isEmpty()) {
                 errorMessage.append("- Telefone deve ser preenchido.\n");
                 hasError = true;
             } else {
-                String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
                 if (telefoneLimpo.length() != 11) {
                     errorMessage.append("- Telefone inválido (certifique-se de que contém 11 dígitos numéricos).\n");
                     hasError = true;
@@ -231,7 +234,7 @@ public class CadastrarFornecedor extends JPanel {
             }
 
             if (hasError) {
-                JOptionPane.showMessageDialog(null, "Erro ao cadastrar fornecedor.", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -264,7 +267,8 @@ public class CadastrarFornecedor extends JPanel {
                 emailField.setText("");
                 telefoneField.setText("");
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao cadastrar fornecedor.", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Erro ao cadastrar fornecedor: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 

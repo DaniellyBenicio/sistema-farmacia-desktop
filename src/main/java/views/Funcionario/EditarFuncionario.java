@@ -199,7 +199,7 @@ public class EditarFuncionario extends JPanel {
         String nome = nomeField.getText().trim();
         String telefone = telefoneField.getText().trim();
         String email = emailField.getText().trim();
-        String cargoNome = cargoField.getText().trim(); 
+        String cargoNome = cargoField.getText().trim();
 
         StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
         boolean hasError = false;
@@ -207,13 +207,18 @@ public class EditarFuncionario extends JPanel {
         if (nome.isEmpty()) {
             errorMessage.append("- Nome deve ser preenchido.\n");
             hasError = true;
+        } else {
+            if (!nome.matches("^[\\p{L}\\s]*$")) {
+                errorMessage.append("- Nome inválido (apenas letras e espaços são permitidos).\n");
+                hasError = true;
+            }
         }
 
-        if (telefone.isEmpty()) {
+        String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
+        if (telefoneLimpo.isEmpty()) {
             errorMessage.append("- Telefone deve ser preenchido.\n");
             hasError = true;
         } else {
-            String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
             if (telefoneLimpo.length() != 11) {
                 errorMessage.append("- Telefone inválido (certifique-se de que contém 11 dígitos numéricos).\n");
                 hasError = true;
@@ -223,14 +228,21 @@ public class EditarFuncionario extends JPanel {
         if (email.isEmpty()) {
             errorMessage.append("- E-mail deve ser preenchido.\n");
             hasError = true;
-        } else if (!validarEmail(email)) {
-            errorMessage.append("- E-mail inválido.\n");
-            hasError = true;
+        } else {
+            if (!validarEmail(email)) {
+                errorMessage.append("- E-mail inválido.\n");
+                hasError = true;
+            }
         }
 
         if (cargoNome.isEmpty()) {
             errorMessage.append("- Cargo deve ser preenchido.\n");
             hasError = true;
+        } else {
+            if (!cargoNome.matches("^[\\p{L}\\s]*$")) {
+                errorMessage.append("- Cargo inválido (apenas letras e espaços são permitidos).\n");
+                hasError = true;
+            }
         }
 
         if (hasError) {
@@ -253,7 +265,7 @@ public class EditarFuncionario extends JPanel {
                 throw new IllegalArgumentException("Cargo deve ter um nome válido.");
             }
 
-            funcionarioAtualizado.setCargo(cargo); 
+            funcionarioAtualizado.setCargo(cargo);
 
             FuncionarioDAO.atualizarFuncionario(conn, funcionarioAtualizado);
             JOptionPane.showMessageDialog(null, "Funcionário atualizado com sucesso!", "Sucesso",

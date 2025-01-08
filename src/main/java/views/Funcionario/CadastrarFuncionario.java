@@ -152,18 +152,18 @@ public class CadastrarFuncionario extends JPanel {
         cadastrarButton.setFocusPainted(false);
         cadastrarButton.setPreferredSize(new Dimension(140, 35));
         botoesPanel.add(cadastrarButton);
-            
+
         cadastrarButton.addActionListener(e -> {
             int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
             String cargoFuncionario = PainelSuperior.getCargoFuncionarioAtual();
 
             if (idFuncionario <= 0 || !"Gerente".equalsIgnoreCase(cargoFuncionario)) {
                 System.out.println("Teste front" + cargoFuncionario);
-                JOptionPane.showMessageDialog(null, 
-                    "A identificação do funcionário é obrigatória.\n" + 
-                    "Somente o gerente pode cadastrar os funcionário.", 
-                    "Acesso Negado", 
-                    JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null,
+                        "A identificação do funcionário é obrigatória.\n" +
+                                "Somente o gerente pode cadastrar os funcionário.",
+                        "Acesso Negado",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -172,39 +172,52 @@ public class CadastrarFuncionario extends JPanel {
             String email = emailField.getText().trim();
             String cargoNome = cargoField.getText().trim();
 
-            if (nome.isEmpty() || telefone.isEmpty() || email.isEmpty() || cargoNome.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Por favor, preencha todos os campos!", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            boolean hasError = false;
             StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
+            boolean hasError = false;
 
-            if (!validarEmail(email)) {
-                errorMessage.append("- E-mail inválido. Por favor, insira um e-mail válido.\n");
+            if (nome.isEmpty()) {
+                errorMessage.append("- Nome deve ser preenchido.\n");
                 hasError = true;
+            } else {
+                if (!nome.matches("^[\\p{L}\\s]*$")) {
+                    errorMessage.append("- Nome inválido (apenas letras e espaços são permitidos).\n");
+                    hasError = true;
+                }
             }
 
             String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
-            if (telefoneLimpo.length() != 11) {
-                errorMessage.append("- Telefone inválido (certifique-se de que contém 11 dígitos numéricos).\n");
+            if (telefoneLimpo.isEmpty()) {
+                errorMessage.append("- Telefone deve ser preenchido.\n");
                 hasError = true;
+            } else {
+                if (telefoneLimpo.length() != 11) {
+                    errorMessage.append("- Telefone inválido (certifique-se de que contém 11 dígitos numéricos).\n");
+                    hasError = true;
+                }
             }
 
-            if (!nome.matches("[a-zA-Zà-úÀ-Ú ]+")) {
-                errorMessage.append("- Nome inválido (apenas letras e espaços são permitidos).\n");
+            if (email.isEmpty()) {
+                errorMessage.append("- E-mail deve ser preenchido.\n");
                 hasError = true;
+            } else {
+                if (!validarEmail(email)) {
+                    errorMessage.append("- E-mail inválido.\n");
+                    hasError = true;
+                }
             }
 
-            if (cargoNome.isEmpty() || !cargoNome.matches("[a-zA-Zà-úÀ-Ú ]+")) {
-                errorMessage.append("- Cargo inválido (somente letras e espaços são permitidos).\n");
+            if (cargoNome.isEmpty()) {
+                errorMessage.append("- Cargo deve ser preenchido.\n");
                 hasError = true;
+            } else {
+                if (!cargoNome.matches("^[\\p{L}\\s]*$")) { 
+                    errorMessage.append("- Cargo inválido (apenas letras e espaços são permitidos).\n");
+                    hasError = true;
+                }
             }
 
             if (hasError) {
-                JOptionPane.showMessageDialog(null, errorMessage.toString(), "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -212,7 +225,6 @@ public class CadastrarFuncionario extends JPanel {
                 Cargo cargo = new Cargo();
                 cargo.setNome(cargoNome);
 
-            
                 Funcionario funcionario = new Funcionario(nome, telefone, email, cargo, true);
                 FuncionarioDAO.cadastrarFuncionario(conn, funcionario);
 
