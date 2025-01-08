@@ -452,6 +452,7 @@ public class ListaDeFornecedores extends JPanel {
             deleteButton = new JButton("EXCLUIR");
 
             editButton.addActionListener(e -> {
+                fireEditingStopped();
                 if (fornecedoresFiltrados.isEmpty()) {
                     return;
                 }
@@ -486,6 +487,7 @@ public class ListaDeFornecedores extends JPanel {
             });
 
             deleteButton.addActionListener(e -> {
+                fireEditingStopped();
                 if (fornecedoresFiltrados.isEmpty()) {
                     return;
                 }
@@ -493,60 +495,11 @@ public class ListaDeFornecedores extends JPanel {
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
                     int fornecedorId = fornecedoresIds.get(indiceLinha);
-                    excluirFornecedor(fornecedorId);
+                    ExcluirFornecedor.excluirFornecedor(fornecedorId);
                     atualizarTabela();
                 }
                 fireEditingStopped();
             });
-        }
-
-        private void excluirFornecedor(int idFornecedor) {
-            if (idFornecedor <= 0) {
-                JOptionPane.showMessageDialog(null, "ID do fornecedor inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            Fornecedor fornecedor;
-            try (Connection conn = ConexaoBD.getConnection()) {
-                fornecedor = FornecedorDAO.fornecedorPorId(conn, idFornecedor);
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(null, "Erro ao recuperar fornecedor.", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (fornecedor == null) {
-                JOptionPane.showMessageDialog(null, "Fornecedor não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            String mensagemConfirmacao = "Você realmente deseja excluir o fornecedor \"" + fornecedor.getNome() + "\"?";
-
-            Object[] opcoes = { "Sim", "Não" };
-
-            int resposta = JOptionPane.showOptionDialog(null,
-                    mensagemConfirmacao,
-                    "Confirmar Exclusão",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE,
-                    null,
-                    opcoes,
-                    opcoes[0]);
-
-            if (resposta == 0) {
-                try (Connection conn = ConexaoBD.getConnection()) {
-                    FornecedorDAO.deletarFornecedor(conn, fornecedor);
-                    JOptionPane.showMessageDialog(null, "Fornecedor excluído com sucesso!", "Sucesso",
-                            JOptionPane.INFORMATION_MESSAGE);
-                    atualizarTabela();
-                } catch (SQLException e) {
-                    JOptionPane.showMessageDialog(null, "Erro ao excluir fornecedor.", "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            } else if (resposta == 1) {
-                System.out.println("Exclusão cancelada.");
-            } else {
-                System.out.println("Diálogo fechado sem seleção.");
-            }
         }
 
         @Override

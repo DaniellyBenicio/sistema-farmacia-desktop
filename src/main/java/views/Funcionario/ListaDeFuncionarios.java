@@ -17,6 +17,7 @@ import javax.swing.table.TableCellRenderer;
 import dao.Funcionario.FuncionarioDAO;
 import models.Funcionario.Funcionario;
 import views.BarrasSuperiores.PainelSuperior;
+import views.Fornecedor.ExcluirFornecedor;
 
 public class ListaDeFuncionarios extends JPanel {
 
@@ -342,11 +343,14 @@ public class ListaDeFuncionarios extends JPanel {
                 JButton btn = (JButton) componente;
                 if (btn.getText().equals("Anterior")) {
                     btn.setEnabled(paginaAtual > 0);
+                    carregarDados();
                 } else if (btn.getText().equals("Próximo")) {
                     btn.setEnabled((paginaAtual + 1) * itensPorPagina < funcionariosFiltrados.size());
+                    carregarDados();
                 }
             }
         }
+        carregarDados();
     }
 
     private class ButtonRenderer extends JPanel implements TableCellRenderer {
@@ -459,6 +463,7 @@ public class ListaDeFuncionarios extends JPanel {
         private final JButton editButton;
         private final JButton deleteButton;
         private int indiceLinha;
+        private ExcluirFuncionario excluirFuncionarioSelecionado;
 
         public ButtonEditor(JTextField textField) {
             super(textField);
@@ -466,6 +471,7 @@ public class ListaDeFuncionarios extends JPanel {
             deleteButton = new JButton("EXCLUIR");
 
             editButton.addActionListener(e -> {
+                fireEditingStopped();
                 if (funcionariosFiltrados.isEmpty()) {
                     return;
                 }
@@ -499,7 +505,10 @@ public class ListaDeFuncionarios extends JPanel {
                 fireEditingStopped();
             });
 
+            excluirFuncionarioSelecionado = new ExcluirFuncionario(conn);
+
             deleteButton.addActionListener(e -> {
+                fireEditingStopped();
                 if (funcionariosFiltrados.isEmpty()) {
                     return;
                 }
@@ -508,85 +517,11 @@ public class ListaDeFuncionarios extends JPanel {
                 if (indiceLinha >= 0) {
                     int idFuncionario = (int) modeloTabela.getValueAt(indiceLinha, 0);
 
-                    excluirFuncionario(idFuncionario);
+                    excluirFuncionarioSelecionado.excluirFuncionario(idFuncionario, null);
                     atualizarTabela();
                 }
                 fireEditingStopped();
             });
-        }
-
-        private void excluirFuncionario(int idFuncionario) {
-            if (idFuncionario <= 0) {
-                JOptionPane.showMessageDialog(null, "ID do funcionário inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            Funcionario funcionario;
-            try {
-                funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(null, "Erro ao recuperar funcionário.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (funcionario == null) {
-                JOptionPane.showMessageDialog(null, "Funcionário não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            String mensagemConfirmacao;
-            if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
-                if (funcionario.isStatus()) {
-                    mensagemConfirmacao = "Deseja desativar o gerente \"" + funcionario.getNome() + "\"?";
-                } else {
-                    mensagemConfirmacao = "Deseja ativar o gerente \"" + funcionario.getNome() + "\"?";
-                }
-            } else {
-                mensagemConfirmacao = "Você realmente deseja excluir o funcionário \"" + funcionario.getNome() + "\"?";
-            }
-
-            Object[] opcoes = { "Sim", "Não" };
-
-            int resposta = JOptionPane.showOptionDialog(null,
-                    mensagemConfirmacao,
-                    "Confirmar Exclusão",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE,
-                    null,
-                    opcoes,
-                    opcoes[0]);
-
-            if (resposta == JOptionPane.YES_OPTION) {
-                try {
-                    if (funcionario.getCargo() != null
-                            && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
-                        if (funcionario.isStatus()) {
-                            FuncionarioDAO.desativarGerente(conn, funcionario);
-                            JOptionPane.showMessageDialog(null, "Gerente desativado com sucesso!", "Sucesso",
-                                    JOptionPane.INFORMATION_MESSAGE);
-                        } else {
-                            FuncionarioDAO.ativarGerente(conn, funcionario);
-                            JOptionPane.showMessageDialog(null, "Gerente ativado com sucesso!", "Sucesso",
-                                    JOptionPane.INFORMATION_MESSAGE);
-                        }
-                    } else {
-                        FuncionarioDAO.deletarFuncionario(conn, funcionario);
-                        JOptionPane.showMessageDialog(null, "Funcionário excluído com sucesso!", "Sucesso",
-                                JOptionPane.INFORMATION_MESSAGE);
-                    }
-                    atualizarFuncionariosFiltrados(funcionarios);
-                    atualizarTabela();
-                } catch (SQLException e) {
-                    JOptionPane.showMessageDialog(null, "Erro ao processar a operação.", "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            } else if (resposta == 1) {
-                System.out.println("Operação cancelada.");
-            } else {
-                System.out.println("Diálogo fechado sem seleção.");
-            }
-            atualizarTabela();
         }
 
         @Override
