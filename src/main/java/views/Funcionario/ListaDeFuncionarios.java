@@ -16,6 +16,7 @@ import javax.swing.table.TableCellRenderer;
 
 import dao.Funcionario.FuncionarioDAO;
 import models.Funcionario.Funcionario;
+import views.BarrasSuperiores.PainelSuperior;
 
 public class ListaDeFuncionarios extends JPanel {
 
@@ -375,22 +376,31 @@ public class ListaDeFuncionarios extends JPanel {
             add(deleteButton);
         }
 
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,int row, int column) {
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+                int row, int column) {
             setBackground(Color.WHITE);
 
             if (funcionarios.isEmpty() || row < 0 || row >= funcionarios.size()) {
                 editButton.setVisible(false);
                 deleteButton.setVisible(false);
-                return this; 
+                return this;
             }
 
-            Funcionario funcionario = funcionarios.get(row); 
+            Funcionario funcionario = funcionarios.get(row);
+
+            String funcionarioAtualCargo = PainelSuperior.getCargoFuncionarioAtual();
+            int funcionarioAtualId = PainelSuperior.getIdFuncionarioAtual();
+
+            if ("Gerente".equalsIgnoreCase(funcionarioAtualCargo) && funcionarioAtualId == funcionario.getId()) {
+                deleteButton.setEnabled(false);
+            } else {
+                deleteButton.setEnabled(true);
+            }
 
             if (funcionario.getCargo() != null) {
                 String cargo = funcionario.getCargo().getNome();
-                
+
                 if ("Gerente".equalsIgnoreCase(cargo)) {
-                    // Se for gerente
                     if (funcionario.isStatus()) {
                         deleteButton.setText("DESATIVAR");
                         editButton.setEnabled(true);
@@ -399,17 +409,14 @@ public class ListaDeFuncionarios extends JPanel {
                         editButton.setEnabled(false);
                     }
                 } else {
-                    // Se não for gerente
                     deleteButton.setText("EXCLUIR");
                     editButton.setEnabled(true);
                 }
             } else {
-                // Se o cargo for nulo, você pode definir um comportamento padrão
                 deleteButton.setText("EXCLUIR");
                 editButton.setEnabled(true);
             }
-            
-            // Verifica se a lista de funcionários filtrados está vazia
+
             if (funcionariosFiltrados.isEmpty()) {
                 editButton.setVisible(false);
                 deleteButton.setVisible(false);
@@ -417,14 +424,14 @@ public class ListaDeFuncionarios extends JPanel {
                 editButton.setVisible(true);
                 deleteButton.setVisible(true);
             }
-            
+
             return this;
         }
     }
 
     private class StatusCellRenderer extends DefaultTableCellRenderer {
         public StatusCellRenderer() {
-            setHorizontalAlignment(SwingConstants.CENTER); 
+            setHorizontalAlignment(SwingConstants.CENTER);
         }
 
         @Override
@@ -440,7 +447,7 @@ public class ListaDeFuncionarios extends JPanel {
                 } else if (status.equals("Inativo")) {
                     label.setForeground(Color.RED);
                 } else {
-                    label.setForeground(Color.BLACK); 
+                    label.setForeground(Color.BLACK);
                 }
             }
 
@@ -555,12 +562,10 @@ public class ListaDeFuncionarios extends JPanel {
                     if (funcionario.getCargo() != null
                             && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
                         if (funcionario.isStatus()) {
-                            // Desativar o gerente
                             FuncionarioDAO.desativarGerente(conn, funcionario);
                             JOptionPane.showMessageDialog(null, "Gerente desativado com sucesso!", "Sucesso",
                                     JOptionPane.INFORMATION_MESSAGE);
                         } else {
-                            // Ativar o gerente
                             FuncionarioDAO.ativarGerente(conn, funcionario);
                             JOptionPane.showMessageDialog(null, "Gerente ativado com sucesso!", "Sucesso",
                                     JOptionPane.INFORMATION_MESSAGE);
@@ -585,19 +590,29 @@ public class ListaDeFuncionarios extends JPanel {
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-           
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
+                int column) {
+
             JPanel panel = new JPanel();
             panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-            panel.setBackground(Color.WHITE); 
+            panel.setBackground(Color.WHITE);
 
             indiceLinha = row;
-            Funcionario funcionario = funcionarios.get(row); 
+            Funcionario funcionario = funcionarios.get(row);
+
+            String funcionarioAtualCargo = PainelSuperior.getCargoFuncionarioAtual();
+            int funcionarioAtualId = PainelSuperior.getIdFuncionarioAtual();
+
+            if ("Gerente".equalsIgnoreCase(funcionarioAtualCargo) && funcionarioAtualId == funcionario.getId()) {
+                deleteButton.setEnabled(false);
+            } else {
+                deleteButton.setEnabled(true);
+            }
 
             if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
                 if (funcionario.isStatus()) {
                     deleteButton.setText("DESATIVAR");
-                    editButton.setEnabled(true);                
+                    editButton.setEnabled(true);
                 } else {
                     deleteButton.setText("ATIVAR");
                     editButton.setEnabled(false);
@@ -619,10 +634,10 @@ public class ListaDeFuncionarios extends JPanel {
                 deleteButton.setVisible(true);
             }
 
-            editButton.setPreferredSize(new Dimension(100, 27)); 
+            editButton.setPreferredSize(new Dimension(100, 27));
             editButton.setMaximumSize(new Dimension(100, 27));
-    
-            deleteButton.setPreferredSize(new Dimension(100, 27)); 
+
+            deleteButton.setPreferredSize(new Dimension(100, 27));
             deleteButton.setMaximumSize(new Dimension(100, 27));
 
             panel.add(editButton);

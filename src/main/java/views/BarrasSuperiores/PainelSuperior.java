@@ -73,20 +73,41 @@ public class PainelSuperior extends JPanel {
     }
 
     private void abrirDialogoIdentificacaoFuncionario() {
-        JDialog dialogo = new JDialog();
-        dialogo.setTitle("Identificar Funcionário");
-        dialogo.setSize(350, 180);
-        dialogo.setLayout(new GridBagLayout());
-        dialogo.setModal(true);
-        dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        boolean funcionarioIdentificado = false;
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
+        while (!funcionarioIdentificado) {
+            JDialog dialogo = new JDialog();
+            dialogo.setTitle("Identificar Funcionário");
+            dialogo.setSize(350, 180);
+            dialogo.setLayout(new GridBagLayout());
+            dialogo.setModal(true);
+            dialogo.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); 
 
-        adicionarComponentesDialogo(dialogo, gbc);
-        dialogo.setLocationRelativeTo(null);
-        dialogo.setVisible(true);
+            dialogo.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                    if (idFuncionarioAtual <= 0) {
+                        JOptionPane.showMessageDialog(dialogo,
+                                "Por favor, identifique um funcionário para abrir o sistema.", "Atenção",
+                                JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        dialogo.dispose(); 
+                    }
+                }
+            });
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(10, 10, 10, 10);
+
+            adicionarComponentesDialogo(dialogo, gbc);
+            dialogo.setLocationRelativeTo(null);
+            dialogo.setVisible(true); 
+
+            if (idFuncionarioAtual > 0) {
+                funcionarioIdentificado = true; 
+            }
+        }
     }
 
     private void adicionarComponentesDialogo(JDialog dialogo, GridBagConstraints gbc) {
@@ -116,7 +137,7 @@ public class PainelSuperior extends JPanel {
     }
 
     public static String getCargoFuncionarioAtual() {
-        return cargoFuncionarioAtual; 
+        return cargoFuncionarioAtual;
     }
 
     public static int getIdFuncionarioAtual() {
@@ -128,32 +149,33 @@ public class PainelSuperior extends JPanel {
             mostrarMensagemErro(dialogo, "Por favor, insira o código do funcionário.");
             return;
         }
-    
+
         Connection conexao = null;
         try {
             int codigo = Integer.parseInt(codigoFuncionarioDigitado);
             conexao = ConexaoBD.getConnection();
             String resultado = new FuncionarioDAO().verificarFuncionarioPorCodigo(conexao, codigo);
-    
+
             if (resultado.startsWith("Código:")) {
                 String[] partes = resultado.split(", ");
                 String codigoFuncionario = partes[0].replace("Código: ", "");
                 String nomeFuncionario = partes[1].replace("Nome: ", "");
                 cargoFuncionario = partes[2].replace("Cargo: ", "");
-                String statusFuncionario = partes[3].replace("Status: ", ""); 
-            
+                String statusFuncionario = partes[3].replace("Status: ", "");
+
                 idFuncionarioAtual = Integer.parseInt(codigoFuncionario);
-                cargoFuncionarioAtual = cargoFuncionario; 
-        
+                cargoFuncionarioAtual = cargoFuncionario;
+
                 if ("Gerente".equalsIgnoreCase(cargoFuncionario) && "Inativo".equalsIgnoreCase(statusFuncionario)) {
-                    mostrarMensagemErro(dialogo, "O gerente " + nomeFuncionario + " está inativo.\nPor favor, identifique outro funcionário.");
-                    return; 
+                    mostrarMensagemErro(dialogo, "O gerente " + nomeFuncionario
+                            + " está inativo.\nPor favor, identifique outro funcionário.");
+                    return;
                 }
-            
+
                 labelFuncionario.setText("Funcionário: " + codigoFuncionario + " - " + nomeFuncionario);
                 dialogo.dispose();
                 atualizarEstadoDosBotoesDeAcordoComCargo();
-            
+
                 if (!"Gerente".equalsIgnoreCase(cargoFuncionario)) {
                     selecionarOpcaoMenu(botoesMenu[0]);
                     mostrarPainel("Vendas");
@@ -270,6 +292,14 @@ public class PainelSuperior extends JPanel {
     }
 
     private void mostrarPainel(String itemMenu) {
+        if (itemMenu.equals("Funcionário") || itemMenu.equals("Fornecedor")) {
+            if (idFuncionarioAtual <= 0 || !"Gerente".equalsIgnoreCase(cargoFuncionarioAtual)) {
+                JOptionPane.showMessageDialog(this, "Você precisa estar logado como Gerente para acessar esta opção.",
+                        "Acesso Negado", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
+
         switch (itemMenu) {
             case "Vendas":
                 layoutAlternativo.show(painelDeVisualizacao, "Vendas");

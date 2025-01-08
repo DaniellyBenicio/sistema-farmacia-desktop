@@ -92,29 +92,43 @@ public class CadastroRepresentante extends JDialog {
         cadastrarButton.addActionListener(e -> {
             String representante = representanteField.getText().trim();
             String telefone = numeroField.getText().replaceAll("[^0-9]", "");
+            StringBuilder mensagensErro = new StringBuilder();
 
             if (representante.isEmpty() && telefone.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos!", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                mensagensErro.append("Por favor, informe o nome e telefone do representante.\n");
             } else if (representante.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, informe o nome do representante.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                mensagensErro.append("Por favor, informe o nome do representante.\n");
+            } else if (!representante.matches("^[a-zA-ZÀ-ÿ\\s]+$")) {
+                mensagensErro.append(
+                        "Nome do representante contém caracteres inválidos. Apenas letras e espaços são permitidos.\n");
             } else if (telefone.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, informe o telefone.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-            } else if (telefone.length() != 11) {
-                JOptionPane.showMessageDialog(this, "Telefone inválido. Certifique-se de que contém 11 dígitos.",
-                        "Erro", JOptionPane.ERROR_MESSAGE);
-            } else if (idFornecedor <= 0) {
-                JOptionPane.showMessageDialog(this, "Erro ao cadastrar fornecedor.", "Erro", JOptionPane.ERROR_MESSAGE);
+                mensagensErro
+                        .append("Por favor, informe o telefone. Certifique-se de que contém exatamente 11 dígitos.\n");
+            }
+
+            if (idFornecedor <= 0) {
+                mensagensErro.append("Erro ao cadastrar fornecedor. ID do fornecedor não é válido.\n");
+            }
+
+            if (mensagensErro.length() > 0) {
+                JOptionPane.showMessageDialog(this, mensagensErro.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
             } else {
                 try (Connection conn = ConexaoBD.getConnection()) {
+                    if (conn == null) {
+                        JOptionPane.showMessageDialog(this, "Erro ao conectar ao banco de dados.", "Erro",
+                                JOptionPane.ERROR_MESSAGE);
+                        return; 
+                    }
+
                     RepresentanteController.cadastrarRepresentante(conn, representante, telefone, idFornecedor);
                     JOptionPane.showMessageDialog(this, "Representante cadastrado com sucesso!", "Sucesso",
                             JOptionPane.INFORMATION_MESSAGE);
                     dispose();
                 } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(this, "Erro ao cadastrar representante.", "Erro",
+                    JOptionPane.showMessageDialog(this, "Erro ao cadastrar representante: " + ex.getMessage(), "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Erro inesperado: " + ex.getMessage(), "Erro",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }

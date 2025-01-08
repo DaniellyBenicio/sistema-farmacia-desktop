@@ -37,6 +37,7 @@ import javax.swing.table.TableCellRenderer;
 import dao.Fornecedor.FornecedorDAO;
 import main.ConexaoBD;
 import models.Fornecedor.Fornecedor;
+import views.BarrasSuperiores.PainelSuperior;
 
 public class ListaDeFornecedores extends JPanel {
 
@@ -421,7 +422,14 @@ public class ListaDeFornecedores extends JPanel {
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
                 int row, int column) {
-            setBackground(Color.WHITE); // Define o fundo como branco
+
+            setBackground(Color.WHITE); 
+
+            if ("Gerente".equalsIgnoreCase(PainelSuperior.getCargoFuncionarioAtual())) {
+                deleteButton.setVisible(false); 
+            } else {
+                deleteButton.setVisible(true);
+            }
             if (fornecedoresFiltrados.isEmpty()) {
                 editButton.setVisible(false);
                 deleteButton.setVisible(false);
@@ -445,7 +453,7 @@ public class ListaDeFornecedores extends JPanel {
 
             editButton.addActionListener(e -> {
                 if (fornecedoresFiltrados.isEmpty()) {
-                    return; // Se não houver fornecedores, não faz nada
+                    return;
                 }
 
                 indiceLinha = tabela.getSelectedRow();
@@ -546,7 +554,7 @@ public class ListaDeFornecedores extends JPanel {
                 int column) {
             JPanel panel = new JPanel();
             panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-            panel.setBackground(Color.WHITE); // Define como fundo branco
+            panel.setBackground(Color.WHITE); 
 
             if (fornecedoresFiltrados.isEmpty()) {
                 editButton.setVisible(false);

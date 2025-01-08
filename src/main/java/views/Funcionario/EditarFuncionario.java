@@ -199,7 +199,7 @@ public class EditarFuncionario extends JPanel {
         String nome = nomeField.getText().trim();
         String telefone = telefoneField.getText().trim();
         String email = emailField.getText().trim();
-        String cargoNome = cargoField.getText().trim(); // Renomeado para evitar confusão
+        String cargoNome = cargoField.getText().trim(); 
 
         StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
         boolean hasError = false;
@@ -246,16 +246,14 @@ public class EditarFuncionario extends JPanel {
             funcionarioAtualizado.setTelefone(telefone.replaceAll("[^0-9]", ""));
             funcionarioAtualizado.setEmail(email);
 
-            // Criação do objeto Cargo
             Cargo cargo = new Cargo();
-            cargo.setNome(cargoNome); // Defina o nome do cargo
+            cargo.setNome(cargoNome);
 
-            // Verifique se o cargo é válido
             if (cargo.getNome() == null || cargo.getNome().trim().isEmpty()) {
                 throw new IllegalArgumentException("Cargo deve ter um nome válido.");
             }
 
-            funcionarioAtualizado.setCargo(cargo); // Defina o cargo no funcionário
+            funcionarioAtualizado.setCargo(cargo); 
 
             FuncionarioDAO.atualizarFuncionario(conn, funcionarioAtualizado);
             JOptionPane.showMessageDialog(null, "Funcionário atualizado com sucesso!", "Sucesso",

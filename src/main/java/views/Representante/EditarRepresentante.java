@@ -112,41 +112,40 @@ public class EditarRepresentante extends JDialog {
             String telefoneOriginal = numeroField.getText().trim();
             String telefoneFormatado = telefoneOriginal.replaceAll("[^0-9]", "");
 
-            if (nomeRepresentante.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, informe o nome do representante.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+            StringBuilder mensagensErro = new StringBuilder();
+
+            if (nomeRepresentante.isEmpty() && telefoneOriginal.isEmpty()) {
+                mensagensErro.append("Por favor, informe o nome e telefone do representante.\n");
+            } else if (nomeRepresentante.isEmpty()) {
+                mensagensErro.append("Por favor, informe o nome do representante.\n");
+            } else if (!nomeRepresentante.matches("^[a-zA-ZÀ-ÿ\\s]+$")) {
+                mensagensErro.append(
+                        "Nome do representante contém caracteres inválidos. Apenas letras e espaços são permitidos.\n");
+            } else if (telefoneOriginal.isEmpty()) {
+                mensagensErro
+                        .append("Por favor, informe o telefone. Certifique-se de que contém exatamente 11 dígitos.\n");
             }
 
-            if (telefoneOriginal.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, informe o telefone.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            if (mensagensErro.length() > 0) {
+                JOptionPane.showMessageDialog(this, mensagensErro.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
+            } else {
+                try (Connection connection = ConexaoBD.getConnection()) {
+                    Representante representanteAtualizado = new Representante();
+                    representanteAtualizado.setNome(nomeRepresentante);
+                    representanteAtualizado.setTelefone(telefoneFormatado);
+                    representanteAtualizado.setFornecedor(representante.getFornecedor());
 
-            if (telefoneFormatado.length() < 11) {
-                JOptionPane.showMessageDialog(this,
-                        "Telefone incompleto. Certifique-se de que contém exatamente 11 dígitos.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (telefoneFormatado.length() > 11) {
-                JOptionPane.showMessageDialog(this, "Telefone inválido. Contém mais de 11 dígitos.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            try (Connection connection = ConexaoBD.getConnection()) {
-                Representante representanteAtualizado = new Representante();
-                representanteAtualizado.setNome(nomeRepresentante);
-                representanteAtualizado.setTelefone(telefoneFormatado);
-                representanteAtualizado.setFornecedor(representante.getFornecedor());
-                RepresentanteController.atualizarRepresentante(connection, representanteAtualizado);
-                JOptionPane.showMessageDialog(this, "Representante editado com sucesso!", "Sucesso",JOptionPane.INFORMATION_MESSAGE);
-                dispose();
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao editar representante.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    RepresentanteController.atualizarRepresentante(connection, representanteAtualizado);
+                    JOptionPane.showMessageDialog(this, "Representante editado com sucesso!", "Sucesso",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    dispose();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Erro ao editar representante: " + ex.getMessage(), "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Erro inesperado: " + ex.getMessage(), "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 

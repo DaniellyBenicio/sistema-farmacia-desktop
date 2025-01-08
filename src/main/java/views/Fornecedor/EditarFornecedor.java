@@ -31,6 +31,7 @@ import dao.Fornecedor.FornecedorDAO;
 import dao.Representante.RepresentanteDAO;
 import main.ConexaoBD;
 import models.Fornecedor.Fornecedor;
+import models.Funcionario.Funcionario;
 import models.Represetante.Representante;
 import views.Representante.CadastroRepresentante;
 import views.Representante.EditarRepresentante;
@@ -45,6 +46,7 @@ public class EditarFornecedor extends JPanel {
 
     public EditarFornecedor(int fornecedorId) {
         this.fornecedorId = fornecedorId;
+
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(new Color(0, 0, 0, 0));
 
@@ -246,25 +248,23 @@ public class EditarFornecedor extends JPanel {
                 return;
             }
 
-            if (!fornecedorExistente.getNome().equals(nome) && nome.isEmpty()) {
+            if (nome.isEmpty()) {
                 errorMessage.append("- Nome/Razão Social deve ser preenchido.\n");
                 hasError = true;
             }
 
-            if (!fornecedorExistente.getCnpj().equals(cnpj)) {
-                if (cnpj.isEmpty()) {
-                    errorMessage.append("- CNPJ deve ser preenchido.\n");
+            if (cnpj.isEmpty()) {
+                errorMessage.append("- CNPJ deve ser preenchido.\n");
+                hasError = true;
+            } else {
+                String cnpjLimpo = cnpj.replaceAll("[^0-9]", "");
+                if (cnpjLimpo.length() != 14) {
+                    errorMessage.append("- CNPJ inválido (certifique-se de que contém 14 dígitos numéricos).\n");
                     hasError = true;
-                } else {
-                    String cnpjLimpo = cnpj.replaceAll("[^0-9]", "");
-                    if (cnpjLimpo.length() != 14) {
-                        errorMessage.append("- CNPJ inválido (certifique-se de que contém 14 dígitos numéricos).\n");
-                        hasError = true;
-                    }
                 }
             }
 
-            if (!fornecedorExistente.getEmail().equals(email) && email.isEmpty()) {
+            if (email.isEmpty()) {
                 errorMessage.append("- E-mail deve ser preenchido.\n");
                 hasError = true;
             } else if (!validarEmail(email)) {
@@ -272,16 +272,14 @@ public class EditarFornecedor extends JPanel {
                 hasError = true;
             }
 
-            if (!fornecedorExistente.getTelefone().equals(telefone)) {
-                if (telefone.isEmpty()) {
-                    errorMessage.append("- Telefone deve ser preenchido.\n");
+            if (telefone.isEmpty()) {
+                errorMessage.append("- Telefone deve ser preenchido.\n");
+                hasError = true;
+            } else {
+                String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
+                if (telefoneLimpo.length() != 11) {
+                    errorMessage.append("- Telefone inválido (certifique-se de que contém 11 dígitos numéricos).\n");
                     hasError = true;
-                } else {
-                    String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
-                    if (telefoneLimpo.length() != 11) {
-                        errorMessage.append("- Telefone inválido (certifique-se de que contém 11 dígitos numéricos).\n");
-                        hasError = true;
-                    }
                 }
             }
 
@@ -292,19 +290,19 @@ public class EditarFornecedor extends JPanel {
         }
 
         if (hasError) {
-            JOptionPane.showMessageDialog(null, "Erro ao atualizar fornecedor.", "Error.", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try (Connection conn = ConexaoBD.getConnection()) {
-            Fornecedor fornecedorAtualizado = new Fornecedor();
-            fornecedorAtualizado.setId(idFornecedor);
-            fornecedorAtualizado.setNome(nome);
-            fornecedorAtualizado.setCnpj(cnpj.replaceAll("[^0-9]", ""));
-            fornecedorAtualizado.setEmail(email);
-            fornecedorAtualizado.setTelefone(telefone.replaceAll("[^0-9]", ""));
+            Fornecedor fornecedorExistente = FornecedorDAO.fornecedorPorId(conn, idFornecedor);
 
-            FornecedorDAO.atualizarFornecedor(conn, fornecedorAtualizado);
+            fornecedorExistente.setNome(nome);
+            fornecedorExistente.setCnpj(cnpj.replaceAll("[^0-9]", ""));
+            fornecedorExistente.setEmail(email);
+            fornecedorExistente.setTelefone(telefone.replaceAll("[^0-9]", ""));
+
+            FornecedorDAO.atualizarFornecedor(conn, fornecedorExistente);
             JOptionPane.showMessageDialog(null, "Fornecedor atualizado com sucesso!", "Sucesso",
                     JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException e) {
