@@ -140,11 +140,13 @@ public class EditarRepresentante extends JDialog {
                             JOptionPane.INFORMATION_MESSAGE);
                     dispose();
                 } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(this, "Erro ao editar representante: " + ex.getMessage(), "Erro",
-                            JOptionPane.ERROR_MESSAGE);
+                    if (ex.getMessage().equals("Já existe um representante com o telefone informado. Tente novamente!")) {
+                        JOptionPane.showMessageDialog(this, "Erro: Já existe um representante com o telefone informado. Tente novamente!", "Erro", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Erro ao atualizar representante: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Erro inesperado: " + ex.getMessage(), "Erro",
-                            JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Erro inesperado: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });

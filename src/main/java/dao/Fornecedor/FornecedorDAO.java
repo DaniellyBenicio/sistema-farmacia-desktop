@@ -8,11 +8,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import models.Fornecedor.Fornecedor;
-import models.Funcionario.Funcionario;
 import models.Represetante.Representante;
 
 public class FornecedorDAO {
     public static void cadastrarFornecedor(Connection conn, Fornecedor forn) throws SQLException {
+        if (fornecedorExiste(conn, forn.getNome(), forn.getCnpj(), forn.getEmail(), forn.getTelefone())) {
+            throw new SQLException("Já existe um fornecedor com um dos dados informados no banco de dados:\n(nome, e-mail, CNPJ ou telefone)\nVerifique novamente!");
+        }
+        
         String sqlFuncionario = "SELECT f.status, c.nome AS cargo FROM funcionario f " +
                 "JOIN cargo c ON f.cargo_id = c.id " +
                 "WHERE f.id = ?";
@@ -62,7 +65,6 @@ public class FornecedorDAO {
             throw new IllegalArgumentException("ID do fornecedor inválido para atualização.");
         }
 
-        // Atualização do fornecedor sem alterar a referência ao funcionário
         String sql = "UPDATE Fornecedor SET nome = ?, cnpj = ?, email = ?, telefone = ? WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, forn.getNome());
@@ -176,4 +178,21 @@ public class FornecedorDAO {
             throw e;
         }
     }
+
+    public static boolean fornecedorExiste(Connection conn, String nome, String cnpj, String email, String telefone) throws SQLException {
+        String sqlVerificarDuplicidade = "SELECT COUNT(*) FROM fornecedor WHERE nome = ? OR cnpj = ? OR email = ? or telefone = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlVerificarDuplicidade)) {
+            pstmt.setString(1, nome);
+            pstmt.setString(2, cnpj.replaceAll("[^0-9]", ""));  
+            pstmt.setString(3, email);
+            pstmt.setString(4, telefone.replaceAll("[^0-9]", ""));    
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true;
+            }
+        }
+        return false; 
+    }
+    
 }
