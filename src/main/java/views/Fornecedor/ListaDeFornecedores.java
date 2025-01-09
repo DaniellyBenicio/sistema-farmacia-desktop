@@ -382,6 +382,9 @@ public class ListaDeFornecedores extends JPanel {
     }
 
     private void atualizarPaginacao() {
+        if (paginaAtual < 0) {
+            paginaAtual = 0;
+        }
         Component[] componentes = painelPaginacao.getComponents();
         for (Component componente : componentes) {
             if (componente instanceof JButton) {
