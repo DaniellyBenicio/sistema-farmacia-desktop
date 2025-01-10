@@ -42,11 +42,8 @@ public class ListaDeFornecedores extends JPanel {
 
     private JTable tabela;
     private DefaultTableModel modeloTabela;
-    private int paginaAtual = 0;
-    private final int itensPorPagina = 10;
     private List<Fornecedor> fornecedores;
     private List<Object[]> fornecedoresFiltrados;
-    private JPanel painelPaginacao;
     private JScrollPane tabelaScrollPane;
     private Connection conn;
 
@@ -71,9 +68,6 @@ public class ListaDeFornecedores extends JPanel {
 
         tabelaScrollPane = criarTabela();
         add(tabelaScrollPane);
-
-        painelPaginacao = criarPaginacao();
-        add(painelPaginacao);
     }
 
     public void atualizarTabela() {
@@ -292,6 +286,7 @@ public class ListaDeFornecedores extends JPanel {
             tabela.getColumnModel().getColumn(i).setResizable(false);
         }
 
+        // ScrollPane para a tabela
         JScrollPane scrollPane = new JScrollPane(tabela);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 57, 30));
 
@@ -340,59 +335,8 @@ public class ListaDeFornecedores extends JPanel {
         if (fornecedoresFiltrados.isEmpty()) {
             modeloTabela.addRow(new Object[] { "Fornecedor não encontrado.", "", "", "", "", "", "" });
         } else {
-            int inicio = paginaAtual * itensPorPagina;
-            int fim = Math.min(inicio + itensPorPagina, fornecedoresFiltrados.size());
-
-            for (int i = inicio; i < fim; i++) {
-                modeloTabela.addRow(fornecedoresFiltrados.get(i));
-            }
-        }
-    }
-
-    private JPanel criarPaginacao() {
-        JPanel painelPaginacao = new JPanel();
-        painelPaginacao.setLayout(new FlowLayout(FlowLayout.CENTER));
-
-        JButton btnAnterior = new JButton("Anterior");
-        btnAnterior.setEnabled(paginaAtual > 0);
-        btnAnterior.addActionListener(e -> {
-            if (paginaAtual > 0) {
-                paginaAtual--;
-                carregarDados();
-                atualizarPaginacao();
-            }
-        });
-
-        JButton btnProximo = new JButton("Próximo");
-        btnProximo.setEnabled((paginaAtual + 1) * itensPorPagina < fornecedoresFiltrados.size());
-        btnProximo.addActionListener(e -> {
-            if ((paginaAtual + 1) * itensPorPagina < fornecedoresFiltrados.size()) {
-                paginaAtual++;
-                carregarDados();
-                atualizarPaginacao();
-            }
-        });
-
-        painelPaginacao.add(btnAnterior);
-        painelPaginacao.add(Box.createHorizontalGlue());
-        painelPaginacao.add(btnProximo);
-
-        return painelPaginacao;
-    }
-
-    private void atualizarPaginacao() {
-        if (paginaAtual < 0) {
-            paginaAtual = 0;
-        }
-        Component[] componentes = painelPaginacao.getComponents();
-        for (Component componente : componentes) {
-            if (componente instanceof JButton) {
-                JButton btn = (JButton) componente;
-                if (btn.getText().equals("Anterior")) {
-                    btn.setEnabled(paginaAtual > 0);
-                } else if (btn.getText().equals("Próximo")) {
-                    btn.setEnabled((paginaAtual + 1) * itensPorPagina < fornecedoresFiltrados.size());
-                }
+            for (Object[] fornecedor : fornecedoresFiltrados) {
+                modeloTabela.addRow(fornecedor);
             }
         }
     }
@@ -400,17 +344,17 @@ public class ListaDeFornecedores extends JPanel {
     private class RenderizadorBotoes extends JPanel implements TableCellRenderer {
         private final JButton botaoEditar;
         private final JButton botaoExcluir;
-    
+
         public RenderizadorBotoes() {
             setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-    
+
             botaoEditar = criarBotao("EDITAR", new Color(24, 39, 55), Color.WHITE);
             botaoExcluir = criarBotao("EXCLUIR", Color.RED, Color.WHITE);
-    
+
             add(botaoEditar);
             add(botaoExcluir);
         }
-    
+
         private JButton criarBotao(String texto, Color corFundo, Color corTexto) {
             JButton botao = new JButton(texto);
             botao.setBackground(corFundo);
@@ -420,18 +364,18 @@ public class ListaDeFornecedores extends JPanel {
             botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return botao;
         }
-    
+
         @Override
         public Component getTableCellRendererComponent(JTable tabela, Object valor, boolean isSelected, boolean hasFocus,
-                                                        int linha, int coluna) {
+                int linha, int coluna) {
             setBackground(Color.WHITE);
-    
+
             if ("Gerente".equalsIgnoreCase(PainelSuperior.getCargoFuncionarioAtual())) {
                 botaoExcluir.setVisible(false);
             } else {
                 botaoExcluir.setVisible(true);
             }
-    
+
             if (fornecedoresFiltrados.isEmpty()) {
                 botaoEditar.setVisible(false);
                 botaoExcluir.setVisible(false);
@@ -442,20 +386,20 @@ public class ListaDeFornecedores extends JPanel {
             return this;
         }
     }
-    
+
     private class EditorBotoes extends DefaultCellEditor {
         private final JButton botaoEditar;
         private final JButton botaoExcluir;
         private int indiceLinha;
-    
+
         public EditorBotoes(JTextField campoTexto) {
             super(campoTexto);
             botaoEditar = criarBotao("EDITAR", new Color(24, 39, 55), Color.WHITE);
             botaoExcluir = criarBotao("EXCLUIR", Color.RED, Color.WHITE);
-    
+
             configurarAcoes();
         }
-    
+
         private JButton criarBotao(String texto, Color corFundo, Color corTexto) {
             JButton botao = new JButton(texto);
             botao.setBackground(corFundo);
@@ -465,32 +409,32 @@ public class ListaDeFornecedores extends JPanel {
             botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return botao;
         }
-    
+
         private void configurarAcoes() {
             botaoEditar.addActionListener(e -> {
                 fireEditingStopped();
                 if (fornecedoresFiltrados.isEmpty()) {
                     return;
                 }
-    
+
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
                     int fornecedorId = fornecedoresIds.get(indiceLinha);
-    
+
                     JDialog dialogoEditar = new JDialog();
                     dialogoEditar.setTitle("Editar Fornecedor");
                     dialogoEditar.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
                     dialogoEditar.setSize(1200, 650);
                     dialogoEditar.setLocationRelativeTo(null);
                     dialogoEditar.setModal(true);
-    
+
                     Point localizacao = dialogoEditar.getLocation();
                     localizacao.y = 150;
                     dialogoEditar.setLocation(localizacao);
-    
+
                     EditarFornecedor painelEditar = new EditarFornecedor(fornecedorId);
                     dialogoEditar.add(painelEditar);
-    
+
                     dialogoEditar.addWindowListener(new java.awt.event.WindowAdapter() {
                         @Override
                         public void windowClosed(java.awt.event.WindowEvent evento) {
@@ -500,13 +444,13 @@ public class ListaDeFornecedores extends JPanel {
                     dialogoEditar.setVisible(true);
                 }
             });
-    
+
             botaoExcluir.addActionListener(e -> {
                 fireEditingStopped();
                 if (fornecedoresFiltrados.isEmpty()) {
                     return;
                 }
-    
+
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
                     int fornecedorId = fornecedoresIds.get(indiceLinha);
@@ -515,13 +459,13 @@ public class ListaDeFornecedores extends JPanel {
                 }
             });
         }
-    
+
         @Override
         public Component getTableCellEditorComponent(JTable tabela, Object valor, boolean isSelected, int linha, int coluna) {
             JPanel painel = new JPanel();
             painel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
             painel.setBackground(Color.WHITE);
-    
+
             if (fornecedoresFiltrados.isEmpty()) {
                 botaoEditar.setVisible(false);
                 botaoExcluir.setVisible(false);
@@ -529,16 +473,16 @@ public class ListaDeFornecedores extends JPanel {
                 botaoEditar.setVisible(true);
                 botaoExcluir.setVisible(true);
             }
-    
+
             painel.add(botaoEditar);
             painel.add(botaoExcluir);
-    
+
             return painel;
         }
-    
+
         @Override
         public Object getCellEditorValue() {
             return "";
         }
     }
-}    
+}
