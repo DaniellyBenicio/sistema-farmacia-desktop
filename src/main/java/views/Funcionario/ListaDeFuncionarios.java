@@ -23,11 +23,8 @@ public class ListaDeFuncionarios extends JPanel {
 
     private JTable tabela;
     private DefaultTableModel modeloTabela;
-    private int paginaAtual = 0;
-    private final int itensPorPagina = 10;
     private List<Funcionario> funcionarios;
     private List<Object[]> funcionariosFiltrados;
-    private JPanel painelPaginacao;
     private JScrollPane tabelaScrollPane;
     private Connection conn;
 
@@ -51,11 +48,9 @@ public class ListaDeFuncionarios extends JPanel {
 
         tabelaScrollPane = criarTabela();
         add(tabelaScrollPane);
-
-        painelPaginacao = criarPaginacao();
-        add(painelPaginacao);
     }
 
+    // Atualiza a lista de funcionários
     public void atualizarTabela() {
         try {
             funcionarios = FuncionarioDAO.listarTodosFuncionarios(conn);
@@ -63,10 +58,11 @@ public class ListaDeFuncionarios extends JPanel {
             carregarDados();
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Erro ao carregar fornecedores.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Erro ao carregar funcionários.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    // Atualiza a lista filtrada
     private void atualizarFuncionariosFiltrados(List<Funcionario> funcionarios) {
         funcionariosFiltrados.clear();
 
@@ -132,6 +128,7 @@ public class ListaDeFuncionarios extends JPanel {
         campoBusca.setText("Buscar");
         campoBusca.setForeground(Color.GRAY);
 
+        // Implementa o listener de foca para limpeza de texto
         campoBusca.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -254,6 +251,7 @@ public class ListaDeFuncionarios extends JPanel {
             tabela.getColumnModel().getColumn(i).setResizable(false);
         }
 
+        // ScrollPane para a tabela
         JScrollPane scrollPane = new JScrollPane(tabela);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 56, 30));
 
@@ -262,16 +260,7 @@ public class ListaDeFuncionarios extends JPanel {
 
     private void filtrarFuncionarios(String filtro) {
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
-            funcionariosFiltrados = funcionarios.stream()
-                    .map(funcionario -> new Object[] {
-                            funcionario.getId(),
-                            funcionario.getNome(),
-                            formatarTelefone(funcionario.getTelefone()),
-                            funcionario.getEmail(),
-                            funcionario.getCargo() != null ? funcionario.getCargo().getNome() : "Cargo não encontrado",
-                            funcionario.isStatus() ? "Ativo" : "Inativo",
-                    })
-                    .collect(Collectors.toList());
+            atualizarFuncionariosFiltrados(funcionarios);
         } else {
             funcionariosFiltrados = funcionarios.stream()
                     .filter(funcionario -> funcionario.getNome().toLowerCase().startsWith(filtro.toLowerCase()))
@@ -295,62 +284,10 @@ public class ListaDeFuncionarios extends JPanel {
         if (funcionariosFiltrados.isEmpty()) {
             modeloTabela.addRow(new Object[] { "", "Funcionário não encontrado.", "", "", "", "", "" });
         } else {
-            int inicio = paginaAtual * itensPorPagina;
-            int fim = Math.min(inicio + itensPorPagina, funcionariosFiltrados.size());
-
-            for (int i = inicio; i < fim; i++) {
-                modeloTabela.addRow(funcionariosFiltrados.get(i));
+            for (Object[] funcionario : funcionariosFiltrados) {
+                modeloTabela.addRow(funcionario);
             }
         }
-    }
-
-    private JPanel criarPaginacao() {
-        JPanel painelPaginacao = new JPanel();
-        painelPaginacao.setLayout(new FlowLayout(FlowLayout.CENTER));
-
-        JButton botaoAnterior = new JButton("Anterior");
-        botaoAnterior.setEnabled(paginaAtual > 0);
-        botaoAnterior.addActionListener(e -> {
-            if (paginaAtual > 0) {
-                paginaAtual--;
-                carregarDados();
-                atualizarPaginacao();
-            }
-        });
-
-        JButton botaoProximo = new JButton("Próximo");
-        botaoProximo.setEnabled((paginaAtual + 1) * itensPorPagina < funcionariosFiltrados.size());
-        botaoProximo.addActionListener(e -> {
-            if ((paginaAtual + 1) * itensPorPagina < funcionariosFiltrados.size()) {
-                paginaAtual++;
-                carregarDados();
-                atualizarPaginacao();
-            }
-        });
-
-        painelPaginacao.add(botaoAnterior);
-        painelPaginacao.add(Box.createHorizontalGlue());
-        painelPaginacao.add(botaoProximo);
-
-        return painelPaginacao;
-    }
-
-    private void atualizarPaginacao() {
-        Component[] componentes = painelPaginacao.getComponents();
-
-        for (Component componente : componentes) {
-            if (componente instanceof JButton) {
-                JButton btn = (JButton) componente;
-                if (btn.getText().equals("Anterior")) {
-                    btn.setEnabled(paginaAtual > 0);
-                    carregarDados();
-                } else if (btn.getText().equals("Próximo")) {
-                    btn.setEnabled((paginaAtual + 1) * itensPorPagina < funcionariosFiltrados.size());
-                    carregarDados();
-                }
-            }
-        }
-        carregarDados();
     }
 
     private class ButtonRenderer extends JPanel implements TableCellRenderer {
@@ -544,6 +481,7 @@ public class ListaDeFuncionarios extends JPanel {
                 deleteButton.setEnabled(true);
             }
 
+            // Define ação do botão de excluir com base no cargo
             if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
                 if (funcionario.isStatus()) {
                     deleteButton.setText("DESATIVAR");
