@@ -236,8 +236,8 @@ public class CadastrarFuncionario extends JPanel {
                 emailField.setText("");
                 cargoField.setText("");
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao cadastrar funcionário.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Erro ao cadastrar funcionário. " + ex.getMessage(), "Erro",
+                JOptionPane.ERROR_MESSAGE);
             }
         });
 

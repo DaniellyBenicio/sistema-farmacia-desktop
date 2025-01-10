@@ -13,7 +13,10 @@ import models.Represetante.Representante;
 
 public class RepresentanteDAO {
     public static void cadastrarRepresentante(Connection conn, String nome, String telefone, int fornecedorId) throws SQLException{
-		String sql = "INSERT INTO representante(nome, telefone, fornecedor_id) VALUES (?,?,?)";
+		if (representanteExiste(conn, nome, telefone, fornecedorId)) {
+            throw new SQLException("Já existe um representante com o número de telefone informado!\nTente novamente!");
+        }
+        String sql = "INSERT INTO representante(nome, telefone, fornecedor_id) VALUES (?,?,?)";
 		try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, nome);
             pstmt.setString(2, telefone);
@@ -21,11 +24,15 @@ public class RepresentanteDAO {
             pstmt.executeUpdate();
             System.out.println("Representante cadastrado com sucesso.");
         } catch (SQLException e) {
-			throw e; 
+			System.err.println("Erro ao cadastrar representante: " + e.getMessage());
+            throw e;
 		}
 	}
 
     public static void atualizarRepresentante(Connection conn, Representante r) throws SQLException {
+        if (representanteExiste(conn, r.getNome(), r.getTelefone(), r.getFornecedor().getId())) {
+            throw new SQLException("Já existe um representante com o telefone informado. Verifique novamente!");
+        }
         String sql = "UPDATE representante SET nome = ?, telefone = ? WHERE fornecedor_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, r.getNome());
@@ -39,8 +46,12 @@ public class RepresentanteDAO {
                 System.out.println("Representante atualizado com sucesso.");
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao atualizar representante: " + e.getMessage());
-            throw e; 
+            if (e.getErrorCode() == 1062) {
+                throw new SQLException("Já existe um representante com o telefone informado. Tente novamente!");
+            } else {
+                System.err.println("Erro ao atualizar representante: " + e.getMessage());
+                throw e;  
+            }
         }
     }
 
@@ -154,4 +165,26 @@ public class RepresentanteDAO {
             throw e; 
         }
     }
+
+    public static boolean representanteExiste(Connection conn, String nome, String telefone, int fornecedorId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM representante WHERE nome = ? AND telefone = ? AND fornecedor_id = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, nome);
+            ps.setString(2, telefone);
+            ps.setInt(3, fornecedorId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0; 
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar existência de representante: " + e.getMessage());
+            throw e;
+        }
+        
+        return false;  
+    }
+    
 }

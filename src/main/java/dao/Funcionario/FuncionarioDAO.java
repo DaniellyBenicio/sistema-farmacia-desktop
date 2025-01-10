@@ -13,6 +13,9 @@ import models.Funcionario.Funcionario;
 
 public class FuncionarioDAO {
     public static void cadastrarFuncionario(Connection conn, Funcionario f) throws SQLException {
+        if (funcionarioExiste(conn, f.getNome(), f.getEmail(), f.getTelefone())) {
+            throw new SQLException("Já existe um funcionário com um dos dados informados no banco de dados:\n(nome, e-mail ou telefone)\nVerifique novamente!");
+        }
         int cargoId = CargoDAO.criarCargo(conn, f.getCargo());
 
         String sql = "INSERT INTO funcionario(nome, telefone, email, cargo_id, status) VALUES (?,?,?,?,?)";
@@ -194,4 +197,24 @@ public class FuncionarioDAO {
         }
     }
 
+    public static boolean funcionarioExiste(Connection conn, String nome, String telefone, String email) throws SQLException {
+        String sqlVerificarDuplicidade = "SELECT COUNT(*) FROM funcionario WHERE nome = ? OR telefone = ? OR email = ? ";
+    
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlVerificarDuplicidade)) {
+            pstmt.setString(1, nome);
+            pstmt.setString(2, telefone.replaceAll("[^0-9]", ""));
+            pstmt.setString(3, email);
+    
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar duplicidade de funcionário: " + e.getMessage());
+            throw e;
+        }
+    
+        return false; 
+    }
 }

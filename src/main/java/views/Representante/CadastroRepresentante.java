@@ -125,12 +125,13 @@ public class CadastroRepresentante extends JDialog {
                             JOptionPane.INFORMATION_MESSAGE);
                     dispose();
                 } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(this, "Erro ao cadastrar representante: " + ex.getMessage(), "Erro",
-                            JOptionPane.ERROR_MESSAGE);
+                    if (ex.getMessage().contains("Duplicate entry")) {
+                        JOptionPane.showMessageDialog(this, "Já existe um representante com o número de telefone informado.\nVerifique novamente!", "Erro", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Erro inesperado: " + ex.getMessage(), "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                }
+                    JOptionPane.showMessageDialog(this, "Erro inesperado: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);                }
             }
         });
 
