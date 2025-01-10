@@ -17,7 +17,6 @@ import javax.swing.table.TableCellRenderer;
 import dao.Funcionario.FuncionarioDAO;
 import models.Funcionario.Funcionario;
 import views.BarrasSuperiores.PainelSuperior;
-import views.Fornecedor.ExcluirFornecedor;
 
 public class ListaDeFuncionarios extends JPanel {
 
