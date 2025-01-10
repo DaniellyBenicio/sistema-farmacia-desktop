@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -16,6 +17,7 @@ import javax.swing.table.TableCellRenderer;
 import dao.Funcionario.FuncionarioDAO;
 import models.Funcionario.Funcionario;
 import views.BarrasSuperiores.PainelSuperior;
+import views.Fornecedor.ExcluirFornecedor;
 
 public class ListaDeFuncionarios extends JPanel {
 
@@ -52,8 +54,6 @@ public class ListaDeFuncionarios extends JPanel {
 
         painelPaginacao = criarPaginacao();
         add(painelPaginacao);
-
-        carregarDados();
     }
 
     public void atualizarTabela() {
@@ -234,9 +234,9 @@ public class ListaDeFuncionarios extends JPanel {
             tabela.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        tabela.getColumnModel().getColumn(5).setCellRenderer(new RenderizadorDeCelulaDeStatus());
-        tabela.getColumnModel().getColumn(6).setCellRenderer(new RenderizadorDeBotoes());
-        tabela.getColumnModel().getColumn(6).setCellEditor(new EditorDeBotao(new JTextField()));
+        tabela.getColumnModel().getColumn(5).setCellRenderer(new StatusCellRenderer());
+        tabela.getColumnModel().getColumn(6).setCellRenderer(new ButtonRenderer());
+        tabela.getColumnModel().getColumn(6).setCellEditor(new ButtonEditor(new JTextField()));
 
         tabela.getColumnModel().getColumn(0).setPreferredWidth(10);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(270);
@@ -285,7 +285,7 @@ public class ListaDeFuncionarios extends JPanel {
                     })
                     .collect(Collectors.toList());
         }
-        System.out.println("Funcionários filtrados: " + funcionariosFiltrados.size());
+
         carregarDados();
     }
 
@@ -300,16 +300,7 @@ public class ListaDeFuncionarios extends JPanel {
 
             for (int i = inicio; i < fim; i++) {
                 modeloTabela.addRow(funcionariosFiltrados.get(i));
-
             }
-        }
-
-        // Verifique se a tabela não é nula antes de chamar revalidate() ou repaint()
-        if (tabela != null) {
-            tabela.revalidate();
-            tabela.repaint();
-        } else {
-            System.out.println("Tabela é nula!");
         }
     }
 
@@ -345,9 +336,6 @@ public class ListaDeFuncionarios extends JPanel {
     }
 
     private void atualizarPaginacao() {
-        if (paginaAtual < 0) {
-            paginaAtual = 0;
-        }
         Component[] componentes = painelPaginacao.getComponents();
 
         for (Component componente : componentes) {
@@ -355,111 +343,98 @@ public class ListaDeFuncionarios extends JPanel {
                 JButton btn = (JButton) componente;
                 if (btn.getText().equals("Anterior")) {
                     btn.setEnabled(paginaAtual > 0);
+                    carregarDados();
                 } else if (btn.getText().equals("Próximo")) {
                     btn.setEnabled((paginaAtual + 1) * itensPorPagina < funcionariosFiltrados.size());
+                    carregarDados();
                 }
             }
         }
         carregarDados();
-
     }
 
-    private class RenderizadorDeBotoes extends JPanel implements TableCellRenderer {
-        private final JButton botaoEditar;
-        private final JButton botaoExcluir;
+    private class ButtonRenderer extends JPanel implements TableCellRenderer {
+        private final JButton editButton;
+        private final JButton deleteButton;
 
-        public RenderizadorDeBotoes() {
+        public ButtonRenderer() {
             setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
 
-            botaoEditar = criarBotao("EDITAR", new Color(24, 39, 55), Color.WHITE);
-            botaoExcluir = criarBotao("EXCLUIR", Color.RED, Color.WHITE);
+            editButton = new JButton("EDITAR");
+            editButton.setBackground(new Color(24, 39, 55));
+            editButton.setForeground(Color.WHITE);
+            editButton.setBorderPainted(false);
+            editButton.setFocusPainted(false);
+            editButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            editButton.setPreferredSize(new Dimension(100, 27));
 
-            add(botaoEditar);
-            add(botaoExcluir);
+            deleteButton = new JButton("EXCLUIR");
+            deleteButton.setBackground(Color.RED);
+            deleteButton.setForeground(Color.WHITE);
+            deleteButton.setBorderPainted(false);
+            deleteButton.setFocusPainted(false);
+            deleteButton.setPreferredSize(new Dimension(100, 27));
+            deleteButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+            add(editButton);
+            add(deleteButton);
         }
 
-        private JButton criarBotao(String texto, Color fundo, Color frente) {
-            JButton botao = new JButton(texto);
-            botao.setBackground(fundo);
-            botao.setForeground(frente);
-            botao.setBorderPainted(false);
-            botao.setFocusPainted(false);
-            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            botao.setPreferredSize(new Dimension(100, 27));
-            return botao;
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable tabela, Object valor, boolean estaSelecionado,
-                boolean temFoco, int linha, int coluna) {
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+                int row, int column) {
             setBackground(Color.WHITE);
 
-            if (funcionarios.isEmpty() || linha < 0 || linha >= funcionarios.size()) {
-                esconderBotoes();
+            if (funcionarios.isEmpty() || row < 0 || row >= funcionarios.size()) {
+                editButton.setVisible(false);
+                deleteButton.setVisible(false);
                 return this;
             }
 
-            Funcionario funcionario = funcionarios.get(linha);
-            String cargoFuncionarioAtual = PainelSuperior.getCargoFuncionarioAtual();
-            int idFuncionarioAtual = PainelSuperior.getIdFuncionarioAtual();
+            Funcionario funcionario = funcionarios.get(row);
 
-            atualizarEstadoBotaoExcluir(cargoFuncionarioAtual, idFuncionarioAtual, funcionario);
-            atualizarVisibilidadeBotoes(funcionario);
+            String funcionarioAtualCargo = PainelSuperior.getCargoFuncionarioAtual();
+            int funcionarioAtualId = PainelSuperior.getIdFuncionarioAtual();
 
-            return this;
-        }
+            if ("Gerente".equalsIgnoreCase(funcionarioAtualCargo) && funcionarioAtualId == funcionario.getId()) {
+                deleteButton.setEnabled(false);
+            } else {
+                deleteButton.setEnabled(true);
+            }
 
-        private void esconderBotoes() {
-            botaoEditar.setVisible(false);
-            botaoExcluir.setVisible(false);
-        }
-
-        public void atualizarEstadoBotaoExcluir(String cargoFuncionarioAtual, int idFuncionarioAtual,
-                Funcionario funcionario) {
-            boolean ehGerente = "Gerente".equalsIgnoreCase(cargoFuncionarioAtual)
-                    && idFuncionarioAtual == funcionario.getId();
-            botaoExcluir.setEnabled(!ehGerente);
-
-        }
-
-        private void atualizarVisibilidadeBotoes(Funcionario funcionario) {
             if (funcionario.getCargo() != null) {
                 String cargo = funcionario.getCargo().getNome();
+
                 if ("Gerente".equalsIgnoreCase(cargo)) {
-                    atualizarNomeDoBotaoParaGerente(funcionario);
+                    if (funcionario.isStatus()) {
+                        deleteButton.setText("DESATIVAR");
+                        editButton.setEnabled(true);
+                    } else {
+                        deleteButton.setText("ATIVAR");
+                        editButton.setEnabled(false);
+                    }
                 } else {
-                    atualizarNomeDoBotaoParaOutrosFuncionarios();
+                    deleteButton.setText("EXCLUIR");
+                    editButton.setEnabled(true);
                 }
             } else {
-                atualizarNomeDoBotaoParaOutrosFuncionarios();
+                deleteButton.setText("EXCLUIR");
+                editButton.setEnabled(true);
             }
 
             if (funcionariosFiltrados.isEmpty()) {
-                esconderBotoes();
+                editButton.setVisible(false);
+                deleteButton.setVisible(false);
             } else {
-                botaoEditar.setVisible(true);
-                botaoExcluir.setVisible(true);
+                editButton.setVisible(true);
+                deleteButton.setVisible(true);
             }
-        }
 
-        private void atualizarNomeDoBotaoParaGerente(Funcionario funcionario) {
-            if (funcionario.isStatus()) {
-                botaoExcluir.setText("DESATIVAR");
-                botaoEditar.setEnabled(true);
-            } else {
-                botaoExcluir.setText("ATIVAR");
-                botaoEditar.setEnabled(false);
-            }
-        }
-
-        private void atualizarNomeDoBotaoParaOutrosFuncionarios() {
-            botaoExcluir.setText("EXCLUIR");
-            botaoEditar.setEnabled(true);
+            return this;
         }
     }
 
-    public class RenderizadorDeCelulaDeStatus extends DefaultTableCellRenderer {
-        public RenderizadorDeCelulaDeStatus() {
+    private class StatusCellRenderer extends DefaultTableCellRenderer {
+        public StatusCellRenderer() {
             setHorizontalAlignment(SwingConstants.CENTER);
         }
 
@@ -469,160 +444,146 @@ public class ListaDeFuncionarios extends JPanel {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
                     column);
 
-            atualizarCorDoTexto(value, label);
-            return label;
-        }
-
-        private void atualizarCorDoTexto(Object value, JLabel label) {
             if (value != null) {
-                String status = value.toString().trim();
-                switch (status) {
-                    case "Ativo":
-                        label.setForeground(Color.GREEN);
-                        break;
-                    case "Inativo":
-                        label.setForeground(Color.RED);
-                        break;
-                    default:
-                        label.setForeground(Color.BLACK);
-                        break;
+                String status = value.toString();
+                if (status.equals("Ativo")) {
+                    label.setForeground(Color.GREEN);
+                } else if (status.equals("Inativo")) {
+                    label.setForeground(Color.RED);
+                } else {
+                    label.setForeground(Color.BLACK);
                 }
-            } else {
-                label.setForeground(Color.BLACK);
             }
+
+            return label;
         }
     }
 
-    private class EditorDeBotao extends DefaultCellEditor {
-        private final JButton botaoEditar;
-        private final JButton botaoExcluir;
+    private class ButtonEditor extends DefaultCellEditor {
+        private final JButton editButton;
+        private final JButton deleteButton;
         private int indiceLinha;
-        private final ExcluirFuncionario excluirFuncionarioSelecionado;
+        private ExcluirFuncionario excluirFuncionarioSelecionado;
 
-        public EditorDeBotao(JTextField campoTexto) {
-            super(campoTexto);
+        public ButtonEditor(JTextField textField) {
+            super(textField);
+            editButton = new JButton("EDITAR");
+            deleteButton = new JButton("EXCLUIR");
 
-            botaoEditar = new JButton("EDITAR");
-            botaoExcluir = new JButton("EXCLUIR");
+            editButton.addActionListener(e -> {
+                fireEditingStopped();
+                if (funcionariosFiltrados.isEmpty()) {
+                    return;
+                }
 
-            configurarAcoesBotaoEditar();
+                indiceLinha = tabela.getSelectedRow();
+                if (indiceLinha >= 0) {
+                    int idFuncionario = (int) modeloTabela.getValueAt(indiceLinha, 0);
+
+                    JDialog editarDialog = new JDialog();
+                    editarDialog.setTitle("Editar Funcionário");
+                    editarDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                    editarDialog.setSize(1200, 650);
+                    editarDialog.setLocationRelativeTo(null);
+                    editarDialog.setModal(true);
+
+                    Point location = editarDialog.getLocation();
+                    location.y = 150;
+                    editarDialog.setLocation(location);
+
+                    EditarFuncionario editarPanel = new EditarFuncionario(idFuncionario);
+                    editarDialog.add(editarPanel);
+
+                    editarDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                        @Override
+                        public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                            atualizarTabela();
+                        }
+                    });
+                    editarDialog.setVisible(true);
+                }
+                fireEditingStopped();
+            });
+
             excluirFuncionarioSelecionado = new ExcluirFuncionario(conn);
-            configurarAcoesBotaoExcluir();
+
+            deleteButton.addActionListener(e -> {
+                fireEditingStopped();
+                if (funcionariosFiltrados.isEmpty()) {
+                    return;
+                }
+
+                indiceLinha = tabela.getSelectedRow();
+                if (indiceLinha >= 0) {
+                    int idFuncionario = (int) modeloTabela.getValueAt(indiceLinha, 0);
+
+                    excluirFuncionarioSelecionado.excluirFuncionario(idFuncionario, null);
+                    atualizarTabela();
+                }
+                fireEditingStopped();
+            });
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable tabela, Object valor, boolean isSelected, int linha,
-                int coluna) {
-            JPanel painel = criarPainelDeBotao();
-            indiceLinha = linha;
-            Funcionario funcionario = funcionarios.get(linha);
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
+                int column) {
 
-            configurarVisibilidadeEBotoes(funcionario);
-            configurarEstiloEBotoes();
+            JPanel panel = new JPanel();
+            panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
+            panel.setBackground(Color.WHITE);
 
-            painel.add(botaoEditar);
-            painel.add(botaoExcluir);
+            indiceLinha = row;
+            Funcionario funcionario = funcionarios.get(row);
 
-            return painel;
+            String funcionarioAtualCargo = PainelSuperior.getCargoFuncionarioAtual();
+            int funcionarioAtualId = PainelSuperior.getIdFuncionarioAtual();
+
+            if ("Gerente".equalsIgnoreCase(funcionarioAtualCargo) && funcionarioAtualId == funcionario.getId()) {
+                deleteButton.setEnabled(false);
+            } else {
+                deleteButton.setEnabled(true);
+            }
+
+            if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
+                if (funcionario.isStatus()) {
+                    deleteButton.setText("DESATIVAR");
+                    editButton.setEnabled(true);
+                } else {
+                    deleteButton.setText("ATIVAR");
+                    editButton.setEnabled(false);
+                }
+            } else {
+                deleteButton.setText("EXCLUIR");
+                editButton.setEnabled(true);
+            }
+
+            if (funcionariosFiltrados.isEmpty()) {
+                editButton.setVisible(false);
+                deleteButton.setVisible(false);
+            } else {
+                editButton.setVisible(true);
+                editButton.setBackground(new Color(24, 39, 55));
+                editButton.setForeground(Color.WHITE);
+                deleteButton.setBackground(Color.RED);
+                deleteButton.setForeground(Color.WHITE);
+                deleteButton.setVisible(true);
+            }
+
+            editButton.setPreferredSize(new Dimension(100, 27));
+            editButton.setMaximumSize(new Dimension(100, 27));
+
+            deleteButton.setPreferredSize(new Dimension(100, 27));
+            deleteButton.setMaximumSize(new Dimension(100, 27));
+
+            panel.add(editButton);
+            panel.add(deleteButton);
+
+            return panel;
         }
 
         @Override
         public Object getCellEditorValue() {
             return "";
-        }
-
-        private void configurarAcoesBotaoEditar() {
-            botaoEditar.addActionListener(e -> {
-                fireEditingStopped();
-
-                if (!funcionariosFiltrados.isEmpty() && indiceLinha >= 0) {
-                    int idFuncionario = obterIdFuncionario(indiceLinha);
-                    abrirDialogoEdicao(idFuncionario);
-                }
-            });
-        }
-
-        private void configurarAcoesBotaoExcluir() {
-            botaoExcluir.addActionListener(e -> {
-                fireEditingStopped();
-
-                if (!funcionariosFiltrados.isEmpty() && indiceLinha >= 0) {
-                    int idFuncionario = obterIdFuncionario(indiceLinha);
-                    excluirFuncionarioSelecionado.excluirFuncionario(idFuncionario, null);
-                    atualizarTabela();
-                }
-            });
-        }
-
-        private int obterIdFuncionario(int linha) {
-            return (int) modeloTabela.getValueAt(linha, 0);
-        }
-
-        private void abrirDialogoEdicao(int idFuncionario) {
-            JDialog editarDialog = new JDialog();
-            editarDialog.setTitle("Editar Funcionário");
-            editarDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            editarDialog.setSize(1200, 650);
-            editarDialog.setLocationRelativeTo(null);
-            editarDialog.setModal(true);
-
-            Point location = editarDialog.getLocation();
-            location.y = 150;
-            editarDialog.setLocation(location);
-
-            EditarFuncionario editarPainel = new EditarFuncionario(idFuncionario);
-            editarDialog.add(editarPainel);
-
-            editarDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                @Override
-                public void windowClosed(java.awt.event.WindowEvent windowEvent) {
-                    atualizarTabela();
-                }
-            });
-
-            editarDialog.setVisible(true);
-        }
-
-        private JPanel criarPainelDeBotao() {
-            JPanel painel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-            painel.setBackground(Color.WHITE);
-            return painel;
-        }
-
-        private void configurarVisibilidadeEBotoes(Funcionario funcionario) {
-            String cargoFuncionarioAtual = PainelSuperior.getCargoFuncionarioAtual();
-            int idFuncionarioAtual = PainelSuperior.getIdFuncionarioAtual();
-
-            if ("Gerente".equalsIgnoreCase(cargoFuncionarioAtual) && idFuncionarioAtual == funcionario.getId()) {
-                botaoExcluir.setEnabled(false);
-            } else {
-                botaoExcluir.setEnabled(true);
-            }
-
-            if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
-                if (funcionario.isStatus()) {
-                    botaoExcluir.setText("DESATIVAR");
-                    botaoEditar.setEnabled(true);
-                } else {
-                    botaoExcluir.setText("ATIVAR");
-                    botaoEditar.setEnabled(false);
-                }
-            } else {
-                botaoExcluir.setText("EXCLUIR");
-                botaoEditar.setEnabled(true);
-            }
-        }
-
-        private void configurarEstiloEBotoes() {
-            botaoEditar.setPreferredSize(new Dimension(100, 27));
-            botaoEditar.setMaximumSize(new Dimension(100, 27));
-            botaoEditar.setBackground(new Color(24, 39, 55));
-            botaoEditar.setForeground(Color.WHITE);
-
-            botaoExcluir.setPreferredSize(new Dimension(100, 27));
-            botaoExcluir.setMaximumSize(new Dimension(100, 27));
-            botaoExcluir.setBackground(Color.RED);
-            botaoExcluir.setForeground(Color.WHITE);
         }
     }
 }
