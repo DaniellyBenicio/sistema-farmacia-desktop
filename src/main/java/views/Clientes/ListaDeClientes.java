@@ -252,11 +252,11 @@ public class ListaDeClientes extends JPanel {
         tabela.getColumnModel().getColumn(6).setCellRenderer(new RenderizadorBotoes());
         tabela.getColumnModel().getColumn(6).setCellEditor(new EditorBotoes(new JTextField()));
 
-        tabela.getColumnModel().getColumn(0).setPreferredWidth(300);
-        tabela.getColumnModel().getColumn(1).setPreferredWidth(30);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(200);
-        tabela.getColumnModel().getColumn(3).setPreferredWidth(70);
-        tabela.getColumnModel().getColumn(4).setPreferredWidth(150);
+        tabela.getColumnModel().getColumn(0).setPreferredWidth(270);
+        tabela.getColumnModel().getColumn(1).setPreferredWidth(60);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(210);
+        tabela.getColumnModel().getColumn(3).setPreferredWidth(100);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(90);
         tabela.getColumnModel().getColumn(5).setPreferredWidth(20);
         tabela.getColumnModel().getColumn(6).setPreferredWidth(160);
 
