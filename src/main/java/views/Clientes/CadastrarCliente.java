@@ -16,10 +16,13 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -167,42 +170,63 @@ public class CadastrarCliente extends JPanel {
         camposPanel.add(bairroField, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 4; 
+        gbc.gridy = 4;
         JLabel cidadeLabel = new JLabel("Cidade");
         cidadeLabel.setFont(labelFont);
         camposPanel.add(cidadeLabel, gbc);
 
         cidadeField = new JTextField();
-        cidadeField.setPreferredSize(new Dimension(180, 40));
+        cidadeField.setPreferredSize(new Dimension(480, 40));
         estilizarCamposFormulario(cidadeField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 5;
         camposPanel.add(cidadeField, gbc);
 
+        List<String> estadosValidos = Arrays.asList("AC", "AL", "AM", "BA", "CE", "DF", "ES", "GO",
+                "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE",
+                "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP",
+                "SE", "TO");
+        String[] estadosArray = estadosValidos.toArray(new String[0]);
+
         JLabel estadoLabel = new JLabel("Estado");
         estadoLabel.setFont(labelFont);
-        gbc.gridx = 1; 
-        gbc.gridy = 4; 
+        gbc.gridx = 1;
+        gbc.gridy = 4;
         camposPanel.add(estadoLabel, gbc);
 
-        estadoField = new JTextField();
-        estadoField.setPreferredSize(new Dimension(100, 40));
-        estilizarCamposFormulario(estadoField, fieldFont);
+        JComboBox<String> estadoComboBox = new JComboBox<>(estadosArray);
+        estadoComboBox.setPreferredSize(new Dimension(200, 40));
+        estadoComboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
+                Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (isSelected) {
+                    component.setBackground(new Color(24, 39, 55));
+                    component.setForeground(Color.WHITE);
+                } else {
+                    component.setBackground(Color.WHITE);
+                    component.setForeground(Color.BLACK);
+                }
+                return component;
+            }
+        });
+        estadoComboBox.setFont(fieldFont);
         gbc.gridx = 1;
-        gbc.gridy = 5; 
-        camposPanel.add(estadoField, gbc);
+        gbc.gridy = 5;
+        camposPanel.add(estadoComboBox, gbc);
 
-        gbc.gridx = 2; 
-        gbc.gridy = 4; 
+        gbc.gridx = 2;
+        gbc.gridy = 4;
         JLabel pontoReferenciaLabel = new JLabel("Ponto de Referência");
         pontoReferenciaLabel.setFont(labelFont);
         camposPanel.add(pontoReferenciaLabel, gbc);
 
         pontodereferenciaField = new JTextField();
-        pontodereferenciaField.setPreferredSize(new Dimension(200, 40)); 
+        pontodereferenciaField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(pontodereferenciaField, fieldFont);
         gbc.gridx = 2;
-        gbc.gridy = 5; 
+        gbc.gridy = 5;
         camposPanel.add(pontodereferenciaField, gbc);
 
         return camposPanel;
@@ -247,11 +271,11 @@ public class CadastrarCliente extends JPanel {
             if (nome.isEmpty()) {
                 errorMessage.append("- Nome deve ser preenchido.\n");
                 hasError = true;
-            } else if (!nome.matches("[A-Za-zÀ-ÿ\\s]+")) {  
+            } else if (!nome.matches("[A-Za-zÀ-ÿ\\s]+")) {
                 errorMessage.append("- Nome não pode conter números ou caracteres especiais.\n");
                 hasError = true;
             }
-            
+
             if (cpf.isEmpty()) {
                 errorMessage.append("- CPF deve ser preenchido.\n");
                 hasError = true;
@@ -271,10 +295,10 @@ public class CadastrarCliente extends JPanel {
             if (rua == null || rua.trim().isEmpty()) {
                 errorMessage.append("- Rua deve ser preenchida.\n");
                 hasError = true;
-            } else if (rua.matches("[0-9]+")) { 
+            } else if (rua.matches("[0-9]+")) {
                 errorMessage.append("- Rua inválida (não pode conter apenas números).\n");
                 hasError = true;
-            }         
+            }
 
             if (numero.isEmpty()) {
                 errorMessage.append("- Número deve ser preenchido.\n");
@@ -284,7 +308,7 @@ public class CadastrarCliente extends JPanel {
             if (bairro.isEmpty()) {
                 errorMessage.append("- Bairro deve ser preenchido.\n");
                 hasError = true;
-            } else if (bairro.matches(".*\\d.*")) { 
+            } else if (bairro.matches(".*\\d.*")) {
                 errorMessage.append("- Bairro inválido (não pode conter números).\n");
                 hasError = true;
             }
@@ -292,14 +316,14 @@ public class CadastrarCliente extends JPanel {
             if (cidade.isEmpty()) {
                 errorMessage.append("- Cidade deve ser preenchida.\n");
                 hasError = true;
-            } else if (cidade.matches(".*\\d.*")) { 
+            } else if (cidade.matches(".*\\d.*")) {
                 errorMessage.append("- Cidade inválida (não pode conter números).\n");
                 hasError = true;
             }
 
-            List<String> estadosValidos = Arrays.asList("AC", "AL", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", 
-                                            "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", 
-                                            "RO", "RR", "SC", "SP", "SE", "TO");
+            List<String> estadosValidos = Arrays.asList("AC", "AL", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT",
+                    "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS",
+                    "RO", "RR", "SC", "SP", "SE", "TO");
 
             if (estado == null || estado.isEmpty() || !estadosValidos.contains(estado)) {
                 errorMessage.append("- Estado deve ser preenchido e válido. Escolha uma sigla de estado válida.\n");
@@ -316,19 +340,11 @@ public class CadastrarCliente extends JPanel {
                 return;
             }
 
-              try (Connection conn = ConexaoBD.getConnection()) {
-                    Funcionario funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
+            try (Connection conn = ConexaoBD.getConnection()) {
+                Funcionario funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
 
-                    if (funcionario == null) {
-                        JOptionPane.showMessageDialog(null,
-                                "A identificação do funcionário é obrigatória.\n" +
-                                        "",
-                                "Acesso Negado",
-                                JOptionPane.WARNING_MESSAGE);
-                        return;
-                    }
-
-                Cliente cliente = new Cliente(nome, cpf, telefone, rua, numero, bairro, cidade, estado, pontodereferencia, funcionario);
+                Cliente cliente = new Cliente(nome, cpf, telefone, rua, numero, bairro, cidade, estado,
+                        pontodereferencia, funcionario);
 
                 ClienteDAO.cadastrarCliente(conn, cliente);
 
@@ -343,8 +359,10 @@ public class CadastrarCliente extends JPanel {
                 cidadeField.setText("");
                 estadoField.setText("");
                 pontodereferenciaField.setText("");
+
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao cadastrar cliente: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Erro ao cadastrar cliente: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 

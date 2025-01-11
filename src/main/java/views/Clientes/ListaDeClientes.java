@@ -34,13 +34,14 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
-import views.BarrasSuperiores.PainelSuperior;
+import models.Cliente.Cliente;
+import dao.Cliente.ClienteDAO;
 
 public class ListaDeClientes extends JPanel {
 
     private JTable tabela;
     private DefaultTableModel modeloTabela;
-   // private List<Cliente> clientes; 
+    private List<Cliente> clientes;
     private List<Object[]> clientesFiltrados;
     private JScrollPane tabelaScrollPane;
     private Connection conn;
@@ -52,15 +53,15 @@ public class ListaDeClientes extends JPanel {
 
         clientesFiltrados = new ArrayList<>();
         clientesIds = new ArrayList<>();
-/*
+
         try {
-            clientes = ClienteDAO.listarClientes(conn); 
+            clientes = ClienteDAO.listarClientes(conn);
             atualizarClientesFiltrados(clientes);
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erro ao carregar clientes.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
-*/
+
         JPanel painelSuperior = criarTituloEBusca();
         add(painelSuperior);
 
@@ -69,33 +70,36 @@ public class ListaDeClientes extends JPanel {
     }
 
     public void atualizarTabela() {
-        //  clientes = ClienteDAO.listarClientes(conn); 
-        //atualizarClientesFiltrados(clientes);
-        carregarDados();
+        try {
+            clientes = ClienteDAO.listarClientesSemCpf(conn);
+            atualizarClientesFiltrados(clientes);
+            carregarDados();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erro ao carregar clientes.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    private List<Integer> clientesIds; 
+    private List<Integer> clientesIds;
 
-    /*
     private void atualizarClientesFiltrados(List<Cliente> clientes) {
         clientesFiltrados.clear();
         clientesIds.clear();
 
-        for (Cliente cliente : clientes) { // Mudança de Fornecedor para Cliente
-            Object[] dadosCliente = new Object[7]; // Mudança de dadosFornecedor para dadosCliente
-            dadosCliente[0] = cliente.getNome(); // Mudança de fornecedor.getNome() para cliente.getNome()
-            dadosCliente[1] = formatarCNPJ(cliente.getCnpj()); // Mudança de fornecedor.getCnpj() para cliente.getCnpj()
-            dadosCliente[2] = cliente.getEmail(); // Mudança de fornecedor.getEmail() para cliente.getEmail()
-            dadosCliente[3] = formatarTelefone(cliente.getTelefone()); // Mudança de fornecedor.getTelefone() para cliente.getTelefone()
-            String representante = cliente.getNomeRepresentante(); // Mudança de fornecedor.getNomeRepresentante() para cliente.getNomeRepresentante()
-            dadosCliente[4] = (representante != null && !representante.isEmpty()) ? representante : "Sem Representante";
-            dadosCliente[5] = cliente.getTelefoneRepresentante() != null ? formatarTelefone(cliente.getTelefoneRepresentante()) : "Sem Telefone";
+        for (Cliente cliente : clientes) {
+            Object[] dadosCliente = new Object[7];
+            dadosCliente[0] = cliente.getNome();
+            dadosCliente[1] = formatarTelefone(cliente.getTelefone());
+            dadosCliente[2] = cliente.getRua() + "" + cliente.getNumCasa();
+            dadosCliente[3] = cliente.getBairro();
+            dadosCliente[4] = cliente.getCidade();
+            dadosCliente[5] = cliente.getEstado();
             dadosCliente[6] = "";
 
-            clientesFiltrados.add(dadosCliente); // Mudança de fornecedoresFiltrados para clientesFiltrados
-            clientesIds.add(cliente.getId()); // Mudança de fornecedor.getId() para cliente.getId()
+            clientesFiltrados.add(dadosCliente);
+            clientesIds.add(cliente.getId());
         }
-    }*/
+    }
 
     private String formatarTelefone(String telefone) {
         String numero = telefone.replaceAll("\\D", "");
@@ -120,7 +124,7 @@ public class ListaDeClientes extends JPanel {
         painelTitulo.setLayout(new BoxLayout(painelTitulo, BoxLayout.Y_AXIS));
         painelTitulo.setBorder(BorderFactory.createEmptyBorder(50, 0, 35, 0));
 
-        JLabel titulo = new JLabel("LISTA DE CLIENTES"); 
+        JLabel titulo = new JLabel("LISTA DE CLIENTES");
         titulo.setFont(new Font("Arial", Font.BOLD, 20));
         titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         painelTitulo.add(titulo);
@@ -164,24 +168,24 @@ public class ListaDeClientes extends JPanel {
         campoBusca.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-             //   filtrarClientes(campoBusca.getText());
+                filtrarClientes(campoBusca.getText());
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-              //  filtrarClientes(campoBusca.getText());
+                filtrarClientes(campoBusca.getText());
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-               // filtrarClientes(campoBusca.getText());
+                filtrarClientes(campoBusca.getText());
             }
         });
 
         painelBuscaBotao.add(campoBusca);
         painelBuscaBotao.add(Box.createHorizontalGlue());
 
-        JButton cadastrarButton = new JButton("Cadastrar Cliente"); 
+        JButton cadastrarButton = new JButton("Cadastrar Cliente");
         cadastrarButton.setFont(new Font("Arial", Font.BOLD, 15));
         cadastrarButton.setBackground(new Color(24, 39, 55));
         cadastrarButton.setForeground(Color.WHITE);
@@ -191,13 +195,13 @@ public class ListaDeClientes extends JPanel {
 
         cadastrarButton.addActionListener(e -> {
             JDialog cadastroDialog = new JDialog();
-            cadastroDialog.setTitle("Cadastrar Cliente"); 
+            cadastroDialog.setTitle("Cadastrar Cliente");
             cadastroDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             cadastroDialog.setSize(1200, 650);
             cadastroDialog.setLocationRelativeTo(this);
             cadastroDialog.setModal(true);
 
-            CadastrarCliente cadastrarCliente = new CadastrarCliente(); 
+            CadastrarCliente cadastrarCliente = new CadastrarCliente();
 
             cadastroDialog.addWindowListener(new java.awt.event.WindowAdapter() {
                 @Override
@@ -249,11 +253,11 @@ public class ListaDeClientes extends JPanel {
         tabela.getColumnModel().getColumn(6).setCellEditor(new EditorBotoes(new JTextField()));
 
         tabela.getColumnModel().getColumn(0).setPreferredWidth(300);
-        tabela.getColumnModel().getColumn(1).setPreferredWidth(80);
+        tabela.getColumnModel().getColumn(1).setPreferredWidth(30);
         tabela.getColumnModel().getColumn(2).setPreferredWidth(200);
         tabela.getColumnModel().getColumn(3).setPreferredWidth(70);
-        tabela.getColumnModel().getColumn(4).setPreferredWidth(200);
-        tabela.getColumnModel().getColumn(5).setPreferredWidth(70);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(150);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(20);
         tabela.getColumnModel().getColumn(6).setPreferredWidth(160);
 
         tabela.setCellSelectionEnabled(false);
@@ -270,50 +274,41 @@ public class ListaDeClientes extends JPanel {
         return scrollPane;
     }
 
-    /*
-    private void filtrarClientes(String filtro) { 
+    private void filtrarClientes(String filtro) {
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
             clientesFiltrados = clientes.stream()
                     .map(cliente -> new Object[] {
-                            cliente.getNome(), // Mudança de fornecedor para cliente
-                            formatarCNPJ(cliente.getCnpj()),
-                            cliente.getEmail(),
+                            cliente.getNome(),
                             formatarTelefone(cliente.getTelefone()),
-                            cliente.getNomeRepresentante() != null && !cliente.getNomeRepresentante().isEmpty()
-                                    ? cliente.getNomeRepresentante()
-                                    : "Sem Representante",
-                            cliente.getTelefoneRepresentante() != null
-                                    ? formatarTelefone(cliente.getTelefoneRepresentante())
-                                    : "Sem Telefone",
+                            cliente.getRua() + cliente.getNumCasa(),
+                            cliente.getBairro(),
+                            cliente.getCidade(),
+                            cliente.getEstado(),
                     })
                     .collect(Collectors.toList());
         } else {
             clientesFiltrados = clientes.stream()
-                    .filter(cliente -> cliente.getNome().toLowerCase().startsWith(filtro.toLowerCase())
+                    .filter(cliente -> cliente.getNome().toLowerCase().startsWith(filtro.toLowerCase()))
                     .map(cliente -> new Object[] {
                             cliente.getNome(),
-                            formatarCNPJ(cliente.getCnpj()),
-                            cliente.getEmail(),
                             formatarTelefone(cliente.getTelefone()),
-                            cliente.getNomeRepresentante() != null && !cliente.getNomeRepresentante().isEmpty()
-                                    ? cliente.getNomeRepresentante()
-                                    : "Sem Representante",
-                            cliente.getTelefoneRepresentante() != null
-                                    ? formatarTelefone(cliente.getTelefoneRepresentante())
-                                    : "Sem Telefone",
+                            cliente.getRua() + cliente.getNumCasa(),
+                            cliente.getBairro(),
+                            cliente.getCidade(),
+                            cliente.getEstado(),
                     })
                     .collect(Collectors.toList());
         }
         carregarDados();
     }
-*/
+
     private void carregarDados() {
         modeloTabela.setRowCount(0);
 
         if (clientesFiltrados.isEmpty()) {
             modeloTabela.addRow(new Object[] { "Cliente não encontrado.", "", "", "", "", "", "" });
         } else {
-            for (Object[] cliente : clientesFiltrados) { 
+            for (Object[] cliente : clientesFiltrados) {
                 modeloTabela.addRow(cliente);
             }
         }
@@ -344,7 +339,8 @@ public class ListaDeClientes extends JPanel {
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable tabela, Object valor, boolean isSelected, boolean hasFocus,
+        public Component getTableCellRendererComponent(JTable tabela, Object valor, boolean isSelected,
+                boolean hasFocus,
                 int linha, int coluna) {
             setBackground(Color.WHITE);
 
@@ -394,7 +390,7 @@ public class ListaDeClientes extends JPanel {
                     int clienteId = clientesIds.get(indiceLinha);
 
                     JDialog dialogoEditar = new JDialog();
-                    dialogoEditar.setTitle("Editar Cliente"); 
+                    dialogoEditar.setTitle("Editar Cliente");
                     dialogoEditar.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
                     dialogoEditar.setSize(1200, 650);
                     dialogoEditar.setLocationRelativeTo(null);
@@ -404,8 +400,8 @@ public class ListaDeClientes extends JPanel {
                     localizacao.y = 150;
                     dialogoEditar.setLocation(localizacao);
 
-                    //EditarCliente painelEditar = new EditarCliente(clienteId); 
-                    //dialogoEditar.add(painelEditar);
+                    // EditarCliente painelEditar = new EditarCliente(clienteId);
+                    // dialogoEditar.add(painelEditar);
 
                     dialogoEditar.addWindowListener(new java.awt.event.WindowAdapter() {
                         @Override
@@ -425,15 +421,16 @@ public class ListaDeClientes extends JPanel {
 
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
-                    int clienteId = clientesIds.get(indiceLinha); 
-                    //ExcluirCliente.excluirCliente(clienteId); 
+                    int clienteId = clientesIds.get(indiceLinha);
+                    // ExcluirCliente.excluirCliente(clienteId);
                     atualizarTabela();
                 }
             });
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable tabela, Object valor, boolean isSelected, int linha, int coluna) {
+        public Component getTableCellEditorComponent(JTable tabela, Object valor, boolean isSelected, int linha,
+                int coluna) {
             JPanel painel = new JPanel();
             painel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
             painel.setBackground(Color.WHITE);
