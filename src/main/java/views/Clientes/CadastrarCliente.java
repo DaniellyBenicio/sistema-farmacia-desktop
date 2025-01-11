@@ -45,7 +45,7 @@ public class CadastrarCliente extends JPanel {
     private JTextField numeroField;
     private JTextField bairroField;
     private JTextField cidadeField;
-    private JTextField estadoField;
+    private JComboBox<String> estadoComboBox; 
     private JTextField pontodereferenciaField;
 
     public CadastrarCliente() {
@@ -194,7 +194,7 @@ public class CadastrarCliente extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(estadoLabel, gbc);
 
-        JComboBox<String> estadoComboBox = new JComboBox<>(estadosArray);
+        estadoComboBox = new JComboBox<>(estadosArray);
         estadoComboBox.setPreferredSize(new Dimension(200, 40));
         estadoComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -262,7 +262,7 @@ public class CadastrarCliente extends JPanel {
             String numero = numeroField.getText().trim();
             String bairro = bairroField.getText().trim();
             String cidade = cidadeField.getText().trim();
-            String estado = estadoField.getText().trim();
+            String estado = (String) estadoComboBox.getSelectedItem();
             String pontodereferencia = pontodereferenciaField.getText().trim();
 
             boolean hasError = false;
@@ -330,11 +330,6 @@ public class CadastrarCliente extends JPanel {
                 hasError = true;
             }
 
-            if (pontodereferencia.isEmpty()) {
-                errorMessage.append("- Ponto de Referência deve ser preenchido.\n");
-                hasError = true;
-            }
-
             if (hasError) {
                 JOptionPane.showMessageDialog(null, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -357,7 +352,7 @@ public class CadastrarCliente extends JPanel {
                 numeroField.setText("");
                 bairroField.setText("");
                 cidadeField.setText("");
-                estadoField.setText("");
+                estadoComboBox.setSelectedIndex(0);
                 pontodereferenciaField.setText("");
 
             } catch (SQLException ex) {
