@@ -66,5 +66,22 @@ create table fornecedorMedicamento(
     foreign key (medicamento_id) references medicamento(id)
 );
 
+
+create table cliente(
+	id int primary key auto_increment not null,
+    nome varchar(50) not null,
+    cpf char(11) not null unique,
+    telefone char(11) not null unique,
+    rua varchar(100) not null,
+    numCasa varchar(5),
+    bairro varchar(100) not null,
+    cidade varchar(50) not null,
+	estado ENUM('AC', 'AL', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 
+                'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO') NOT NULL,    
+	pontoReferencia varchar(255),
+    funcionario_id int not null,
+    foreign key (funcionario_id) references funcionario(id) 
+);
+
 drop database farmacia;
 
