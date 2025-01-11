@@ -102,39 +102,6 @@ public class ClienteDAO {
         return null;
     }
 
-    public static Cliente clientePorNome(Connection conn, String nome) throws SQLException {
-        String sql = "SELECT c.id, c.nome, c.cpf, c.telefone, c.rua, c.numCasa, c.bairro, c.cidade, c.estado, c.pontoReferencia " +
-                     "FROM cliente c " +
-                     "WHERE c.nome = ?";
-    
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, nome);  
-    
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Cliente cliente = new Cliente();
-                    cliente.setId(rs.getInt("id"));
-                    cliente.setNome(rs.getString("nome"));
-                    cliente.setCpf(rs.getString("cpf"));
-                    cliente.setTelefone(rs.getString("telefone"));
-                    cliente.setRua(rs.getString("rua"));
-                    cliente.setNumCasa(rs.getString("numCasa"));
-                    cliente.setBairro(rs.getString("bairro"));
-                    cliente.setCidade(rs.getString("cidade"));
-                    cliente.setEstado(rs.getString("estado"));
-                    cliente.setPontoReferencia(rs.getString("pontoReferencia"));
-    
-                    return cliente;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Erro ao buscar cliente por nome: " + e.getMessage());
-            throw e;
-        }
-    
-        return null;  
-    }
-
     public static Cliente clientePorCpf(Connection conn, String cpf) throws SQLException {
         String sql = "SELECT c.id, c.nome, c.cpf, c.telefone, c.rua, c.numCasa, c.bairro, c.cidade, c.estado, c.pontoReferencia " +
                      "FROM cliente c " +
@@ -168,36 +135,6 @@ public class ClienteDAO {
         return null;  
     }
     
-    public static ArrayList<Cliente> listarClientes(Connection conn) throws SQLException {
-        String sql = "SELECT c.id, c.nome, c.cpf, c.telefone, c.rua, c.numCasa, c.bairro, c.cidade, c.estado, c.pontoReferencia " +
-             "FROM cliente c " +
-             "ORDER BY c.nome ASC";
-
-        ArrayList<Cliente> clientes = new ArrayList<>();
-
-        try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-                Cliente cliente = new Cliente();
-                cliente.setId(rs.getInt("id"));
-                cliente.setNome(rs.getString("nome"));
-                cliente.setCpf(rs.getString("cpf"));
-                cliente.setTelefone(rs.getString("telefone"));
-                cliente.setRua(rs.getString("rua"));
-                cliente.setNumCasa(rs.getString("numCasa"));
-                cliente.setBairro(rs.getString("bairro"));
-                cliente.setCidade(rs.getString("cidade"));
-                cliente.setEstado(rs.getString("estado"));
-                cliente.setPontoReferencia(rs.getString("pontoReferencia"));
-
-                clientes.add(cliente);
-            }
-        } catch (SQLException e) {
-            System.err.println("Erro ao listar clientes: " + e.getMessage());
-            throw e;
-        }
-        return clientes;
-    }
-
     public static ArrayList<Cliente> listarClientesSemCpf(Connection conn) throws SQLException {
         String sql = "SELECT c.id, c.nome, c.telefone, c.rua, c.numCasa, c.bairro, c.cidade, c.estado, c.pontoReferencia " +
                      "FROM cliente c " +

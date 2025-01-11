@@ -46,30 +46,12 @@ public class ClienteController {
         }
     }
 
-    public static Cliente buscarClientePorNome(Connection conn, String nome) throws SQLException {
-        try {
-            return ClienteDAO.clientePorNome(conn, nome);
-        } catch (SQLException e) {
-            System.err.println("Erro ao buscar cliente por nome: " + e.getMessage());
-            return null;
-        }
-    }
-
     public static Cliente buscarClientePorCpf(Connection conn, String cpf) throws SQLException {
         try {
             return ClienteDAO.clientePorCpf(conn, cpf);
         } catch (SQLException e) {
             System.err.println("Erro ao buscar cliente por cpf: " + e.getMessage());
             return null;
-        }
-    }
-
-
-    public static ArrayList<Cliente> listarComCpf(Connection conn) throws SQLException {
-        try {
-            return ClienteDAO.listarClientes(conn);
-        } catch (SQLException e) {
-            throw new SQLException("Erro ao listar clientes.", e);
         }
     }
 
