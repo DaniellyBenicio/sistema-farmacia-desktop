@@ -236,7 +236,7 @@ public class ListaDeFuncionarios extends JPanel {
 
         tabela.getColumnModel().getColumn(0).setPreferredWidth(10);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(270);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(50);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(70);
         tabela.getColumnModel().getColumn(3).setPreferredWidth(210);
         tabela.getColumnModel().getColumn(4).setPreferredWidth(90);
         tabela.getColumnModel().getColumn(5).setPreferredWidth(50);
@@ -480,7 +480,6 @@ public class ListaDeFuncionarios extends JPanel {
                 deleteButton.setEnabled(true);
             }
 
-            // Define ação do botão de excluir com base no cargo
             if (funcionario.getCargo() != null && "Gerente".equalsIgnoreCase(funcionario.getCargo().getNome())) {
                 if (funcionario.isStatus()) {
                     deleteButton.setText("DESATIVAR");

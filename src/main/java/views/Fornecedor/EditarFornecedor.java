@@ -31,7 +31,6 @@ import dao.Fornecedor.FornecedorDAO;
 import dao.Representante.RepresentanteDAO;
 import main.ConexaoBD;
 import models.Fornecedor.Fornecedor;
-import models.Funcionario.Funcionario;
 import models.Represetante.Representante;
 import views.Representante.CadastroRepresentante;
 import views.Representante.EditarRepresentante;

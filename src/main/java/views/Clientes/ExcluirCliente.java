@@ -30,7 +30,7 @@ public class ExcluirCliente {
             return;
         }
 
-        String mensagemConfirmacao = "Você realmente deseja excluir o fornecedor \"" + cliente.getNome() + "\"?";
+        String mensagemConfirmacao = "Você realmente deseja excluir o cliente \"" + cliente.getNome() + "\"?";
 
         Object[] opcoes = { "Sim", "Não" };
 

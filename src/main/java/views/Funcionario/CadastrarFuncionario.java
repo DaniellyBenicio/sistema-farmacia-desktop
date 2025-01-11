@@ -210,7 +210,7 @@ public class CadastrarFuncionario extends JPanel {
                 errorMessage.append("- Cargo deve ser preenchido.\n");
                 hasError = true;
             } else {
-                if (!cargoNome.matches("^[\\p{L}\\s]*$")) { 
+                if (!cargoNome.matches("^[\\p{L}\\s]*$")) {
                     errorMessage.append("- Cargo inválido (apenas letras e espaços são permitidos).\n");
                     hasError = true;
                 }
@@ -237,7 +237,7 @@ public class CadastrarFuncionario extends JPanel {
                 cargoField.setText("");
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(null, "Erro ao cadastrar funcionário. " + ex.getMessage(), "Erro",
-                JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 

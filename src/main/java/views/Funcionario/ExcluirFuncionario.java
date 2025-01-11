@@ -72,7 +72,6 @@ public class ExcluirFuncionario {
                             JOptionPane.INFORMATION_MESSAGE);
                 }
 
-                // Executa a operação de sucesso, se fornecida
                 if (onSuccess != null) {
                     onSuccess.run();
                 }

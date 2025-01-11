@@ -366,7 +366,8 @@ public class ListaDeFornecedores extends JPanel {
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable tabela, Object valor, boolean isSelected, boolean hasFocus,
+        public Component getTableCellRendererComponent(JTable tabela, Object valor, boolean isSelected,
+                boolean hasFocus,
                 int linha, int coluna) {
             setBackground(Color.WHITE);
 
@@ -461,7 +462,8 @@ public class ListaDeFornecedores extends JPanel {
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable tabela, Object valor, boolean isSelected, int linha, int coluna) {
+        public Component getTableCellEditorComponent(JTable tabela, Object valor, boolean isSelected, int linha,
+                int coluna) {
             JPanel painel = new JPanel();
             painel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
             painel.setBackground(Color.WHITE);
