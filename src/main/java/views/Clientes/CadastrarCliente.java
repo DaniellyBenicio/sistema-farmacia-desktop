@@ -45,7 +45,7 @@ public class CadastrarCliente extends JPanel {
     private JTextField numeroField;
     private JTextField bairroField;
     private JTextField cidadeField;
-    private JComboBox<String> estadoComboBox; 
+    private JComboBox<String> estadoComboBox;
     private JTextField pontodereferenciaField;
 
     public CadastrarCliente() {
@@ -278,6 +278,11 @@ public class CadastrarCliente extends JPanel {
 
             if (cpf.isEmpty()) {
                 errorMessage.append("- CPF deve ser preenchido.\n");
+                hasError = true;
+            }
+
+            if (cpf.isEmpty() || cpf.replaceAll("[^0-9]", "").length() != 11) {
+                errorMessage.append("- CPF deve ser preenchido e deve conter exatamente 11 dígitos numéricos.\n");
                 hasError = true;
             }
 
