@@ -309,7 +309,7 @@ public class CadastrarCliente extends JPanel {
                         return;
                     }
 
-                Cliente cliente = new Cliente(nome, cpf, telefone, rua, numero, bairro, cidade, estado, funcionario);
+                Cliente cliente = new Cliente(nome, cpf, telefone, rua, numero, bairro, cidade, estado, pontodereferencia, funcionario);
 
                 ClienteDAO.cadastrarCliente(conn, cliente);
 

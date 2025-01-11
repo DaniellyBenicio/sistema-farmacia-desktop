@@ -7,6 +7,7 @@ public class Cliente {
 	private String nome;
     private String cpf;
     private String telefone;
+    private String rua;
     private String numCasa;
     private String bairro;
     private String cidade;
@@ -14,10 +15,11 @@ public class Cliente {
     private String pontoReferencia;
     private Funcionario funcionario; 
  
-    public Cliente(String nome, String cpf, String telefone, String numCasa, String bairro, String cidade, String estado, String pontoReferencia, Funcionario funcionario) {
+    public Cliente(String nome, String cpf, String telefone, String rua, String numCasa, String bairro, String cidade, String estado, String pontoReferencia, Funcionario funcionario) {
         this.nome = nome;  
         this.cpf = cpf;
         this.telefone = telefone;
+        this.rua = rua;
         this.numCasa = numCasa;
         this.bairro = bairro;
         this.cidade = cidade;
@@ -76,6 +78,17 @@ public class Cliente {
             throw new IllegalArgumentException("Telefone inválido. Deve ter 11 números.");
         }
         this.telefone = telefone;
+    }
+
+    public String getRua() {
+        return rua;
+    }
+
+    public void setRua(String rua) {
+        if (rua == null || rua.isEmpty()) {
+            throw new IllegalArgumentException("A rua não pode ser nula ou vazia.");
+        }
+        this.rua = rua;
     }
 
     public String getNumCasa() {

@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+
 import models.Cliente.Cliente;
 
 public class ClienteDAO {
@@ -11,18 +13,19 @@ public class ClienteDAO {
    
         if (existeClientePorCpf(conn, c.getCpf())) {
         throw new IllegalArgumentException("Cliente com o CPF " + c.getCpf() + " já cadastrado.");
-    }
-        String sql = "INSERT INTO cliente(nome, cpf, telefone, numCasa, bairro, cidade, estado, pontoReferencia, funcionario_id) VALUES (?,?,?,?,?,?,?,?,?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    } 
+        String sql = "INSERT INTO cliente(nome, cpf, telefone, rua, numCasa, bairro, cidade, estado, pontoReferencia, funcionario_id) VALUES (?,?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, c.getNome());
             pstmt.setString(2, c.getCpf().replaceAll("[^0-9]", ""));
             pstmt.setString(3, c.getTelefone().replaceAll("[^0-9]", ""));
-            pstmt.setString(4, c.getNumCasa());
-            pstmt.setString(5, c.getBairro());
-            pstmt.setString(6, c.getCidade());
-            pstmt.setString(7, c.getEstado());
-            pstmt.setString(8, c.getPontoReferencia());
-            pstmt.setInt(9, c.getFuncionario().getId());            
+            pstmt.setString(4, c.getRua());
+            pstmt.setString(5, c.getNumCasa());
+            pstmt.setString(6, c.getBairro());
+            pstmt.setString(7, c.getCidade());
+            pstmt.setString(8, c.getEstado());
+            pstmt.setString(9, c.getPontoReferencia());
+            pstmt.setInt(10, c.getFuncionario().getId());            
             pstmt.executeUpdate();
 
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
