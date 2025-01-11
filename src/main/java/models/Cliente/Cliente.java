@@ -1,6 +1,7 @@
 package models.Cliente;
 
 import models.Funcionario.Funcionario;
+import utils.Criptografia;
 
 public class Cliente {
     private int id;
@@ -17,7 +18,7 @@ public class Cliente {
  
     public Cliente(String nome, String cpf, String telefone, String rua, String numCasa, String bairro, String cidade, String estado, String pontoReferencia, Funcionario funcionario) {
         this.nome = nome;  
-        this.cpf = cpf;
+        this.cpf = Criptografia.criptografar(cpf);        
         this.telefone = telefone;
         this.rua = rua;
         this.numCasa = numCasa;
@@ -53,7 +54,7 @@ public class Cliente {
     } 
 
     public String getCpf() {
-        return cpf;
+        return Criptografia.descriptografar(cpf);  
     }
 
     public void setCpf(String cpf) {
@@ -63,8 +64,7 @@ public class Cliente {
         if (!cpf.matches("\\d{11}")) { 
             throw new IllegalArgumentException("CPF inválido. Deve ter 11 números.");
         }
-        this.cpf = cpf;
-    }
+        this.cpf = Criptografia.criptografar(cpf);    }
 
     public String getTelefone() {
         return telefone;

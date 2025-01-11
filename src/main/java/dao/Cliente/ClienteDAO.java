@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-
+import utils.Criptografia;
 import models.Cliente.Cliente;
 
 public class ClienteDAO {
@@ -18,7 +18,7 @@ public class ClienteDAO {
         String sql = "INSERT INTO cliente(nome, cpf, telefone, rua, numCasa, bairro, cidade, estado, pontoReferencia, funcionario_id) VALUES (?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, c.getNome());
-            pstmt.setString(2, c.getCpf().replaceAll("[^0-9]", ""));
+            pstmt.setString(2, Criptografia.criptografar(c.getCpf().replaceAll("[^0-9]", "")));
             pstmt.setString(3, c.getTelefone().replaceAll("[^0-9]", ""));
             pstmt.setString(4, c.getRua());
             pstmt.setString(5, c.getNumCasa());
@@ -47,7 +47,7 @@ public class ClienteDAO {
             throw new IllegalArgumentException("ID do cliente inválido para atualização.");
         }
 
-        String sql = "UPDATE cliente SET nome = ?, cnpj = ?, email = ?, telefone = ? WHERE id = ?";
+        String sql = "UPDATE cliente SET nome = ?, cpf = ?, email = ?, telefone = ? WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, c.getNome());
             pstmt.setString(2, c.getCpf().replaceAll("[^0-9]", ""));
