@@ -61,9 +61,6 @@ public class Cliente {
         if (cpf == null || cpf.trim().isEmpty()) {
             throw new IllegalArgumentException("CPF não pode ser vazio.");
         }
-        if (!cpf.matches("\\d{11}")) { 
-            throw new IllegalArgumentException("CPF inválido. Deve ter 11 números.");
-        }
         this.cpf = Criptografia.criptografar(cpf);    }
 
     public String getTelefone() {
