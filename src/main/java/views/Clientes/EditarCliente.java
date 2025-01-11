@@ -12,18 +12,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -46,6 +43,7 @@ public class EditarCliente extends JPanel {
     private JComboBox<String> estadoComboBox;
     private JTextField pontodereferenciaField;
     private int clienteId;
+    private String cpfOriginal; // Para armazenar o CPF original
 
     public EditarCliente(int clienteId) {
         this.clienteId = clienteId;
@@ -74,7 +72,7 @@ public class EditarCliente extends JPanel {
         return titulo;
     }
 
-     private JPanel criarCamposPanel() {
+    private JPanel criarCamposPanel() {
         JPanel camposPanel = new JPanel();
         camposPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -104,7 +102,7 @@ public class EditarCliente extends JPanel {
         camposPanel.add(cpfLabel, gbc);
 
         try {
-            MaskFormatter cpfFormatter = new MaskFormatter("###.###.###-##");
+            MaskFormatter cpfFormatter = new MaskFormatter("***.###.###-**");
             cpfField = new JFormattedTextField(cpfFormatter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -199,21 +197,6 @@ public class EditarCliente extends JPanel {
 
         estadoComboBox = new JComboBox<>(estadosArray);
         estadoComboBox.setPreferredSize(new Dimension(200, 40));
-        estadoComboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
-                    boolean cellHasFocus) {
-                Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (isSelected) {
-                    component.setBackground(new Color(24, 39, 55));
-                    component.setForeground(Color.WHITE);
-                } else {
-                    component.setBackground(Color.WHITE);
-                    component.setForeground(Color.BLACK);
-                }
-                return component;
-            }
-        });
         estadoComboBox.setFont(fieldFont);
         gbc.gridx = 1;
         gbc.gridy = 5;
@@ -267,13 +250,15 @@ public class EditarCliente extends JPanel {
             Cliente cliente = ClienteDAO.clientePorID(conn, clienteId);
             if (cliente != null) {
                 nomeField.setText(cliente.getNome());
-                cpfField.setText(cliente.getCpf());
+                cpfOriginal = cliente.getCpf();
+                cpfField.setText(formatarCpf(cpfOriginal)); // Formata o CPF para exibição
                 telefoneField.setText(cliente.getTelefone());
                 ruaField.setText(cliente.getRua());
                 numeroField.setText(cliente.getNumCasa());
                 bairroField.setText(cliente.getBairro());
                 cidadeField.setText(cliente.getCidade());
-                estadoComboBox.setToolTipText(cliente.getEstado());
+                estadoComboBox.setSelectedItem(cliente.getEstado());
+                pontodereferenciaField.setText(cliente.getPontoReferencia());
             } else {
                 JOptionPane.showMessageDialog(null, "Cliente não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
             }
@@ -283,11 +268,23 @@ public class EditarCliente extends JPanel {
         }
     }
 
+    private String formatarCpf(String cpf) {
+        if (cpf != null && cpf.length() == 11) {
+            return "***." + cpf.substring(3, 6) + "." + cpf.substring(6, 9) + "-" + "**";
+        }
+        return cpf; // Retorna como está se não for válido
+    }
+
     private void salvarCliente(int idCliente) {
         String nome = nomeField.getText().trim();
-        String cpf = cpfField.getText().trim();
-     //   String email = emailField.getText().trim();
+        String cpf = cpfField.getText().replaceAll("[^0-9]", ""); // Limpa a máscara do CPF
         String telefone = telefoneField.getText().trim();
+        String rua = ruaField.getText().trim();
+        String numero = numeroField.getText().trim();
+        String bairro = bairroField.getText().trim();
+        String cidade = cidadeField.getText().trim();
+        String estado = (String) estadoComboBox.getSelectedItem();
+        String pontodereferencia = pontodereferenciaField.getText().trim();
 
         boolean hasError = false;
         StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
@@ -297,16 +294,39 @@ public class EditarCliente extends JPanel {
             hasError = true;
         }
 
-        String cpfLimpo = cpf.replaceAll("[^0-9]", "");
-        if (cpfLimpo.isEmpty() || cpfLimpo.length() != 11) {
-            errorMessage.append("- CPF deve ser preenchido e conter exatamente 11 dígitos numéricos.\n");
+        if (cpf.isEmpty()) {
+            errorMessage.append("- CPF deve ser preenchido.\n");
             hasError = true;
         }
 
-       
         String telefoneLimpo = telefone.replaceAll("[^0-9]", "");
         if (telefoneLimpo.isEmpty() || telefoneLimpo.length() != 11) {
             errorMessage.append("- Telefone deve conter 11 dígitos numéricos.\n");
+            hasError = true;
+        }
+
+        if (rua.isEmpty()) {
+            errorMessage.append("- Rua deve ser preenchida.\n");
+            hasError = true;
+        }
+
+        if (numero.isEmpty()) {
+            errorMessage.append("- Número deve ser preenchido.\n");
+            hasError = true;
+        }
+
+        if (bairro.isEmpty()) {
+            errorMessage.append("- Bairro deve ser preenchido.\n");
+            hasError = true;
+        }
+
+        if (cidade.isEmpty()) {
+            errorMessage.append("- Cidade deve ser preenchida.\n");
+            hasError = true;
+        }
+
+        if (estado == null || estado.isEmpty()) {
+            errorMessage.append("- Estado deve ser preenchido e válido.\n");
             hasError = true;
         }
 
@@ -322,10 +342,26 @@ public class EditarCliente extends JPanel {
                 return;
             }
 
+            // Formata o CPF original para comparação
+            String cpfFormatadoOriginal = formatarCpf(cpfOriginal);
+            String cpfOriginalLimpo = cpfFormatadoOriginal.replaceAll("[^0-9]", "");
+            String cpfFormatadoAtual = formatarCpf(cpf); // Formata o CPF atual para comparação
+
+            // Verifica se o CPF foi alterado ou se o CPF formatado é diferente do que está
+            // no campo
+            // Verifique se os CPFs são diferentes
+            if (!cpf.equals(cpfOriginalLimpo) && !cpfFormatadoAtual.equals(cpfFormatadoOriginal)) {
+                clienteExistente.setCpf(cpf); // Salva o CPF limpo
+            }
+
             clienteExistente.setNome(nome);
-            clienteExistente.setCpf(cpfLimpo);
-            
             clienteExistente.setTelefone(telefoneLimpo);
+            clienteExistente.setRua(rua);
+            clienteExistente.setNumCasa(numero);
+            clienteExistente.setBairro(bairro);
+            clienteExistente.setCidade(cidade);
+            clienteExistente.setEstado(estado);
+            clienteExistente.setPontoReferencia(pontodereferencia);
 
             ClienteDAO.atualizarCliente(conn, clienteExistente);
             JOptionPane.showMessageDialog(null, "Cliente atualizado com sucesso!", "Sucesso",
@@ -335,7 +371,6 @@ public class EditarCliente extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-
 
     private void estilizarCamposFormulario(JComponent campo, Font font) {
         campo.setBackground(Color.WHITE);

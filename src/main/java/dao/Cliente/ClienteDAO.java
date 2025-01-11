@@ -47,7 +47,7 @@ public class ClienteDAO {
             throw new IllegalArgumentException("ID do cliente inválido para atualização.");
         }
 
-        String sql = "UPDATE cliente SET nome = ?, cpf = ?, email = ?, telefone = ? WHERE id = ?";
+        String sql = "UPDATE cliente SET nome = ?, cpf = ?, telefone = ?, rua = ?, numCasa = ?, bairro = ?, cidade = ?, estado = ?, pontoReferencia = ? WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, c.getNome());
             pstmt.setString(2, Criptografia.criptografar(c.getCpf().replaceAll("[^0-9]", "")));
@@ -79,7 +79,10 @@ public class ClienteDAO {
                     Cliente cliente = new Cliente();
                     cliente.setId(rs.getInt("id"));
                     cliente.setNome(rs.getString("nome"));
-                    cliente.setCpf(rs.getString("cpf"));
+                    String cpfCriptografado = rs.getString("cpf");
+                    String cpfDescriptografado = Criptografia.descriptografar(cpfCriptografado);
+                
+                    cliente.setCpf(cpfDescriptografado);
                     cliente.setTelefone(rs.getString("telefone"));
                     cliente.setRua(rs.getString("rua"));
                     cliente.setNumCasa(rs.getString("numCasa"));

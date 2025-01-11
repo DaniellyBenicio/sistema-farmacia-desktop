@@ -55,7 +55,7 @@ public class ListaDeClientes extends JPanel {
         clientesIds = new ArrayList<>();
 
         try {
-            clientes = ClienteDAO.listarClientes(conn);
+            clientes = ClienteDAO.listarClientesSemCpf(conn);
             atualizarClientesFiltrados(clientes);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -400,8 +400,8 @@ public class ListaDeClientes extends JPanel {
                     localizacao.y = 150;
                     dialogoEditar.setLocation(localizacao);
 
-                    // EditarCliente painelEditar = new EditarCliente(clienteId);
-                    // dialogoEditar.add(painelEditar);
+                    EditarCliente painelEditar = new EditarCliente(clienteId);
+                    dialogoEditar.add(painelEditar);
 
                     dialogoEditar.addWindowListener(new java.awt.event.WindowAdapter() {
                         @Override
