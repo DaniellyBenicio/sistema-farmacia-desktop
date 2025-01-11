@@ -50,7 +50,7 @@ public class ClienteDAO {
         String sql = "UPDATE cliente SET nome = ?, cpf = ?, email = ?, telefone = ? WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, c.getNome());
-            pstmt.setString(2, c.getCpf().replaceAll("[^0-9]", ""));
+            pstmt.setString(2, Criptografia.criptografar(c.getCpf().replaceAll("[^0-9]", "")));
             pstmt.setString(3, c.getTelefone().replaceAll("[^0-9]", "")); 
             pstmt.setString(4, c.getRua());
             pstmt.setString(5, c.getNumCasa());
