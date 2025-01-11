@@ -10,6 +10,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -244,8 +247,11 @@ public class CadastrarCliente extends JPanel {
             if (nome.isEmpty()) {
                 errorMessage.append("- Nome deve ser preenchido.\n");
                 hasError = true;
+            } else if (!nome.matches("[A-Za-zÀ-ÿ\\s]+")) {  
+                errorMessage.append("- Nome não pode conter números ou caracteres especiais.\n");
+                hasError = true;
             }
-
+            
             if (cpf.isEmpty()) {
                 errorMessage.append("- CPF deve ser preenchido.\n");
                 hasError = true;
@@ -262,10 +268,13 @@ public class CadastrarCliente extends JPanel {
                 }
             }
 
-            if (rua.isEmpty()) {
+            if (rua == null || rua.trim().isEmpty()) {
                 errorMessage.append("- Rua deve ser preenchida.\n");
                 hasError = true;
-            }
+            } else if (rua.matches("[0-9]+")) { 
+                errorMessage.append("- Rua inválida (não pode conter apenas números).\n");
+                hasError = true;
+            }         
 
             if (numero.isEmpty()) {
                 errorMessage.append("- Número deve ser preenchido.\n");
@@ -275,15 +284,25 @@ public class CadastrarCliente extends JPanel {
             if (bairro.isEmpty()) {
                 errorMessage.append("- Bairro deve ser preenchido.\n");
                 hasError = true;
+            } else if (bairro.matches(".*\\d.*")) { 
+                errorMessage.append("- Bairro inválido (não pode conter números).\n");
+                hasError = true;
             }
 
             if (cidade.isEmpty()) {
                 errorMessage.append("- Cidade deve ser preenchida.\n");
                 hasError = true;
+            } else if (cidade.matches(".*\\d.*")) { 
+                errorMessage.append("- Cidade inválida (não pode conter números).\n");
+                hasError = true;
             }
 
-            if (estado.isEmpty()) {
-                errorMessage.append("- Estado deve ser preenchido.\n");
+            List<String> estadosValidos = Arrays.asList("AC", "AL", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", 
+                                            "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", 
+                                            "RO", "RR", "SC", "SP", "SE", "TO");
+
+            if (estado == null || estado.isEmpty() || !estadosValidos.contains(estado)) {
+                errorMessage.append("- Estado deve ser preenchido e válido. Escolha uma sigla de estado válida.\n");
                 hasError = true;
             }
 
@@ -313,7 +332,7 @@ public class CadastrarCliente extends JPanel {
 
                 ClienteDAO.cadastrarCliente(conn, cliente);
 
-                JOptionPane.showMessageDialog(null, "Fornecedor cadastrado com sucesso!", "Sucesso",
+                JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!", "Sucesso",
                         JOptionPane.INFORMATION_MESSAGE);
                 nomeField.setText("");
                 cpfField.setText("");
