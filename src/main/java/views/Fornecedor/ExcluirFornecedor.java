@@ -42,7 +42,7 @@ public class ExcluirFornecedor {
                 opcoes,
                 opcoes[0]);
 
-        if (resposta == 0) { // Se "Sim" foi selecionado
+        if (resposta == 0) {
             try (Connection conn = ConexaoBD.getConnection()) {
                 FornecedorDAO.deletarFornecedor(conn, fornecedor);
                 JOptionPane.showMessageDialog(null, "Fornecedor excluído com sucesso!", "Sucesso",

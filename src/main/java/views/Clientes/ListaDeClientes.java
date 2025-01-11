@@ -90,7 +90,7 @@ public class ListaDeClientes extends JPanel {
             Object[] dadosCliente = new Object[7];
             dadosCliente[0] = cliente.getNome();
             dadosCliente[1] = formatarTelefone(cliente.getTelefone());
-            dadosCliente[2] = cliente.getRua() + "" + cliente.getNumCasa();
+            dadosCliente[2] = cliente.getRua() + " Nº " + cliente.getNumCasa();
             dadosCliente[3] = cliente.getBairro();
             dadosCliente[4] = cliente.getCidade();
             dadosCliente[5] = cliente.getEstado();
@@ -280,7 +280,7 @@ public class ListaDeClientes extends JPanel {
                     .map(cliente -> new Object[] {
                             cliente.getNome(),
                             formatarTelefone(cliente.getTelefone()),
-                            cliente.getRua() + cliente.getNumCasa(),
+                            cliente.getRua() + " Nº " + cliente.getNumCasa(),
                             cliente.getBairro(),
                             cliente.getCidade(),
                             cliente.getEstado(),
@@ -292,7 +292,7 @@ public class ListaDeClientes extends JPanel {
                     .map(cliente -> new Object[] {
                             cliente.getNome(),
                             formatarTelefone(cliente.getTelefone()),
-                            cliente.getRua() + cliente.getNumCasa(),
+                            cliente.getRua() + " Nº " + cliente.getNumCasa(),
                             cliente.getBairro(),
                             cliente.getCidade(),
                             cliente.getEstado(),
@@ -422,7 +422,7 @@ public class ListaDeClientes extends JPanel {
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
                     int clienteId = clientesIds.get(indiceLinha);
-                    // ExcluirCliente.excluirCliente(clienteId);
+                    ExcluirCliente.excluirCliente(clienteId);
                     atualizarTabela();
                 }
             });
