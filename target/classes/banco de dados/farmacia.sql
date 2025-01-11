@@ -70,7 +70,7 @@ create table fornecedorMedicamento(
 create table cliente(
 	id int primary key auto_increment not null,
     nome varchar(50) not null,
-    cpf char(11) not null unique,
+    cpf VARCHAR(255) not null unique,
     telefone char(11) not null unique,
     rua varchar(100) not null,
     numCasa varchar(5),
