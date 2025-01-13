@@ -89,7 +89,7 @@ public class EditarCliente extends JPanel {
         camposPanel.add(nomeLabel, gbc);
 
         nomeField = new JTextField();
-        nomeField.setPreferredSize(new Dimension(480, 40));
+        nomeField.setPreferredSize(new Dimension(400, 40));
         estilizarCamposFormulario(nomeField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -125,7 +125,7 @@ public class EditarCliente extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        telefoneField.setPreferredSize(new Dimension(200, 40));
+        telefoneField.setPreferredSize(new Dimension(250, 40));
         estilizarCamposFormulario(telefoneField, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 1;
@@ -138,7 +138,7 @@ public class EditarCliente extends JPanel {
         camposPanel.add(ruaLabel, gbc);
 
         ruaField = new JTextField();
-        ruaField.setPreferredSize(new Dimension(480, 40));
+        ruaField.setPreferredSize(new Dimension(400, 40));
         estilizarCamposFormulario(ruaField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 3;
@@ -164,7 +164,7 @@ public class EditarCliente extends JPanel {
         camposPanel.add(bairroLabel, gbc);
 
         bairroField = new JTextField();
-        bairroField.setPreferredSize(new Dimension(200, 40));
+        bairroField.setPreferredSize(new Dimension(250, 40));
         estilizarCamposFormulario(bairroField, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 3;
@@ -177,7 +177,7 @@ public class EditarCliente extends JPanel {
         camposPanel.add(cidadeLabel, gbc);
 
         cidadeField = new JTextField();
-        cidadeField.setPreferredSize(new Dimension(480, 40));
+        cidadeField.setPreferredSize(new Dimension(400, 40));
         estilizarCamposFormulario(cidadeField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 5;
@@ -209,7 +209,7 @@ public class EditarCliente extends JPanel {
         camposPanel.add(pontoReferenciaLabel, gbc);
 
         pontodereferenciaField = new JTextField();
-        pontodereferenciaField.setPreferredSize(new Dimension(200, 40));
+        pontodereferenciaField.setPreferredSize(new Dimension(250, 40));
         estilizarCamposFormulario(pontodereferenciaField, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 5;

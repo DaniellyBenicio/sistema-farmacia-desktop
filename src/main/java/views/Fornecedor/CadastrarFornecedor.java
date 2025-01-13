@@ -73,7 +73,7 @@ public class CadastrarFornecedor extends JPanel {
 
         Font labelFont = new Font("Arial", Font.BOLD, 18);
         Font fieldFont = new Font("Arial", Font.PLAIN, 18);
-        Dimension fieldSize = new Dimension(300, 40);
+        Dimension fieldSize = new Dimension(200, 40);
 
         JLabel nomeLabel = new JLabel("Nome/Razão Social");
         nomeLabel.setFont(labelFont);
@@ -82,7 +82,7 @@ public class CadastrarFornecedor extends JPanel {
         camposPanel.add(nomeLabel, gbc);
 
         nomeField = new JTextField();
-        nomeField.setPreferredSize(new Dimension(600, 40));
+        nomeField.setPreferredSize(new Dimension(500, 40));
         estilizarCamposFormulario(nomeField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -120,7 +120,7 @@ public class CadastrarFornecedor extends JPanel {
         camposPanel.add(emailLabel, gbc);
 
         emailField = new JTextField();
-        emailField.setPreferredSize(new Dimension(300, 40));
+        emailField.setPreferredSize(new Dimension(500, 40));
         estilizarCamposFormulario(emailField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 4;

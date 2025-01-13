@@ -77,7 +77,7 @@ public class EditarFuncionario extends JPanel {
 
         Font labelFont = new Font("Arial", Font.BOLD, 18);
         Font fieldFont = new Font("Arial", Font.PLAIN, 18);
-        Dimension fieldSize = new Dimension(300, 40);
+        Dimension fieldSize = new Dimension(230, 40);
 
         JLabel nomeLabel = new JLabel("Nome");
         nomeLabel.setFont(labelFont);
@@ -86,7 +86,7 @@ public class EditarFuncionario extends JPanel {
         camposPanel.add(nomeLabel, gbc);
 
         nomeField = new JTextField();
-        nomeField.setPreferredSize(new Dimension(600, 40));
+        nomeField.setPreferredSize(new Dimension(500, 40));
         estilizarCampo(nomeField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -124,7 +124,7 @@ public class EditarFuncionario extends JPanel {
         camposPanel.add(emailLabel, gbc);
 
         emailField = new JTextField();
-        emailField.setPreferredSize(new Dimension(300, 40));
+        emailField.setPreferredSize(new Dimension(500, 40));
         estilizarCampo(emailField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 4;

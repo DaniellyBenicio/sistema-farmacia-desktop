@@ -29,7 +29,7 @@ public class EditarRepresentante extends JDialog {
 
     public EditarRepresentante(java.awt.Frame parent, Representante representante, Connection conn) {
         super(parent, "Editar Representante", true);
-        setSize(550, 300);
+        setSize(580, 300);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
@@ -69,7 +69,7 @@ public class EditarRepresentante extends JDialog {
 
         for (JTextField field : new JTextField[] { fornecedorField, representanteField, numeroField }) {
             field.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-            field.setPreferredSize(new Dimension(230, 30));
+            field.setPreferredSize(new Dimension(300, 30));
         }
 
         gbc.gridx = 0;
