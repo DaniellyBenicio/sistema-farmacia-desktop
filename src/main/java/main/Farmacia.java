@@ -11,7 +11,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import views.BarrasSuperiores.PainelSuperior;
-import views.Clientes.ListaDeClientes;
+//import views.Clientes.ListaDeClientes;
 import views.Fornecedor.CadastrarFornecedor;
 import views.Fornecedor.ListaDeFornecedores;
 import views.Funcionario.CadastrarFuncionario;
@@ -46,7 +46,7 @@ public class Farmacia extends JFrame {
         painelCentral.add(new ListaDeFornecedores(conexão), "ListaDeFornecedores");
         painelCentral.add(new CadastrarFuncionario(), "CadastrarFuncionário");
         painelCentral.add(new ListaDeFuncionarios(conexão), "ListaDeFuncionarios");
-        painelCentral.add(new ListaDeClientes(conexão), "ListaDeClientes");
+       //painelCentral.add(new ListaDeClientes(conexão), "ListaDeClientes");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
         add(painelSuperior, BorderLayout.NORTH);
