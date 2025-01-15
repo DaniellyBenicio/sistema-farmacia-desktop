@@ -198,12 +198,11 @@ public class FuncionarioDAO {
     }
 
     public static boolean funcionarioExiste(Connection conn, String nome, String telefone, String email) throws SQLException {
-        String sqlVerificarDuplicidade = "SELECT COUNT(*) FROM funcionario WHERE nome = ? OR telefone = ? OR email = ? ";
+        String sqlVerificarDuplicidade = "SELECT COUNT(*) FROM funcionario WHERE telefone = ? OR email = ? ";
     
         try (PreparedStatement pstmt = conn.prepareStatement(sqlVerificarDuplicidade)) {
-            pstmt.setString(1, nome);
-            pstmt.setString(2, telefone.replaceAll("[^0-9]", ""));
-            pstmt.setString(3, email);
+            pstmt.setString(1, telefone.replaceAll("[^0-9]", ""));
+            pstmt.setString(2, email);
     
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next() && rs.getInt(1) > 0) {
