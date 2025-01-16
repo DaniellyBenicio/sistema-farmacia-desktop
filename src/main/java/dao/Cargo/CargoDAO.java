@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import models.Cargo.Cargo;
 
@@ -54,5 +55,24 @@ public class CargoDAO {
             throw e;
         }
     }
-}
 
+    public static ArrayList<Cargo> listarTodosCargos(Connection conn) throws SQLException {
+        String sql = "SELECT nome FROM cargo ORDER BY nome ASC";
+
+        ArrayList<Cargo> cargos = new ArrayList<>();
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Cargo cargo = new Cargo();
+                cargo.setNome(rs.getString("nome")); 
+
+                cargos.add(cargo);
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar cargos: " + e.getMessage());
+            throw e;
+        }
+        return cargos; 
+    }
+
+}
