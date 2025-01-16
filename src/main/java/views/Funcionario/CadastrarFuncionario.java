@@ -11,12 +11,15 @@ import java.awt.Insets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -38,6 +41,7 @@ public class CadastrarFuncionario extends JPanel {
     private JTextField emailField;
     private JFormattedTextField telefoneField;
     private JTextField cargoField;
+    private JComboBox<String> cargoComboBox;
 
     public CadastrarFuncionario() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -123,12 +127,37 @@ public class CadastrarFuncionario extends JPanel {
         gbc.gridy = 3;
         camposPanel.add(cargoLabel, gbc);
 
+        List<String> cargos = new ArrayList<>();
+        cargos.add("Atendente");
+        cargos.add("Caixa");
+        cargos.add("Farmacêutico ");
+        cargos.add("Gerente");
+        cargos.add("Outros");
+
+        cargoComboBox = new JComboBox<>(cargos.toArray(new String[0]));
+        cargoComboBox.setPreferredSize(fieldSize);
+        cargoComboBox.setFont(fieldFont);
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        camposPanel.add(cargoComboBox, gbc);
+
         cargoField = new JTextField();
         cargoField.setPreferredSize(fieldSize);
         estilizarCampo(cargoField, fieldFont);
+        cargoField.setVisible(false);
         gbc.gridx = 1;
         gbc.gridy = 4;
         camposPanel.add(cargoField, gbc);
+
+        cargoComboBox.addActionListener(e -> {
+            if ("Outros".equals(cargoComboBox.getSelectedItem())) {
+                cargoComboBox.setVisible(false);
+                cargoField.setVisible(true);
+            } else {
+                cargoComboBox.setVisible(true);
+                cargoField.setVisible(false);
+            }
+        });
 
         return camposPanel;
     }
@@ -170,7 +199,11 @@ public class CadastrarFuncionario extends JPanel {
             String nome = nomeField.getText().trim();
             String telefone = telefoneField.getText().trim();
             String email = emailField.getText().trim();
-            String cargoNome = cargoField.getText().trim();
+            String cargoNome = (String) cargoComboBox.getSelectedItem();
+
+            if ("Outros".equals(cargoNome)) {
+                cargoNome = cargoField.getText().trim();
+            }
 
             StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
             boolean hasError = false;
