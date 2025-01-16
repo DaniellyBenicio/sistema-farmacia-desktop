@@ -148,18 +148,18 @@ public class CadastrarFuncionario extends JPanel {
         camposPanel.add(cargoField, gbc);
 
         cargoComboBox.addActionListener(e -> {
-            if ("Outros...".equals(cargoComboBox.getSelectedItem())) {
+            if ("Outros".equals(cargoComboBox.getSelectedItem())) {
                 cargoComboBox.setVisible(false);
                 cargoField.setVisible(true);
             } else {
-                cargoField.setText(""); 
+                cargoField.setText("");
                 cargoComboBox.setVisible(true);
                 cargoField.setVisible(false);
             }
         });
 
         return camposPanel;
-    }    
+    }
 
     private List<String> obterCargos() {
         List<String> cargos = new ArrayList<>();
@@ -186,7 +186,7 @@ public class CadastrarFuncionario extends JPanel {
             e.printStackTrace();
         }
 
-        cargos.add("Outros..."); // "Outros" sempre estará no final
+        cargos.add("Outros"); // "Outros" sempre estará no final
         return cargos;
     }
 
@@ -229,7 +229,7 @@ public class CadastrarFuncionario extends JPanel {
             String cargoNome = (String) cargoComboBox.getSelectedItem();
 
             // Se o cargo for "Outros", pega o valor do campo de texto
-            if ("Outros...".equals(cargoNome)) {
+            if ("Outros".equals(cargoNome)) {
                 cargoNome = cargoField.getText().trim();
             }
 
@@ -283,7 +283,8 @@ public class CadastrarFuncionario extends JPanel {
             }
 
             try (Connection conn = ConexaoBD.getConnection()) {
-                if (!"Outros...".equals(cargoComboBox.getSelectedItem())) {
+                // Verificar se cargo é digitado e "Outros" foi selecionado
+                if ("Outros".equals(cargoComboBox.getSelectedItem())) {
                     ArrayList<Cargo> cargosExistentes = CargoDAO.listarTodosCargos(conn);
                     for (Cargo c : cargosExistentes) {
                         if (c.getNome().equalsIgnoreCase(cargoNome)) {
@@ -292,7 +293,10 @@ public class CadastrarFuncionario extends JPanel {
                                             "Selecione esse cargo na lista de cargos.",
                                     "Cargo Existente",
                                     JOptionPane.INFORMATION_MESSAGE);
-                            cargoComboBox.setSelectedItem(cargoNome);
+                            cargoField.setText(""); // Limpar o campo
+                            cargoComboBox.setVisible(true); // Mostrar o ComboBox novamente
+                            cargoField.setVisible(false); // Esconder o campo de texto
+                            cargoComboBox.setSelectedItem(""); // Reiniciar seleção do ComboBox
                             return;
                         }
                     }
@@ -307,13 +311,13 @@ public class CadastrarFuncionario extends JPanel {
                 JOptionPane.showMessageDialog(null, "Funcionário cadastrado com sucesso!", "Sucesso",
                         JOptionPane.INFORMATION_MESSAGE);
 
+                // Limpar campos após o cadastro
                 nomeField.setText("");
                 telefoneField.setText("");
                 emailField.setText("");
                 cargoField.setText("");
 
-                cargoComboBox.setVisible(true);
-                cargoField.setVisible(false);
+                cargoComboBox.setSelectedItem(""); 
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(null, "Erro ao cadastrar funcionário. " + ex.getMessage(), "Erro",
                         JOptionPane.ERROR_MESSAGE);
