@@ -44,11 +44,7 @@ create  table medicamento(
     tipoReceita enum('SIMPLES', 'ESPECIAL'),
     qnt int not null,
     tipo enum('ETICO', 'GENERICO', 'SIMILAR'),
-    fornecedor_id int not null,
-	funcionario_id int not null,
     categoria_id int not null,
-    foreign key (funcionario_id) references funcionario(id),
-    foreign key (fornecedor_id) references fornecedor(id),
     foreign key (categoria_id) references categoria (id)
 );
 
@@ -74,8 +70,16 @@ create table fornecedorMedicamento(
 	fornecedor_id int not null,
     medicamento_id int not null,
     primary key (fornecedor_id, medicamento_id),
-    foreign key (fornecedor_id) references fornecedor(id),
-    foreign key (medicamento_id) references medicamento(id)
+    foreign key (fornecedor_id) references fornecedor(id) on delete cascade,
+    foreign key (medicamento_id) references medicamento(id) on delete cascade
+);
+
+create table funcionarioMedicamento(
+    funcionario_id int not null,
+    medicamento_id int not null,
+    primary key (funcionario_id, medicamento_id),
+    foreign key (funcionario_id) references funcionario(id) on delete cascade,
+    foreign key (medicamento_id) references medicamento(id) on delete cascade
 );
 
 create table cliente(
