@@ -1,4 +1,4 @@
-package models.Represetante;
+package models.Representante;
 
 import models.Fornecedor.Fornecedor;
 
@@ -33,7 +33,6 @@ public class Representante {
     }
 
     public void setTelefone(String telefone) {
-        // Verificação de comprimento e se contém apenas dígitos
         if (telefone == null || !telefone.matches("\\d{11}")) {
             throw new IllegalArgumentException("Telefone inválido. Deve conter 11 dígitos numéricos.");
         }

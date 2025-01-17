@@ -1,7 +1,7 @@
 package models.Fornecedor;
 
 import models.Funcionario.Funcionario;
-import models.Represetante.Representante;
+import models.Representante.Representante;
 
 public class Fornecedor{
     private int id;

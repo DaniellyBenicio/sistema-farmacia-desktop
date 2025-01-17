@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import dao.Representante.RepresentanteDAO;
-import models.Represetante.Representante;
+import models.Representante.Representante;
 
 public class RepresentanteController {
     public static void cadastrarRepresentante(Connection conn, String nome, String telefone, int fornecedorId) throws SQLException {

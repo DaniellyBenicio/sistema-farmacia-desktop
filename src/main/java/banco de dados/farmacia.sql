@@ -35,15 +35,21 @@ create table representante(
 
 create  table medicamento(
 	id int primary key auto_increment not null,
-    nome varchar(50) not null unique COLLATE utf8mb4_general_ci,
-	valorUnit decimal(10,2) not null,
-    dataValidade date not null,
-    tipoReceita enum('Azul', 'Comum', 'Especial'),
-    formaFarmaceutica varchar (50) not null COLLATE utf8mb4_general_ci,
+    nome varchar(50) not null COLLATE utf8mb4_general_ci,
     dosagem varchar (50) not null COLLATE utf8mb4_general_ci,
+    formaFarmaceutica varchar (50) not null COLLATE utf8mb4_general_ci,
+    valorUnit decimal(10,2) not null,
+    dataValidade date not null,
+    dataFabricacao date not null,
+    tipoReceita enum('SIMPLES', 'ESPECIAL'),
     qnt int not null,
+    tipo enum('ETICO', 'GENERICO', 'SIMILAR'),
+    fornecedor_id int not null,
 	funcionario_id int not null,
-    foreign key (funcionario_id) references funcionario(id) 
+    categoria_id int not null,
+    foreign key (funcionario_id) references funcionario(id),
+    foreign key (fornecedor_id) references fornecedor(id),
+    foreign key (categoria_id) references categoria (id)
 );
 
 create table categoria(
@@ -51,21 +57,26 @@ create table categoria(
     nome varchar(50) not null unique COLLATE utf8mb4_general_ci
 );
 
-create table CategoriaMedicamento(
-    medicamento_id int not null,
-    categoria_id int not null,
-    foreign key (medicamento_id) references medicamento(id),
-    foreign key (categoria_id) references categoria(id),
-    primary key (medicamento_id, categoria_id)
+create table fabricante(
+	id int primary key auto_increment not null,
+    nome varchar(50) not null unique COLLATE utf8mb4_general_ci
+);
+
+create table fabricanteMedicamento(
+	fabricante_id int,
+    medicamento_id int,
+    primary key(fabricante_id, medicamento_id),
+    foreign key (fabricante_id) references fabricante(id) on delete cascade,
+    foreign key (medicamento_id) references medicamento(id) on delete cascade
 );
 
 create table fornecedorMedicamento(
 	fornecedor_id int not null,
     medicamento_id int not null,
+    primary key (fornecedor_id, medicamento_id),
     foreign key (fornecedor_id) references fornecedor(id),
     foreign key (medicamento_id) references medicamento(id)
 );
-
 
 create table cliente(
 	id int primary key auto_increment not null,
@@ -84,4 +95,3 @@ create table cliente(
 );
 
 drop database farmacia;
-

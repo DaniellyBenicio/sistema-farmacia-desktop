@@ -8,7 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import models.Fornecedor.Fornecedor;
-import models.Represetante.Representante;
+import models.Representante.Representante;
 
 public class FornecedorDAO {
     public static void cadastrarFornecedor(Connection conn, Fornecedor forn) throws SQLException {

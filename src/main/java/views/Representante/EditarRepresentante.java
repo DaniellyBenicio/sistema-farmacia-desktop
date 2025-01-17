@@ -21,7 +21,7 @@ import javax.swing.text.MaskFormatter;
 
 import controllers.Represetante.RepresentanteController;
 import main.ConexaoBD;
-import models.Represetante.Representante;
+import models.Representante.Representante;
 
 public class EditarRepresentante extends JDialog {
     private JTextField representanteField;

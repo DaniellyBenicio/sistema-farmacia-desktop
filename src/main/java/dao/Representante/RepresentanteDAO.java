@@ -9,7 +9,7 @@ import java.util.List;
 
 import dao.Fornecedor.FornecedorDAO;
 import models.Fornecedor.Fornecedor;
-import models.Represetante.Representante;
+import models.Representante.Representante;
 
 public class RepresentanteDAO {
     public static void cadastrarRepresentante(Connection conn, String nome, String telefone, int fornecedorId) throws SQLException{
