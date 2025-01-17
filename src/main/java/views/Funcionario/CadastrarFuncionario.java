@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -163,7 +164,8 @@ public class CadastrarFuncionario extends JPanel {
 
     private List<String> obterCargos() {
         List<String> cargos = new ArrayList<>();
-        // Cargos predefinidos
+
+        cargos.add("Selecione");
         cargos.add("Assistente Administrativo");
         cargos.add("Atendente");
         cargos.add("Caixa");
@@ -177,7 +179,6 @@ public class CadastrarFuncionario extends JPanel {
             ArrayList<Cargo> cargosDB = CargoDAO.listarTodosCargos(conn);
             for (Cargo cargo : cargosDB) {
                 String nomeCargo = cargo.getNome();
-                // Adicionar apenas se não estiver no ArrayList
                 if (!cargos.contains(nomeCargo)) {
                     cargos.add(nomeCargo);
                 }
@@ -186,8 +187,17 @@ public class CadastrarFuncionario extends JPanel {
             e.printStackTrace();
         }
 
-        cargos.add("Outros"); // "Outros" sempre estará no final
-        return cargos;
+        List<String> cargosParaOrdenar = new ArrayList<>(cargos);
+        cargosParaOrdenar.remove("Selecione");
+
+        Collections.sort(cargosParaOrdenar, String.CASE_INSENSITIVE_ORDER);
+        cargosParaOrdenar.add("Outros");
+
+        List<String> listaFinal = new ArrayList<>();
+        listaFinal.add("Selecione");
+        listaFinal.addAll(cargosParaOrdenar);
+
+        return listaFinal;
     }
 
     private JPanel criarBotoesPanel() {
@@ -228,7 +238,6 @@ public class CadastrarFuncionario extends JPanel {
             String email = emailField.getText().trim();
             String cargoNome = (String) cargoComboBox.getSelectedItem();
 
-            // Se o cargo for "Outros", pega o valor do campo de texto
             if ("Outros".equals(cargoNome)) {
                 cargoNome = cargoField.getText().trim();
             }
@@ -267,8 +276,8 @@ public class CadastrarFuncionario extends JPanel {
                 }
             }
 
-            if (cargoNome.isEmpty()) {
-                errorMessage.append("- Cargo deve ser preenchido.\n");
+            if (cargoNome == null || "Selecione".equals(cargoNome)) {
+                errorMessage.append("- Cargo deve ser selecionado.\n");
                 hasError = true;
             } else {
                 if (!cargoNome.matches("^[\\p{L}\\s]*$")) {
@@ -283,7 +292,6 @@ public class CadastrarFuncionario extends JPanel {
             }
 
             try (Connection conn = ConexaoBD.getConnection()) {
-                // Verificar se cargo é digitado e "Outros" foi selecionado
                 if ("Outros".equals(cargoComboBox.getSelectedItem())) {
                     ArrayList<Cargo> cargosExistentes = CargoDAO.listarTodosCargos(conn);
                     for (Cargo c : cargosExistentes) {
@@ -293,10 +301,10 @@ public class CadastrarFuncionario extends JPanel {
                                             "Selecione esse cargo na lista de cargos.",
                                     "Cargo Existente",
                                     JOptionPane.INFORMATION_MESSAGE);
-                            cargoField.setText(""); // Limpar o campo
-                            cargoComboBox.setVisible(true); // Mostrar o ComboBox novamente
-                            cargoField.setVisible(false); // Esconder o campo de texto
-                            cargoComboBox.setSelectedItem(""); // Reiniciar seleção do ComboBox
+                            cargoField.setText("");
+                            cargoComboBox.setVisible(true);
+                            cargoField.setVisible(false);
+                            cargoComboBox.setSelectedItem("");
                             return;
                         }
                     }
@@ -311,16 +319,22 @@ public class CadastrarFuncionario extends JPanel {
                 JOptionPane.showMessageDialog(null, "Funcionário cadastrado com sucesso!", "Sucesso",
                         JOptionPane.INFORMATION_MESSAGE);
 
-                // Limpar campos após o cadastro
                 nomeField.setText("");
                 telefoneField.setText("");
                 emailField.setText("");
                 cargoField.setText("");
 
-                cargoComboBox.setSelectedItem(""); 
+                cargoComboBox.setSelectedItem("");
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao cadastrar funcionário. " + ex.getMessage(), "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                String message = ex.getMessage();
+                if (message.contains("email")) {
+                    JOptionPane.showMessageDialog(null, "E-mail já cadastrado. Tente um e-mail diferente.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+                if (message.contains("telefone")) {
+                    JOptionPane.showMessageDialog(null, "Telefone já cadastrado. Tente um telefone diferente.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 

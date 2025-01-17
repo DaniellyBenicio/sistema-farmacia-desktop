@@ -11,12 +11,16 @@ import java.awt.Insets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -26,6 +30,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.MaskFormatter;
 
+import dao.Cargo.CargoDAO;
 import dao.Funcionario.FuncionarioDAO;
 import main.ConexaoBD;
 import models.Cargo.Cargo;
@@ -34,9 +39,10 @@ import models.Funcionario.Funcionario;
 public class EditarFuncionario extends JPanel {
 
     private JTextField nomeField;
-    private JTextField telefoneField;
+    private JFormattedTextField telefoneField;
     private JTextField emailField;
     private JTextField cargoField;
+    private JComboBox<String> cargoComboBox;
 
     private int funcionarioId;
 
@@ -102,15 +108,7 @@ public class EditarFuncionario extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(telefoneLabel, gbc);
 
-        MaskFormatter telefoneFormatter = null;
-        try {
-            telefoneFormatter = new MaskFormatter("(##) #####-####");
-            telefoneFormatter.setValidCharacters("0123456789");
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        telefoneField = new JFormattedTextField(telefoneFormatter);
+        telefoneField = criarCampoFormatado("(##) #####-####");
         telefoneField.setPreferredSize(fieldSize);
         estilizarCampo(telefoneField, fieldFont);
         gbc.gridx = 1;
@@ -130,18 +128,41 @@ public class EditarFuncionario extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(emailField, gbc);
 
+        List<String> cargos = obterCargos();
+
         JLabel cargoLabel = new JLabel("Cargo");
         cargoLabel.setFont(labelFont);
         gbc.gridx = 1;
         gbc.gridy = 3;
         camposPanel.add(cargoLabel, gbc);
 
+        cargoComboBox = new JComboBox<>(obterCargos().toArray(new String[0]));
+        cargoComboBox.setPreferredSize(fieldSize);
+        cargoComboBox.setFont(fieldFont);
+        cargoComboBox.setFocusable(false);
+
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        camposPanel.add(cargoComboBox, gbc);
+
         cargoField = new JTextField();
         cargoField.setPreferredSize(fieldSize);
         estilizarCampo(cargoField, fieldFont);
+        cargoField.setVisible(false);
         gbc.gridx = 1;
         gbc.gridy = 4;
         camposPanel.add(cargoField, gbc);
+
+        cargoComboBox.addActionListener(e -> {
+            if ("Outros".equals(cargoComboBox.getSelectedItem())) {
+                cargoComboBox.setVisible(false);
+                cargoField.setVisible(true);
+            } else {
+                cargoField.setText("");
+                cargoComboBox.setVisible(true);
+                cargoField.setVisible(false);
+            }
+        });
 
         return camposPanel;
     }
@@ -181,9 +202,7 @@ public class EditarFuncionario extends JPanel {
                 telefoneField.setText(funcionario.getTelefone());
                 emailField.setText(funcionario.getEmail());
                 if (funcionario.getCargo() != null) {
-                    cargoField.setText(funcionario.getCargo().getNome());
-                } else {
-                    cargoField.setText("");
+                    cargoComboBox.setSelectedItem(funcionario.getCargo().getNome());
                 }
 
             } else {
@@ -195,11 +214,53 @@ public class EditarFuncionario extends JPanel {
         }
     }
 
+    private List<String> obterCargos() {
+        List<String> cargos = new ArrayList<>();
+
+        cargos.add("Selecione");
+        cargos.add("Assistente Administrativo");
+        cargos.add("Atendente");
+        cargos.add("Caixa");
+        cargos.add("Estoquista");
+        cargos.add("Farmacêutico");
+        cargos.add("Gerente");
+        cargos.add("Técnico de Enfermagem");
+        cargos.add("Técnico de Farmácia");
+
+        try (Connection conn = ConexaoBD.getConnection()) {
+            ArrayList<Cargo> cargosDB = CargoDAO.listarTodosCargos(conn);
+            for (Cargo cargo : cargosDB) {
+                String nomeCargo = cargo.getNome();
+                if (!cargos.contains(nomeCargo)) {
+                    cargos.add(nomeCargo);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        List<String> cargosParaOrdenar = new ArrayList<>(cargos);
+        cargosParaOrdenar.remove("Selecione");
+
+        Collections.sort(cargosParaOrdenar, String.CASE_INSENSITIVE_ORDER);
+        cargosParaOrdenar.add("Outros");
+
+        List<String> listaFinal = new ArrayList<>();
+        listaFinal.add("Selecione");
+        listaFinal.addAll(cargosParaOrdenar);
+
+        return listaFinal;
+    }
+
     private void salvarFuncionario(int idFuncionario) {
         String nome = nomeField.getText().trim();
         String telefone = telefoneField.getText().trim();
         String email = emailField.getText().trim();
-        String cargoNome = cargoField.getText().trim();
+        String cargoNome = (String) cargoComboBox.getSelectedItem();
+
+        if ("Outros".equals(cargoNome)) {
+            cargoNome = cargoField.getText().trim();
+        }
 
         StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
         boolean hasError = false;
@@ -235,8 +296,8 @@ public class EditarFuncionario extends JPanel {
             }
         }
 
-        if (cargoNome.isEmpty()) {
-            errorMessage.append("- Cargo deve ser preenchido.\n");
+        if (cargoNome == null || "Selecione".equals(cargoNome)) {
+            errorMessage.append("- Cargo deve ser selecionado.\n");
             hasError = true;
         } else {
             if (!cargoNome.matches("^[\\p{L}\\s]*$")) {
@@ -251,6 +312,25 @@ public class EditarFuncionario extends JPanel {
         }
 
         try (Connection conn = ConexaoBD.getConnection()) {
+
+            if ("Outros".equals(cargoComboBox.getSelectedItem())) {
+                ArrayList<Cargo> cargosExistentes = CargoDAO.listarTodosCargos(conn);
+                for (Cargo c : cargosExistentes) {
+                    if (c.getNome().equalsIgnoreCase(cargoNome)) {
+                        JOptionPane.showMessageDialog(null,
+                                "O cargo informado já existe no banco de dados.\n" +
+                                        "Selecione esse cargo na lista de cargos.",
+                                "Cargo Existente",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        cargoField.setText("");
+                        cargoComboBox.setVisible(true);
+                        cargoField.setVisible(false);
+                        cargoComboBox.setSelectedItem("");
+                        return;
+                    }
+                }
+            }
+
             Funcionario funcionarioAtualizado = new Funcionario();
 
             funcionarioAtualizado.setId(idFuncionario);
@@ -279,11 +359,25 @@ public class EditarFuncionario extends JPanel {
             JOptionPane.showMessageDialog(null, "Erro inesperado: " + e.getMessage(), "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
+        cargoComboBox.setVisible(true);
     }
 
     private boolean validarEmail(String email) {
         String emailRegex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
         return Pattern.matches(emailRegex, email);
+    }
+
+    private JFormattedTextField criarCampoFormatado(String formato) {
+        MaskFormatter formatter = null;
+        try {
+            formatter = new MaskFormatter(formato);
+            formatter.setValidCharacters("0123456789");
+            formatter.setPlaceholderCharacter('_');
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return new JFormattedTextField(formatter);
     }
 
     private void estilizarCampo(JComponent campo, Font font) {
