@@ -190,7 +190,7 @@ public class ListaDeClientes extends JPanel {
         cadastrarButton.setBackground(new Color(24, 39, 55));
         cadastrarButton.setForeground(Color.WHITE);
         cadastrarButton.setFocusPainted(false);
-        cadastrarButton.setPreferredSize(new Dimension(200, 30));
+        cadastrarButton.setPreferredSize(new Dimension(180, 30));
         painelBuscaBotao.add(cadastrarButton);
 
         cadastrarButton.addActionListener(e -> {

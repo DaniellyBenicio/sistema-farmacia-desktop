@@ -217,7 +217,6 @@ public class EditarFuncionario extends JPanel {
     private List<String> obterCargos() {
         List<String> cargos = new ArrayList<>();
 
-        cargos.add("Selecione");
         cargos.add("Assistente Administrativo");
         cargos.add("Atendente");
         cargos.add("Caixa");
@@ -240,16 +239,10 @@ public class EditarFuncionario extends JPanel {
         }
 
         List<String> cargosParaOrdenar = new ArrayList<>(cargos);
-        cargosParaOrdenar.remove("Selecione");
-
         Collections.sort(cargosParaOrdenar, String.CASE_INSENSITIVE_ORDER);
         cargosParaOrdenar.add("Outros");
 
-        List<String> listaFinal = new ArrayList<>();
-        listaFinal.add("Selecione");
-        listaFinal.addAll(cargosParaOrdenar);
-
-        return listaFinal;
+        return cargosParaOrdenar;
     }
 
     private void salvarFuncionario(int idFuncionario) {
@@ -296,8 +289,8 @@ public class EditarFuncionario extends JPanel {
             }
         }
 
-        if (cargoNome == null || "Selecione".equals(cargoNome)) {
-            errorMessage.append("- Cargo deve ser selecionado.\n");
+        if (cargoNome == null || cargoNome.isEmpty()) {
+            errorMessage.append("- Cargo deve ser preenchido.\n");
             hasError = true;
         } else {
             if (!cargoNome.matches("^[\\p{L}\\s]*$")) {

@@ -186,7 +186,11 @@ public class CadastrarCliente extends JPanel {
                 "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE",
                 "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP",
                 "SE", "TO");
-        String[] estadosArray = estadosValidos.toArray(new String[0]);
+        String[] estadosArray = new String[estadosValidos.size() + 1]; // +1 para o item 'Selecione'
+        estadosArray[0] = "Selecione"; // Primeiro item
+        for (int i = 0; i < estadosValidos.size(); i++) {
+            estadosArray[i + 1] = estadosValidos.get(i);
+        }
 
         JLabel estadoLabel = new JLabel("Estado");
         estadoLabel.setFont(labelFont);
@@ -212,6 +216,8 @@ public class CadastrarCliente extends JPanel {
             }
         });
         estadoComboBox.setFont(fieldFont);
+        estadoComboBox.setFocusable(false);
+        estadoComboBox.setSelectedIndex(0);
         gbc.gridx = 1;
         gbc.gridy = 5;
         camposPanel.add(estadoComboBox, gbc);
@@ -326,12 +332,8 @@ public class CadastrarCliente extends JPanel {
                 hasError = true;
             }
 
-            List<String> estadosValidos = Arrays.asList("AC", "AL", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT",
-                    "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS",
-                    "RO", "RR", "SC", "SP", "SE", "TO");
-
-            if (estado == null || estado.isEmpty() || !estadosValidos.contains(estado)) {
-                errorMessage.append("- Estado deve ser preenchido e válido. Escolha uma sigla de estado válida.\n");
+            if (estado == null || estado.equals("Selecione")) {
+                errorMessage.append("- Estado deve ser selecionado.\n");
                 hasError = true;
             }
 
@@ -340,11 +342,15 @@ public class CadastrarCliente extends JPanel {
                 return;
             }
 
+            System.out.println(cpf);
+
             try (Connection conn = ConexaoBD.getConnection()) {
                 Funcionario funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
 
                 Cliente cliente = new Cliente(nome, cpf, telefone, rua, numero, bairro, cidade, estado,
                         pontodereferencia, funcionario);
+
+                System.out.println(cpf);
 
                 ClienteDAO.cadastrarCliente(conn, cliente);
 
@@ -361,8 +367,14 @@ public class CadastrarCliente extends JPanel {
                 pontodereferenciaField.setText("");
 
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao cadastrar cliente: " + ex.getMessage(), "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                String message = ex.getMessage();
+                if (message.contains("telefone")) {
+                    JOptionPane.showMessageDialog(null, "Telefone já cadastrado. Tente um telefone diferente.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Erro ao cadastrar cliente: " + ex.getMessage(), "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 

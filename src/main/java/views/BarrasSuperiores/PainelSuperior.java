@@ -310,9 +310,9 @@ public class PainelSuperior extends JPanel {
             case "Funcionário":
                 layoutAlternativo.show(painelDeVisualizacao, "ListaDeFuncionarios");
                 break;
-          /*case "Cliente":
+            case "Cliente":
                 layoutAlternativo.show(painelDeVisualizacao, "ListaDeClientes");
-                break;*/
+                break;
             
         }
     }

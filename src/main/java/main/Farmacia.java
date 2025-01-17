@@ -3,6 +3,11 @@ package main;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -11,7 +16,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import views.BarrasSuperiores.PainelSuperior;
-//import views.Clientes.ListaDeClientes;
+import views.Clientes.ListaDeClientes;
 import views.Fornecedor.CadastrarFornecedor;
 import views.Fornecedor.ListaDeFornecedores;
 import views.Funcionario.CadastrarFuncionario;
@@ -28,31 +33,51 @@ public class Farmacia extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-    
+
         layoutCartao = new CardLayout();
         painelCentral = new JPanel(layoutCartao);
         painelCentral.setBackground(Color.WHITE);
 
         Connection conexão = null;
         try {
-            conexão = ConexaoBD.getConnection(); 
+            conexão = ConexaoBD.getConnection();
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Erro de conexão com o banco de dados", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Erro de conexão com o banco de dados", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
 
+        // Adicionando painéis
         painelCentral.add(new RealizarVenda(), "Vendas");
         painelCentral.add(new CadastrarFornecedor(), "CadastrarFornecedor");
         painelCentral.add(new ListaDeFornecedores(conexão), "ListaDeFornecedores");
         painelCentral.add(new CadastrarFuncionario(), "CadastrarFuncionário");
         painelCentral.add(new ListaDeFuncionarios(conexão), "ListaDeFuncionarios");
-       //painelCentral.add(new ListaDeClientes(conexão), "ListaDeClientes");
+        painelCentral.add(new ListaDeClientes(conexão), "ListaDeClientes");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
         add(painelSuperior, BorderLayout.NORTH);
         add(painelCentral, BorderLayout.CENTER);
 
-        layoutCartao.show(painelCentral, "Vendas"); 
+        layoutCartao.show(painelCentral, "Vendas");
+
+        // Ajustando a responsividade
+        addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent evt) {
+                ajusteLayout();
+            }
+        });
+    }
+
+    private void ajusteLayout() {
+        // Método para ajustar o layout ou o tamanho dos componentes conforme necessário
+        for (Component comp : painelCentral.getComponents()) {
+            if (comp instanceof JComponent) {
+                ((JComponent) comp).revalidate(); // Solicitar a revalidação do layout
+                ((JComponent) comp).repaint(); // Repaint para atualização visual
+            }
+        }
+        painelCentral.repaint();
     }
 
     public static void main(String[] args) {
