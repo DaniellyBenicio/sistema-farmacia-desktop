@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -29,6 +30,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.MaskFormatter;
 
+import dao.Cargo.CargoDAO;
 import dao.Funcionario.FuncionarioDAO;
 import main.ConexaoBD;
 import models.Cargo.Cargo;
@@ -127,16 +129,13 @@ public class CadastrarFuncionario extends JPanel {
         gbc.gridy = 3;
         camposPanel.add(cargoLabel, gbc);
 
-        List<String> cargos = new ArrayList<>();
-        cargos.add("Atendente");
-        cargos.add("Caixa");
-        cargos.add("Farmacêutico ");
-        cargos.add("Gerente");
-        cargos.add("Outros");
+        List<String> cargos = obterCargos();
 
         cargoComboBox = new JComboBox<>(cargos.toArray(new String[0]));
         cargoComboBox.setPreferredSize(fieldSize);
         cargoComboBox.setFont(fieldFont);
+        cargoComboBox.setFocusable(false);
+
         gbc.gridx = 1;
         gbc.gridy = 4;
         camposPanel.add(cargoComboBox, gbc);
@@ -154,12 +153,51 @@ public class CadastrarFuncionario extends JPanel {
                 cargoComboBox.setVisible(false);
                 cargoField.setVisible(true);
             } else {
+                cargoField.setText("");
                 cargoComboBox.setVisible(true);
                 cargoField.setVisible(false);
             }
         });
 
         return camposPanel;
+    }
+
+    private List<String> obterCargos() {
+        List<String> cargos = new ArrayList<>();
+
+        cargos.add("Selecione");
+        cargos.add("Assistente Administrativo");
+        cargos.add("Atendente");
+        cargos.add("Caixa");
+        cargos.add("Estoquista");
+        cargos.add("Farmacêutico");
+        cargos.add("Gerente");
+        cargos.add("Técnico de Enfermagem");
+        cargos.add("Técnico de Farmácia");
+
+        try (Connection conn = ConexaoBD.getConnection()) {
+            ArrayList<Cargo> cargosDB = CargoDAO.listarTodosCargos(conn);
+            for (Cargo cargo : cargosDB) {
+                String nomeCargo = cargo.getNome();
+                if (!cargos.contains(nomeCargo)) {
+                    cargos.add(nomeCargo);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        List<String> cargosParaOrdenar = new ArrayList<>(cargos);
+        cargosParaOrdenar.remove("Selecione");
+
+        Collections.sort(cargosParaOrdenar, String.CASE_INSENSITIVE_ORDER);
+        cargosParaOrdenar.add("Outros");
+
+        List<String> listaFinal = new ArrayList<>();
+        listaFinal.add("Selecione");
+        listaFinal.addAll(cargosParaOrdenar);
+
+        return listaFinal;
     }
 
     private JPanel criarBotoesPanel() {
@@ -187,7 +225,6 @@ public class CadastrarFuncionario extends JPanel {
             String cargoFuncionario = PainelSuperior.getCargoFuncionarioAtual();
 
             if (idFuncionario <= 0 || !"Gerente".equalsIgnoreCase(cargoFuncionario)) {
-                System.out.println("Teste front" + cargoFuncionario);
                 JOptionPane.showMessageDialog(null,
                         "A identificação do funcionário é obrigatória.\n" +
                                 "Somente o gerente pode cadastrar os funcionário.",
@@ -239,8 +276,8 @@ public class CadastrarFuncionario extends JPanel {
                 }
             }
 
-            if (cargoNome.isEmpty()) {
-                errorMessage.append("- Cargo deve ser preenchido.\n");
+            if (cargoNome == null || "Selecione".equals(cargoNome)) {
+                errorMessage.append("- Cargo deve ser selecionado.\n");
                 hasError = true;
             } else {
                 if (!cargoNome.matches("^[\\p{L}\\s]*$")) {
@@ -255,6 +292,24 @@ public class CadastrarFuncionario extends JPanel {
             }
 
             try (Connection conn = ConexaoBD.getConnection()) {
+                if ("Outros".equals(cargoComboBox.getSelectedItem())) {
+                    ArrayList<Cargo> cargosExistentes = CargoDAO.listarTodosCargos(conn);
+                    for (Cargo c : cargosExistentes) {
+                        if (c.getNome().equalsIgnoreCase(cargoNome)) {
+                            JOptionPane.showMessageDialog(null,
+                                    "O cargo informado já existe no banco de dados.\n" +
+                                            "Selecione esse cargo na lista de cargos.",
+                                    "Cargo Existente",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            cargoField.setText("");
+                            cargoComboBox.setVisible(true);
+                            cargoField.setVisible(false);
+                            cargoComboBox.setSelectedItem("");
+                            return;
+                        }
+                    }
+                }
+
                 Cargo cargo = new Cargo();
                 cargo.setNome(cargoNome);
 
@@ -268,9 +323,18 @@ public class CadastrarFuncionario extends JPanel {
                 telefoneField.setText("");
                 emailField.setText("");
                 cargoField.setText("");
+
+                cargoComboBox.setSelectedItem("");
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao cadastrar funcionário. " + ex.getMessage(), "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                String message = ex.getMessage();
+                if (message.contains("email")) {
+                    JOptionPane.showMessageDialog(null, "E-mail já cadastrado. Tente um e-mail diferente.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+                if (message.contains("telefone")) {
+                    JOptionPane.showMessageDialog(null, "Telefone já cadastrado. Tente um telefone diferente.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
