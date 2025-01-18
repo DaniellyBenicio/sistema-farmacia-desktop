@@ -186,8 +186,8 @@ public class CadastrarCliente extends JPanel {
                 "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE",
                 "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP",
                 "SE", "TO");
-        String[] estadosArray = new String[estadosValidos.size() + 1]; // +1 para o item 'Selecione'
-        estadosArray[0] = "Selecione"; // Primeiro item
+        String[] estadosArray = new String[estadosValidos.size() + 1]; 
+        estadosArray[0] = "Selecione";
         for (int i = 0; i < estadosValidos.size(); i++) {
             estadosArray[i + 1] = estadosValidos.get(i);
         }

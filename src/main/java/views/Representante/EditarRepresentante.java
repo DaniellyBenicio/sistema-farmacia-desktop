@@ -142,7 +142,7 @@ public class EditarRepresentante extends JDialog {
                 } catch (SQLException ex) {
                     String message = ex.getMessage();
                     if (message.contains("telefone")) {
-                        JOptionPane.showMessageDialog(null, "Telefone já cadastrado. Tente um telefone diferente.", "Erro",
+                        JOptionPane.showMessageDialog(null, "O telefone informado já está associado a um representante existente. Por favor, utilize outro número.", "Erro",
                                 JOptionPane.ERROR_MESSAGE);
                     }
                 }

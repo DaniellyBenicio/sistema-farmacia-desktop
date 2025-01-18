@@ -289,7 +289,7 @@ public class EditarFuncionario extends JPanel {
             }
         }
 
-        if (cargoNome == null || cargoNome.isEmpty()) {
+        if (cargoNome == null || cargoNome.isEmpty() || "Selecione".equals(cargoNome)) {
             errorMessage.append("- Cargo deve ser preenchido.\n");
             hasError = true;
         } else {
@@ -343,14 +343,16 @@ public class EditarFuncionario extends JPanel {
             FuncionarioDAO.atualizarFuncionario(conn, funcionarioAtualizado);
             JOptionPane.showMessageDialog(null, "Funcionário atualizado com sucesso!", "Sucesso",
                     JOptionPane.INFORMATION_MESSAGE);
-        } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erro ao atualizar funcionário: " + e.getMessage(), "Erro",
-                    JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Erro inesperado: " + e.getMessage(), "Erro",
-                    JOptionPane.ERROR_MESSAGE);
+            String message = e.getMessage();
+            if (message.contains("email")) {
+                JOptionPane.showMessageDialog(null, "O e-mail informado já está associado a um funcionário existente. Por favor, utilize outro e-mail.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            if (message.contains("telefone")) {
+                JOptionPane.showMessageDialog(null, "O telefone informado já está associado a um funcionário existente. Por favor, informe outro número.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
         cargoComboBox.setVisible(true);
     }
