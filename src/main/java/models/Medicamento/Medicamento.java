@@ -1,6 +1,7 @@
 package models.Medicamento;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -119,36 +120,56 @@ public class Medicamento {
         }
         this.valorUnit = valorUnit;
     }
+
     public LocalDate getDataValidade() {
         return dataValidade;
     }
 
-    public void setDataValidade(LocalDate dataValidade) {
-        if (dataValidade.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("A data de validade não pode ser anterior à data atual.");
+    public void setDataValidade(YearMonth dataValidade) {
+        LocalDate validade = dataValidade.atDay(1);
+        if (validade.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Data inválida! Não pode ser anterior à data atual.");
         }
-        if (dataFabricacao != null && dataValidade.isBefore(dataFabricacao)) {
-            throw new IllegalArgumentException("A data de validade não pode ser anterior à data de fabricação.");
+        if (dataFabricacao != null && validade.isBefore(dataFabricacao)) {
+            throw new IllegalArgumentException("Data inválida! Não pode ser anterior à data de fabricação.");
         }
 
-        this.dataValidade = dataValidade;
-    }
+        this.dataValidade = validade;
+
+    }    
 
     public LocalDate getDataFabricacao() {
         return dataFabricacao;
     }
 
-    public void setDataFabricacao(LocalDate dataFabricacao) {
-        if (dataFabricacao.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("A data de fabricação não pode ser posterior a atual.");
+   public void setDataFabricacao(YearMonth dataFabricacao) {
+        LocalDate fabricacao = dataFabricacao.atDay(1); 
+        if (fabricacao.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Data inválida! Não pode ser posterior à data atual.");
         }
-        if (dataValidade != null && dataFabricacao.isAfter(dataValidade)) {
-            throw new IllegalArgumentException("A data de fabricação não pode ser posterior à data de validade.");
+        if (dataValidade != null && fabricacao.isAfter(dataValidade)) {
+            throw new IllegalArgumentException("Data inválida! Não pode ser posterior à data de validade.");
         }
 
-        this.dataFabricacao = dataFabricacao;
+        this.dataFabricacao = fabricacao;
     }
 
+    public boolean isValido() {
+        if (dataValidade == null || dataFabricacao == null) {
+            return false; 
+        }
+   
+        if (dataValidade.isBefore(LocalDate.now())) {
+            return false; 
+        }
+    
+        if (dataFabricacao.isAfter(dataValidade)) {
+            return false; 
+        }
+    
+        return true; 
+    }
+    
     public TipoReceita getTipoReceita() {
         return tipoReceita;
     }
