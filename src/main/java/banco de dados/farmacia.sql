@@ -45,7 +45,7 @@ create  table medicamento(
     qnt int not null,
     tipo enum('ETICO', 'GENERICO', 'SIMILAR'),
     categoria_id int not null,
-    foreign key (categoria_id) references categoria (id)
+    foreign key (categoria_id) references categoria (id) on delete cascade
 );
 
 create table categoria(
