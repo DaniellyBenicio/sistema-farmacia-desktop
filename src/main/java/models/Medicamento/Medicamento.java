@@ -1,12 +1,14 @@
 package models.Medicamento;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import models.Funcionario.Funcionario;
 import models.Fornecedor.Fornecedor;
 import models.Categoria.Categoria;
+import models.Fabricante.Fabricante;
 
 public class Medicamento {
     private int id;
@@ -19,13 +21,14 @@ public class Medicamento {
     private TipoReceita tipoReceita;
     private int qnt;
     private Tipo tipo;
-    private Funcionario funcionario;
-    private Fornecedor fornecedor;
     private Categoria categoria;
+    private List<Fabricante> fabricantes; 
+    private List<Fornecedor> fornecedores; 
+    private List<Funcionario> funcionarios;
 
     public Medicamento(){};
 
-    public Medicamento(String nome, String dosagem, String formaFarmaceutica, double valorUnit, LocalDate dataValidade, LocalDate dataFabricacao, TipoReceita tipoReceita, int qnt, Tipo tipo, Funcionario funcionario, Fornecedor fornecedor, Categoria categoria){
+    public Medicamento(String nome, String dosagem, String formaFarmaceutica, double valorUnit, LocalDate dataValidade, LocalDate dataFabricacao, TipoReceita tipoReceita, int qnt, Tipo tipo, Categoria categoria, List<Fabricante> fabricantes, List<Fornecedor> fornecedores, List<Funcionario> funcionarios){
         this.nome = nome;
         this.dosagem = dosagem;
         this.formaFarmaceutica = formaFarmaceutica;
@@ -35,9 +38,10 @@ public class Medicamento {
         this.tipoReceita = tipoReceita;
         this.qnt = qnt;
         this.tipo = tipo;
-        this.funcionario = funcionario;
-        this.fornecedor = fornecedor;
         this.categoria = categoria;
+        this.fabricantes = fabricantes != null ? fabricantes : new ArrayList<>();
+        this.fornecedores = fornecedores != null ? fornecedores : new ArrayList<>();
+        this.funcionarios = funcionarios != null ? funcionarios : new ArrayList<>();
     };
     
     public enum TipoReceita {
@@ -72,8 +76,12 @@ public class Medicamento {
         if (dosagem == null || dosagem.trim().isEmpty()) {
             throw new IllegalArgumentException("A dosagem não pode ser vazia.");
         }
-        if (!dosagem.matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) { 
+        if (!dosagem.matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
             throw new IllegalArgumentException("Informe a unidade válida (mg, g, mcg, ml, l).");
+        }
+        double dosagemValor = Double.parseDouble(dosagem.replaceAll("[^\\d.]", ""));
+        if (dosagemValor <= 0) {
+            throw new IllegalArgumentException("A dosagem deve ser um valor positivo.");
         }
         this.dosagem = dosagem;
     }
@@ -89,10 +97,10 @@ public class Medicamento {
         }
 
         List<String> formasValidas = Arrays.asList(
-            "comprimido", "creme", "pomada", "injeção", "xarope", "solução", "spray", 
-            "capsula", "gel", "loção", "gelatina", "supositório", "pó", "emulsão", 
-            "colírio", "gotejamento", "aerossol", "spray nasal", "pastilha", 
-            "suspensão", "solução oral", "pasta", "sachê"
+            "comprimido", "creme", "pomada", "injecao", "xarope", "solucao", "spray", 
+            "capsula", "gel", "locao", "gelatina", "supositorio", "pó", "emulsao", 
+            "colirio", "gotejamento", "aerossol", "spray nasal", "pastilha", 
+            "suspensao", "pasta", "sache"
         );
 
         if (!formasValidas.contains(formaFarmaceutica.trim().toLowerCase())) {
@@ -169,28 +177,6 @@ public class Medicamento {
         this.tipo = tipo;
     }
 
-    public Funcionario getFuncionario() {
-        return funcionario;
-    }
-
-    public void setFuncionario(Funcionario funcionario) {
-        if (funcionario == null) {
-            throw new IllegalArgumentException("O funcionário não pode ser nulo.");
-        }
-        this.funcionario = funcionario;
-    }
-    
-    public Fornecedor getFornecedor() {
-        return fornecedor;
-    }
-
-    public void setFornecedor(Fornecedor fornecedor) {
-        if (fornecedor == null) {
-            throw new IllegalArgumentException("O fornecedor não pode ser nulo.");
-        }
-        this.fornecedor = fornecedor;
-    }
-
     public Categoria getCategoria() {
         return categoria;
     }
@@ -200,5 +186,41 @@ public class Medicamento {
             throw new IllegalArgumentException("A categoria não pode ser nula.");
         }
         this.categoria = categoria;
+    }
+
+    public List<Fabricante> getFabricantes() {
+        return fabricantes;
+    }
+
+    public void setFabricantes(List<Fabricante> fabricantes) {
+        if (fabricantes != null) {
+            this.fabricantes = fabricantes;
+        } else {
+            throw new IllegalArgumentException("A lista de fabricantes não pode ser nula.");
+        }
+    }
+
+    public List<Fornecedor> getFornecedores() {
+        return fornecedores;
+    }
+
+    public void setFornecedores(List<Fornecedor> fornecedores) {
+        if (fornecedores != null) {
+            this.fornecedores = fornecedores;
+        } else {
+            throw new IllegalArgumentException("A lista de fornecedores não pode ser nula.");
+        }
+    }
+
+    public List<Funcionario> getFuncionarios() {
+        return funcionarios;
+    }
+
+    public void setFuncionarios(List<Funcionario> funcionarios) {
+        if (funcionarios != null) {
+            this.funcionarios = funcionarios;
+        } else {
+            throw new IllegalArgumentException("A lista de funcionários não pode ser nula.");
+        }
     }
 }
