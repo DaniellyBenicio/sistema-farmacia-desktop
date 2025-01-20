@@ -365,12 +365,15 @@ public class EditarCliente extends JPanel {
 
             ClienteDAO.atualizarCliente(conn, clienteExistente);
             JOptionPane.showMessageDialog(null, "Cliente atualizado com sucesso!", "Sucesso",
-                    JOptionPane.INFORMATION_MESSAGE);
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erro ao atualizar cliente: " + e.getMessage(), "Erro",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.INFORMATION_MESSAGE);
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Erro ao atualizar cliente: " + e.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) { 
+                JOptionPane.showMessageDialog(null, "Uma exceção ocorreu: " + e.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
-    }
 
     private void estilizarCamposFormulario(JComponent campo, Font font) {
         campo.setBackground(Color.WHITE);

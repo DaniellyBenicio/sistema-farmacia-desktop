@@ -11,15 +11,29 @@ import models.Cliente.Cliente;
 
 public class ClienteDAO {
     public static void cadastrarCliente(Connection conn, Cliente c) throws SQLException {
-   
-        if (existeClientePorCpf(conn, c.getCpf())) {
-        throw new IllegalArgumentException("Cliente com o CPF " + c.getCpf() + " já cadastrado.");
-    } 
+        String cpfCriptografado = null;
+    
+        try {
+            cpfCriptografado = Criptografia.criptografar(c.getCpf());
+        } catch (Exception e) {
+            System.err.println("Erro ao criptografar CPF: " + e.getMessage());
+            throw new SQLException("Erro ao criptografar CPF.", e); 
+        }
+    
+        try {
+            if (verificarCpfExistente(conn, cpfCriptografado, c.getId())) {
+                throw new IllegalArgumentException("Cliente com o CPF " + c.getCpf() + " já cadastrado.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar existência do cliente: " + e.getMessage());
+            throw e; 
+        }
+    
         String sql = "INSERT INTO cliente(nome, cpf, telefone, rua, numCasa, bairro, cidade, estado, pontoReferencia, funcionario_id) VALUES (?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, c.getNome());
-            pstmt.setString(2, Criptografia.criptografar(c.getCpf().replaceAll("[^0-9]", "")));
-            pstmt.setString(3, c.getTelefone().replaceAll("[^0-9]", ""));
+            pstmt.setString(2, cpfCriptografado); 
+            pstmt.setString(3, c.getTelefone().replaceAll("[^0-9]", "")); 
             pstmt.setString(4, c.getRua());
             pstmt.setString(5, c.getNumCasa());
             pstmt.setString(6, c.getBairro());
@@ -27,8 +41,9 @@ public class ClienteDAO {
             pstmt.setString(8, c.getEstado());
             pstmt.setString(9, c.getPontoReferencia());
             pstmt.setInt(10, c.getFuncionario().getId());            
+    
             pstmt.executeUpdate();
-
+    
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     c.setId(generatedKeys.getInt(1));  
@@ -38,20 +53,38 @@ public class ClienteDAO {
             }
         } catch (SQLException e) {
             System.err.println("Erro ao cadastrar cliente: " + e.getMessage());
-            throw e;
+            throw e; 
+        } catch (Exception e) {
+            System.err.println("Erro inesperado ao cadastrar cliente: " + e.getMessage());
+            throw new SQLException("Erro inesperado ao cadastrar cliente.", e); 
         }
     }
 
     public static void atualizarCliente(Connection conn, Cliente c) throws SQLException {
-        if (c.getId() <= 0) {
-            throw new IllegalArgumentException("ID do cliente inválido para atualização.");
+        String cpfCriptografadoNovo = null;
+
+        try {
+            cpfCriptografadoNovo = Criptografia.criptografar(c.getCpf());
+        } catch (Exception e) {
+            System.err.println("Erro ao criptografar CPF: " + e.getMessage());
+            throw new SQLException("Erro ao criptografar CPF.", e);
         }
 
-        String sql = "UPDATE cliente SET nome = ?, cpf = ?, telefone = ?, rua = ?, numCasa = ?, bairro = ?, cidade = ?, estado = ?, pontoReferencia = ? WHERE id = ?";
+        try {
+            if (verificarCpfExistente(conn, cpfCriptografadoNovo, c.getId())) {
+                throw new IllegalArgumentException("Já existe um cliente com o CPF " + c.getCpf());
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar existência do CPF: " + e.getMessage());
+            throw e;
+        }
+
+    String sql = "UPDATE cliente SET nome = ?, cpf = ?, telefone = ?, rua = ?, numCasa = ?, bairro = ?, cidade = ?, estado = ?, pontoReferencia = ? WHERE id = ?";
+        
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, c.getNome());
-            pstmt.setString(2, Criptografia.criptografar(c.getCpf().replaceAll("[^0-9]", "")));
-            pstmt.setString(3, c.getTelefone().replaceAll("[^0-9]", "")); 
+            pstmt.setString(2, cpfCriptografadoNovo);
+            pstmt.setString(3, c.getTelefone().replaceAll("[^0-9]", ""));
             pstmt.setString(4, c.getRua());
             pstmt.setString(5, c.getNumCasa());
             pstmt.setString(6, c.getBairro());
@@ -59,10 +92,14 @@ public class ClienteDAO {
             pstmt.setString(8, c.getEstado());
             pstmt.setString(9, c.getPontoReferencia());
             pstmt.setInt(10, c.getId());
+    
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar cliente: " + e.getMessage());
             throw e;
+        } catch (Exception e) {
+            System.err.println("Erro inesperado ao atualizar cliente: " + e.getMessage());
+            throw new SQLException("Erro inesperado ao atualizar cliente ID " + c.getId(), e);
         }
     }
 
@@ -80,9 +117,13 @@ public class ClienteDAO {
                     cliente.setId(rs.getInt("id"));
                     cliente.setNome(rs.getString("nome"));
                     String cpfCriptografado = rs.getString("cpf");
-                    String cpfDescriptografado = Criptografia.descriptografar(cpfCriptografado);
-                
-                    cliente.setCpf(cpfDescriptografado);
+                    try {
+                        String cpfDescriptografado = Criptografia.descriptografar(cpfCriptografado);
+                        cliente.setCpf(cpfDescriptografado);
+                    } catch (Exception e) {
+                        System.err.println("Erro ao descriptografar CPF para o cliente ID " + id + ": " + e.getMessage());
+                        throw new SQLException("Erro ao descriptografar CPF do cliente ID " + id, e);
+                    }
                     cliente.setTelefone(rs.getString("telefone"));
                     cliente.setRua(rs.getString("rua"));
                     cliente.setNumCasa(rs.getString("numCasa"));
@@ -103,19 +144,35 @@ public class ClienteDAO {
     }
 
     public static Cliente clientePorCpf(Connection conn, String cpf) throws SQLException {
+        String cpfCriptografado = null;
+        try {
+            cpfCriptografado = Criptografia.criptografar(cpf.replaceAll("[^0-9]", ""));
+        } catch (Exception e) {
+            System.err.println("Erro ao criptografar CPF: " + e.getMessage());
+            throw new SQLException("Erro ao criptografar CPF para busca de cliente", e); 
+        }
+    
         String sql = "SELECT c.id, c.nome, c.cpf, c.telefone, c.rua, c.numCasa, c.bairro, c.cidade, c.estado, c.pontoReferencia " +
                      "FROM cliente c " +
                      "WHERE c.cpf = ?";
-    
+        
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, cpf); 
-    
+            ps.setString(1, cpfCriptografado);
+        
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Cliente cliente = new Cliente();
                     cliente.setId(rs.getInt("id"));
                     cliente.setNome(rs.getString("nome"));
-                    cliente.setCpf(rs.getString("cpf"));
+                    
+                    String cpfDescriptografado = null;
+                    try {
+                        cpfDescriptografado = Criptografia.descriptografar(rs.getString("cpf"));
+                    } catch (Exception e) {
+                        System.err.println("Erro ao descriptografar CPF: " + e.getMessage());
+                        throw new SQLException("Erro ao descriptografar CPF do cliente", e); 
+                    }
+                    cliente.setCpf(cpfDescriptografado);
                     cliente.setTelefone(rs.getString("telefone"));
                     cliente.setRua(rs.getString("rua"));
                     cliente.setNumCasa(rs.getString("numCasa"));
@@ -123,17 +180,21 @@ public class ClienteDAO {
                     cliente.setCidade(rs.getString("cidade"));
                     cliente.setEstado(rs.getString("estado"));
                     cliente.setPontoReferencia(rs.getString("pontoReferencia"));
-    
+        
                     return cliente;
                 }
             }
         } catch (SQLException e) {
             System.err.println("Erro ao buscar cliente por CPF: " + e.getMessage());
-            throw e;
+            throw e; 
+        } catch (Exception e) {
+            System.err.println("Erro inesperado ao buscar cliente por CPF: " + e.getMessage());
+            throw new SQLException("Erro inesperado ao buscar cliente por CPF", e);
         }
-    
+        
         return null;  
     }
+    
     
     public static ArrayList<Cliente> listarClientesSemCpf(Connection conn) throws SQLException {
         String sql = "SELECT c.id, c.nome, c.telefone, c.rua, c.numCasa, c.bairro, c.cidade, c.estado, c.pontoReferencia " +
@@ -193,5 +254,19 @@ public class ClienteDAO {
             }
         }
         return false; 
+    }
+
+    public static boolean verificarCpfExistente(Connection conn, String cpfCriptografado, int idCliente) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM cliente WHERE cpf = ? AND id != ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, cpfCriptografado);
+            pstmt.setInt(2, idCliente);  
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
     }
 }

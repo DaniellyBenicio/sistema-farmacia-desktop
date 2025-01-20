@@ -16,9 +16,9 @@ public class Cliente {
     private String pontoReferencia;
     private Funcionario funcionario; 
  
-    public Cliente(String nome, String cpf, String telefone, String rua, String numCasa, String bairro, String cidade, String estado, String pontoReferencia, Funcionario funcionario) {
+    public Cliente(String nome, String cpf, String telefone, String rua, String numCasa, String bairro, String cidade, String estado, String pontoReferencia, Funcionario funcionario) throws Exception {
         this.nome = nome;  
-        this.cpf = Criptografia.criptografar(cpf);        
+        this.cpf = Criptografia.criptografar(cpf);       
         this.telefone = telefone;
         this.rua = rua;
         this.numCasa = numCasa;
@@ -54,14 +54,20 @@ public class Cliente {
     } 
 
     public String getCpf() {
-        return Criptografia.descriptografar(cpf);  
+        try {
+            return Criptografia.descriptografar(cpf);
+        } catch (Exception e) {
+            System.err.println("Erro ao descriptografar CPF: " + e.getMessage());
+            throw new RuntimeException("Erro ao obter CPF: " + e.getMessage(), e); 
+        }
     }
-
-    public void setCpf(String cpf) {
+    
+    public void setCpf(String cpf) throws Exception {
         if (cpf == null || cpf.trim().isEmpty()) {
             throw new IllegalArgumentException("CPF não pode ser vazio.");
         }
-        this.cpf = Criptografia.criptografar(cpf);    }
+        this.cpf = Criptografia.criptografar(cpf);
+    }
 
     public String getTelefone() {
         return telefone;

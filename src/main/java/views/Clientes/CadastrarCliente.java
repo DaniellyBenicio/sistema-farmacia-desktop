@@ -342,9 +342,15 @@ public class CadastrarCliente extends JPanel {
                 return;
             }
 
-            System.out.println(cpf);
-
+            boolean existe = false;
             try (Connection conn = ConexaoBD.getConnection()) {
+                existe = ClienteDAO.existeClientePorCpf(conn, cpf);
+                
+                if (existe) {
+                    JOptionPane.showMessageDialog(null, "Este CPF já está cadastrado. Por favor, tente um CPF diferente.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 Funcionario funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
 
                 Cliente cliente = new Cliente(nome, cpf, telefone, rua, numero, bairro, cidade, estado,
@@ -375,6 +381,9 @@ public class CadastrarCliente extends JPanel {
                     JOptionPane.showMessageDialog(null, "Erro ao cadastrar cliente: " + ex.getMessage(), "Erro",
                             JOptionPane.ERROR_MESSAGE);
                 }
+            } catch (Exception e1) {
+                JOptionPane.showMessageDialog(null, "Erro: " + e1.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                e1.printStackTrace();
             }
         });
 

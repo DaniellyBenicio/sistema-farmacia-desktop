@@ -1,20 +1,30 @@
 package utils;
 
-import org.jasypt.util.text.AES256TextEncryptor;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
 
 public class Criptografia {
 
-    private static final String SECRET_KEY = "CPF_ENCRYPTION_KEY";  
-    
-    public static String criptografar(String texto) {
-        AES256TextEncryptor encryptor = new AES256TextEncryptor();
-        encryptor.setPassword(SECRET_KEY);
-        return encryptor.encrypt(texto);
+    private static final String CHAVE_SECRETA = "1234567890123456"; 
+
+    public static String criptografar(String cpf) throws Exception {
+        SecretKeySpec secretKey = new SecretKeySpec(CHAVE_SECRETA.getBytes(), "AES");
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        byte[] encrypted = cipher.doFinal(cpf.getBytes());
+        return Base64.getEncoder().encodeToString(encrypted);
     }
 
-    public static String descriptografar(String textoCriptografado) {
-        AES256TextEncryptor encryptor = new AES256TextEncryptor();
-        encryptor.setPassword(SECRET_KEY);
-        return encryptor.decrypt(textoCriptografado);
+    public static String descriptografar(String encryptedCpf) throws Exception {
+        SecretKeySpec secretKey = new SecretKeySpec(CHAVE_SECRETA.getBytes(), "AES");
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(encryptedCpf));
+        return new String(decrypted);
     }
+
 }
+
