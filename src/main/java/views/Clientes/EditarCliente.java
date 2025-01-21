@@ -107,6 +107,7 @@ public class EditarCliente extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         cpfField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(cpfField, fieldFont);
         gbc.gridx = 1;
@@ -251,7 +252,8 @@ public class EditarCliente extends JPanel {
             if (cliente != null) {
                 nomeField.setText(cliente.getNome());
                 cpfOriginal = cliente.getCpf();
-                cpfField.setText(formatarCpf(cpfOriginal)); // Formata o CPF para exibição
+                String cpfFormatado = formatarCpf(cpfOriginal);
+                cpfField.setText(cpfFormatado);
                 telefoneField.setText(cliente.getTelefone());
                 ruaField.setText(cliente.getRua());
                 numeroField.setText(cliente.getNumCasa());
@@ -261,10 +263,12 @@ public class EditarCliente extends JPanel {
                 pontodereferenciaField.setText(cliente.getPontoReferencia());
             } else {
                 JOptionPane.showMessageDialog(null, "Cliente não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erro ao carregar dados do cliente.", "Erro",
+            JOptionPane.showMessageDialog(null, "Erro ao carregar dados do cliente: " + e.getMessage(), "Erro",
                     JOptionPane.ERROR_MESSAGE);
+            return;
         }
     }
 
@@ -272,12 +276,12 @@ public class EditarCliente extends JPanel {
         if (cpf != null && cpf.length() == 11) {
             return "***." + cpf.substring(3, 6) + "." + cpf.substring(6, 9) + "-" + "**";
         }
-        return cpf; // Retorna como está se não for válido
+        return cpf;
     }
 
     private void salvarCliente(int idCliente) {
         String nome = nomeField.getText().trim();
-        String cpf = cpfField.getText().replaceAll("[^0-9]", ""); // Limpa a máscara do CPF
+        String cpf = cpfField.getText().replaceAll("[^0-9]", "");
         String telefone = telefoneField.getText().trim();
         String rua = ruaField.getText().trim();
         String numero = numeroField.getText().trim();
@@ -342,14 +346,10 @@ public class EditarCliente extends JPanel {
                 return;
             }
 
-            // Formata o CPF original para comparação
             String cpfFormatadoOriginal = formatarCpf(cpfOriginal);
             String cpfOriginalLimpo = cpfFormatadoOriginal.replaceAll("[^0-9]", "");
-            String cpfFormatadoAtual = formatarCpf(cpf); // Formata o CPF atual para comparação
+            String cpfFormatadoAtual = formatarCpf(cpf);
 
-            // Verifica se o CPF foi alterado ou se o CPF formatado é diferente do que está
-            // no campo
-            // Verifique se os CPFs são diferentes
             if (!cpf.equals(cpfOriginalLimpo) && !cpfFormatadoAtual.equals(cpfFormatadoOriginal)) {
                 clienteExistente.setCpf(cpf); // Salva o CPF limpo
             }
@@ -365,15 +365,24 @@ public class EditarCliente extends JPanel {
 
             ClienteDAO.atualizarCliente(conn, clienteExistente);
             JOptionPane.showMessageDialog(null, "Cliente atualizado com sucesso!", "Sucesso",
-            JOptionPane.INFORMATION_MESSAGE);
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(null, "Erro ao atualizar cliente: " + e.getMessage(), "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-            } catch (Exception e) { 
-                JOptionPane.showMessageDialog(null, "Uma exceção ocorreu: " + e.getMessage(), "Erro",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException e) {
+            String message = e.getMessage();
+            if (message.contains("telefone")) {
+                JOptionPane.showMessageDialog(null, "Telefone já cadastrado. Tente um telefone diferente.", "Erro",
                         JOptionPane.ERROR_MESSAGE);
             }
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar cliente: " + e.getMessage(), "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+            carregarDadosCliente();
+        } catch (IllegalArgumentException e) { // Captura erros relacionados ao CPF
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            carregarDadosCliente();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Uma exceção ocorreu: " + e.getMessage(), "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
+    }
 
     private void estilizarCamposFormulario(JComponent campo, Font font) {
         campo.setBackground(Color.WHITE);

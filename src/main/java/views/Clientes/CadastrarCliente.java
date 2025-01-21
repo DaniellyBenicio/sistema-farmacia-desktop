@@ -186,7 +186,7 @@ public class CadastrarCliente extends JPanel {
                 "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE",
                 "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP",
                 "SE", "TO");
-        String[] estadosArray = new String[estadosValidos.size() + 1]; 
+        String[] estadosArray = new String[estadosValidos.size() + 1];
         estadosArray[0] = "Selecione";
         for (int i = 0; i < estadosValidos.size(); i++) {
             estadosArray[i + 1] = estadosValidos.get(i);
@@ -345,9 +345,11 @@ public class CadastrarCliente extends JPanel {
             boolean existe = false;
             try (Connection conn = ConexaoBD.getConnection()) {
                 existe = ClienteDAO.existeClientePorCpf(conn, cpf);
-                
+
                 if (existe) {
-                    JOptionPane.showMessageDialog(null, "Este CPF já está cadastrado. Por favor, tente um CPF diferente.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null,
+                            "Este CPF já está cadastrado. Por favor, tente um CPF diferente.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -377,13 +379,12 @@ public class CadastrarCliente extends JPanel {
                 if (message.contains("telefone")) {
                     JOptionPane.showMessageDialog(null, "Telefone já cadastrado. Tente um telefone diferente.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Erro ao cadastrar cliente: " + ex.getMessage(), "Erro",
-                            JOptionPane.ERROR_MESSAGE);
                 }
-            } catch (Exception e1) {
-                JOptionPane.showMessageDialog(null, "Erro: " + e1.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-                e1.printStackTrace();
+            } catch (IllegalArgumentException ex) { // Captura erros relacionados ao CPF
+                JOptionPane.showMessageDialog(null, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Uma exceção ocorreu: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
