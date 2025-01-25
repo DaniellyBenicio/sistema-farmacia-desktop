@@ -81,7 +81,7 @@ public class PainelSuperior extends JPanel {
             dialogo.setSize(350, 180);
             dialogo.setLayout(new GridBagLayout());
             dialogo.setModal(true);
-            dialogo.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); 
+            dialogo.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
             dialogo.addWindowListener(new java.awt.event.WindowAdapter() {
                 @Override
@@ -91,7 +91,7 @@ public class PainelSuperior extends JPanel {
                                 "Por favor, identifique um funcionário para abrir o sistema.", "Atenção",
                                 JOptionPane.WARNING_MESSAGE);
                     } else {
-                        dialogo.dispose(); 
+                        dialogo.dispose();
                     }
                 }
             });
@@ -102,10 +102,10 @@ public class PainelSuperior extends JPanel {
 
             adicionarComponentesDialogo(dialogo, gbc);
             dialogo.setLocationRelativeTo(null);
-            dialogo.setVisible(true); 
+            dialogo.setVisible(true);
 
             if (idFuncionarioAtual > 0) {
-                funcionarioIdentificado = true; 
+                funcionarioIdentificado = true;
             }
         }
     }
@@ -265,10 +265,48 @@ public class PainelSuperior extends JPanel {
         botao.setContentAreaFilled(false);
         botao.setFocusable(false);
 
+        String caminhoIcone = "../../icons/";
+
+        switch (itensMenu[indice]) {
+            case "Vendas":
+                caminhoIcone += "";
+                break;
+            case "Fornecedor":
+                caminhoIcone += "";
+                break;
+            case "Medicamento":
+                caminhoIcone += "";
+                break;
+            case "Produtos":
+                caminhoIcone += "";
+                break;
+            case "Funcionário":
+                caminhoIcone += "";
+                break;
+            case "Cliente":
+                caminhoIcone += "";
+                break;
+            case "Estoque":
+                caminhoIcone += "";
+                break;
+        }
+
+        ImageIcon icon = new ImageIcon(getClass().getResource(caminhoIcone));
+        Image img = icon.getImage();
+        Image resizedImg = img.getScaledInstance(32, 32, java.awt.Image.SCALE_FAST);
+        icon = new ImageIcon(resizedImg);
+
+        botao.setIcon(icon);
+
+        botao.setHorizontalTextPosition(SwingConstants.LEFT);
+        botao.setIconTextGap(15);
+        botao.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+
         botao.addActionListener(e -> {
             selecionarOpcaoMenu(botao);
             mostrarPainel(itensMenu[indice]);
         });
+
         return botao;
     }
 
@@ -313,7 +351,7 @@ public class PainelSuperior extends JPanel {
             case "Cliente":
                 layoutAlternativo.show(painelDeVisualizacao, "ListaDeClientes");
                 break;
-            
+
         }
     }
 }
