@@ -141,7 +141,7 @@ public class CadastrarMedicamento extends JPanel {
         JTextField formaFarmaceuticaField = new JTextField();
         formaFarmaceuticaField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(formaFarmaceuticaField, fieldFont);
-        formaFarmaceuticaField.setVisible(false); // Inicialmente invisível
+        formaFarmaceuticaField.setVisible(false); 
         gbc.gridx = 1;
         gbc.gridy = 3;
         camposPanel.add(formaFarmaceuticaField, gbc);

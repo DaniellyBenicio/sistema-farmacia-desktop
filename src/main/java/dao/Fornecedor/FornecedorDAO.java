@@ -162,6 +162,24 @@ public class FornecedorDAO {
         return fornecedores;
     }
 
+    public static ArrayList<String> listarNomesFornecedores(Connection conn) throws SQLException {
+        String sql = "SELECT nome FROM fornecedor ORDER BY nome ASC"; 
+    
+        ArrayList<String> nomesFornecedores = new ArrayList<>(); 
+    
+        try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                String nomeFornecedor = rs.getString("nome"); 
+                nomesFornecedores.add(nomeFornecedor);  
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar nomes de fornecedores: " + e.getMessage());
+            throw e;
+        }
+        return nomesFornecedores;
+    }
+    
+    
     public static void deletarFornecedor(Connection conn, Fornecedor forn) throws SQLException {
         String sql = "DELETE FROM fornecedor WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
