@@ -1,6 +1,11 @@
 package views.Medicamentos;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
 
@@ -117,20 +122,42 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 3;
         camposPanel.add(fornecedorComboBox, gbc);
 
+        // Criação do Label para Forma Farmacêutica
         JLabel formaFarmaceuticaLabel = new JLabel("Forma Farmacêutica");
         formaFarmaceuticaLabel.setFont(labelFont);
         gbc.gridx = 1;
         gbc.gridy = 2;
         camposPanel.add(formaFarmaceuticaLabel, gbc);
 
-        String[] formasFarmaceuticas = { "Selecione", "Forma 1", "Forma 2", "Forma 3" };
-        JComboBox<String> formaFarmaceuticaComboBox = new JComboBox<>(formasFarmaceuticas);
+        // Criação do ComboBox para formas farmacêuticas
+        JComboBox<String> formaFarmaceuticaComboBox = new JComboBox<>(obterFormasFarmaceuticas());
         formaFarmaceuticaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(formaFarmaceuticaComboBox, fieldFont);
         gbc.gridx = 1;
         gbc.gridy = 3;
         camposPanel.add(formaFarmaceuticaComboBox, gbc);
 
+        // Criação do JTextField que ficará oculto inicialmente
+        JTextField formaFarmaceuticaField = new JTextField();
+        formaFarmaceuticaField.setPreferredSize(new Dimension(200, 40));
+        estilizarCamposFormulario(formaFarmaceuticaField, fieldFont);
+        formaFarmaceuticaField.setVisible(false); // Inicialmente invisível
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        camposPanel.add(formaFarmaceuticaField, gbc);
+
+        // Ação quando a seleção do JComboBox mudar
+        formaFarmaceuticaComboBox.addActionListener(e -> {
+            if ("Outros".equals(formaFarmaceuticaComboBox.getSelectedItem())) {
+                formaFarmaceuticaComboBox.setVisible(false); // Oculta o ComboBox
+                formaFarmaceuticaField.setVisible(true); // Mostra o campo de texto
+                formaFarmaceuticaField.requestFocus(); // Set focus para o JTextField
+            } else {
+                formaFarmaceuticaField.setText(""); // Limpa o JTextField
+                formaFarmaceuticaComboBox.setVisible(true); // Mostra novamente o ComboBox
+                formaFarmaceuticaField.setVisible(false); // Oculta o JTextField
+            }
+        });
         JLabel receitaLabel = new JLabel("Receita");
         receitaLabel.setFont(labelFont);
         gbc.gridx = 2;
@@ -226,6 +253,30 @@ public class CadastrarMedicamento extends JPanel {
         camposPanel.add(valorUnitarioField, gbc);
 
         return camposPanel;
+    }
+
+    private String[] obterFormasFarmaceuticas() {
+        // Criando uma lista mutável com todas as formas farmacêuticas
+        List<String> formas = new ArrayList<>(Arrays.asList(
+                "Comprimido", "Creme", "Pomada", "Injeção", "Xarope", "Solução",
+                "Spray", "Cápsula", "Gel", "Loção", "Gelatina", "Supositório",
+                "Pó", "Emulsão", "Colírio", "Gotejamento", "Aerossol",
+                "Spray Nasal", "Pastilha", "Suspensão", "Pasta", "Sachê"));
+        
+        // Adicionando a opção "Outros" e "Selecione"
+        formas.add(0, "Selecione"); // Colocando "Selecione" no início
+        formas.add("Outros"); // Adicionando "Outros" ao final
+    
+        // Ordenando a lista de forma alfabética, excluindo "Selecione" e "Outros"
+        List<String> formasOrdenadas = new ArrayList<>(formas.subList(1, formas.size() - 1)); // Exclui "Selecione" e "Outros"
+        Collections.sort(formasOrdenadas, String.CASE_INSENSITIVE_ORDER);
+    
+        // Adicionando "Selecione" e "Outros" de volta à lista
+        formasOrdenadas.add(0, "Selecione"); // Adicionando novamente "Selecione" no início
+        formasOrdenadas.add("Outros"); // Adicionando "Outros" no final
+    
+        // Convertendo de volta para um array para usar no JComboBox
+        return formasOrdenadas.toArray(new String[0]);
     }
 
     private JPanel criarBotoesPanel() {
