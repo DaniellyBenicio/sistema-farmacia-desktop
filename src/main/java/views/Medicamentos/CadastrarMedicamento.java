@@ -13,6 +13,7 @@ import javax.swing.text.MaskFormatter;
 
 import dao.Fornecedor.FornecedorDAO;
 import main.ConexaoBD;
+import views.BarrasSuperiores.PainelSuperior;
 import views.Fornecedor.CadastrarFornecedor;
 
 public class CadastrarMedicamento extends JPanel {
@@ -75,17 +76,37 @@ public class CadastrarMedicamento extends JPanel {
 
         JLabel categoriaLabel = new JLabel("Categoria");
         categoriaLabel.setFont(labelFont);
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        camposPanel.add(categoriaLabel, gbc);
-
-        String[] categorias = { "Selecione", "Categoria 1", "Categoria 2", "Categoria 3" };
+        gbc.gridx = 1; gbc.gridy = 0; camposPanel.add(categoriaLabel, gbc);
+        
+        String[] categorias = {
+            "Selecione", "Analgesico", "Anestesico", "Antitermico", "Antipiretico", "Antibiotico", 
+            "Antifungico", "Antiviral", "Antiinflamatorio", "Antidepressivo", "Antipsicotico", 
+            "Ansiolitico", "Antihipertensivo", "Antidiabetico", "Antiácidos", "Antialérgicos", 
+            "Anti-eméticos", "Outros" 
+        };
+        
         categoriaComboBox = new JComboBox<>(categorias);
         categoriaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        camposPanel.add(categoriaComboBox, gbc);
+        gbc.gridx = 1; gbc.gridy = 1; camposPanel.add(categoriaComboBox, gbc);
+        
+        JTextField categoriaField = new JTextField();
+        categoriaField.setPreferredSize(new Dimension(200, 40));
+        estilizarCamposFormulario(categoriaField, fieldFont);
+        categoriaField.setVisible(false);
+        gbc.gridx = 1; gbc.gridy = 1; camposPanel.add(categoriaField, gbc);
+    
+        categoriaComboBox.addActionListener(e -> {
+            if ("Outros".equals(categoriaComboBox.getSelectedItem())) {
+                categoriaComboBox.setVisible(false);
+                categoriaField.setVisible(true);
+                categoriaField.requestFocus();
+            } else {
+                categoriaField.setText("");
+                categoriaComboBox.setVisible(true);
+                categoriaField.setVisible(false);
+            }
+        });
 
         JLabel dosagemLabel = new JLabel("Dosagem");
         dosagemLabel.setFont(labelFont);
@@ -106,7 +127,7 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(tipoLabel, gbc);
 
-        String[] tipos = { "Selecione", "Tipo 1", "Tipo 2", "Tipo 3" };
+        String[] tipos = { "Selecione", "Ético", "Genérico", "Similar"};
         tipoComboBox = new JComboBox<>(tipos);
         tipoComboBox.setPreferredSize(new Dimension(170, 40));
         estilizarComboBox(tipoComboBox, fieldFont);
@@ -324,6 +345,8 @@ public class CadastrarMedicamento extends JPanel {
         cadastrarButton.setFocusPainted(false);
         cadastrarButton.setPreferredSize(new Dimension(140, 35));
         botoesPanel.add(cadastrarButton);
+
+        int idFuncionario = PainelSuperior.getIdFuncionarioAtual();            
 
         return botoesPanel;
     }
