@@ -1,6 +1,8 @@
 package views.Medicamentos;
 
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,6 +10,10 @@ import java.util.List;
 
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
+
+import dao.Fornecedor.FornecedorDAO;
+import main.ConexaoBD;
+import views.Fornecedor.CadastrarFornecedor;
 
 public class CadastrarMedicamento extends JPanel {
     private JTextField nomeField;
@@ -114,22 +120,36 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 2;
         camposPanel.add(fornecedorLabel, gbc);
 
-        String[] fornecedores = { "Selecione", "Fornecedor 1", "Fornecedor 2", "Fornecedor 3" };
-        fornecedorComboBox = new JComboBox<>(fornecedores);
+        fornecedorComboBox = new JComboBox<>(obterFornecedores());
         fornecedorComboBox.setPreferredSize(new Dimension(400, 40));
         estilizarComboBox(fornecedorComboBox, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 3;
         camposPanel.add(fornecedorComboBox, gbc);
 
-        // Criação do Label para Forma Farmacêutica
+        fornecedorComboBox.addActionListener(e -> {
+            String selectedItem = (String) fornecedorComboBox.getSelectedItem();
+            if ("Outros".equals(selectedItem)) {
+                JDialog cadastroDialog = new JDialog();
+                cadastroDialog.setTitle("Cadastrar Fornecedor");
+                cadastroDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                cadastroDialog.setSize(1200, 650);
+                cadastroDialog.setLocationRelativeTo(this);
+                cadastroDialog.setModal(true);
+
+                CadastrarFornecedor cadastroPanel = new CadastrarFornecedor();
+
+                cadastroDialog.add(cadastroPanel);
+                cadastroDialog.setVisible(true);
+            }
+        });
+
         JLabel formaFarmaceuticaLabel = new JLabel("Forma Farmacêutica");
         formaFarmaceuticaLabel.setFont(labelFont);
         gbc.gridx = 1;
         gbc.gridy = 2;
         camposPanel.add(formaFarmaceuticaLabel, gbc);
 
-        // Criação do ComboBox para formas farmacêuticas
         JComboBox<String> formaFarmaceuticaComboBox = new JComboBox<>(obterFormasFarmaceuticas());
         formaFarmaceuticaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(formaFarmaceuticaComboBox, fieldFont);
@@ -137,25 +157,23 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 3;
         camposPanel.add(formaFarmaceuticaComboBox, gbc);
 
-        // Criação do JTextField que ficará oculto inicialmente
         JTextField formaFarmaceuticaField = new JTextField();
         formaFarmaceuticaField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(formaFarmaceuticaField, fieldFont);
-        formaFarmaceuticaField.setVisible(false); 
+        formaFarmaceuticaField.setVisible(false);
         gbc.gridx = 1;
         gbc.gridy = 3;
         camposPanel.add(formaFarmaceuticaField, gbc);
 
-        // Ação quando a seleção do JComboBox mudar
         formaFarmaceuticaComboBox.addActionListener(e -> {
             if ("Outros".equals(formaFarmaceuticaComboBox.getSelectedItem())) {
-                formaFarmaceuticaComboBox.setVisible(false); // Oculta o ComboBox
-                formaFarmaceuticaField.setVisible(true); // Mostra o campo de texto
-                formaFarmaceuticaField.requestFocus(); // Set focus para o JTextField
+                formaFarmaceuticaComboBox.setVisible(false);
+                formaFarmaceuticaField.setVisible(true);
+                formaFarmaceuticaField.requestFocus();
             } else {
-                formaFarmaceuticaField.setText(""); // Limpa o JTextField
-                formaFarmaceuticaComboBox.setVisible(true); // Mostra novamente o ComboBox
-                formaFarmaceuticaField.setVisible(false); // Oculta o JTextField
+                formaFarmaceuticaField.setText("");
+                formaFarmaceuticaComboBox.setVisible(true);
+                formaFarmaceuticaField.setVisible(false);
             }
         });
         JLabel receitaLabel = new JLabel("Receita");
@@ -255,27 +273,35 @@ public class CadastrarMedicamento extends JPanel {
         return camposPanel;
     }
 
+    private String[] obterFornecedores() {
+        try (Connection conn = ConexaoBD.getConnection()) {
+            ArrayList<String> fornecedores = FornecedorDAO.listarNomesFornecedores(conn);
+            fornecedores.add(0, "Selecione");
+            fornecedores.add("Outros");
+            return fornecedores.toArray(new String[0]);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new String[] { "Selecione" };
+        }
+
+    }
+
     private String[] obterFormasFarmaceuticas() {
-        // Criando uma lista mutável com todas as formas farmacêuticas
         List<String> formas = new ArrayList<>(Arrays.asList(
                 "Comprimido", "Creme", "Pomada", "Injeção", "Xarope", "Solução",
                 "Spray", "Cápsula", "Gel", "Loção", "Gelatina", "Supositório",
                 "Pó", "Emulsão", "Colírio", "Gotejamento", "Aerossol",
                 "Spray Nasal", "Pastilha", "Suspensão", "Pasta", "Sachê"));
-        
-        // Adicionando a opção "Outros" e "Selecione"
-        formas.add(0, "Selecione"); // Colocando "Selecione" no início
-        formas.add("Outros"); // Adicionando "Outros" ao final
-    
-        // Ordenando a lista de forma alfabética, excluindo "Selecione" e "Outros"
-        List<String> formasOrdenadas = new ArrayList<>(formas.subList(1, formas.size() - 1)); // Exclui "Selecione" e "Outros"
+
+        formas.add(0, "Selecione");
+        formas.add("Outros");
+
+        List<String> formasOrdenadas = new ArrayList<>(formas.subList(1, formas.size() - 1));
         Collections.sort(formasOrdenadas, String.CASE_INSENSITIVE_ORDER);
-    
-        // Adicionando "Selecione" e "Outros" de volta à lista
-        formasOrdenadas.add(0, "Selecione"); // Adicionando novamente "Selecione" no início
-        formasOrdenadas.add("Outros"); // Adicionando "Outros" no final
-    
-        // Convertendo de volta para um array para usar no JComboBox
+
+        formasOrdenadas.add(0, "Selecione");
+        formasOrdenadas.add("Outros");
+
         return formasOrdenadas.toArray(new String[0]);
     }
 
