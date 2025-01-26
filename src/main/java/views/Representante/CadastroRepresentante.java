@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.MaskFormatter;
 
-import controllers.Represetante.RepresentanteController;
+import controllers.Representante.RepresentanteController;
 import main.ConexaoBD;
 
 public class CadastroRepresentante extends JDialog {

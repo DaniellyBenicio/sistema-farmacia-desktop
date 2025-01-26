@@ -6,6 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import dao.Categoria.CategoriaDAO;
+import dao.Fabricante.FabricanteDAO;
+import dao.Fornecedor.FornecedorDAO;
+import dao.Funcionario.FuncionarioDAO;
+
 import java.sql.Date;
 import java.time.YearMonth;
 import models.Medicamento.Medicamento;
@@ -45,6 +51,10 @@ public class MedicamentoDAO {
             System.out.println("O medicamento já existe na base de dados.");
             return; 
         }
+        
+        int categoriaId = CategoriaDAO.criarCategoria(conn, m.getCategoria());
+        int fabricanteId = FabricanteDAO.criarFabricante(conn, m.getFabricante());
+        
         String sql = "INSERT INTO medicamento (nome, dosagem, formaFarmaceutica, valorUnit, dataValidade, dataFabricacao, tipoReceita, qnt, tipo, categoria_id, funcionario_id, fabricante_id, fornecedor_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";       
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, m.getNome()); 
@@ -56,11 +66,10 @@ public class MedicamentoDAO {
             pstmt.setString(7, m.getTipoReceita().name());
             pstmt.setInt(8, m.getQnt()); 
             pstmt.setString(9, m.getTipo().name()); 
-            pstmt.setInt(10, m.getCategoria().getId()); 
+            pstmt.setInt(10, categoriaId);
             pstmt.setInt(11, m.getFuncionario().getId()); 
-            pstmt.setInt(12, m.getFabricante().getId()); 
+            pstmt.setInt(12, fabricanteId);
             pstmt.setInt(13, m.getFornecedor().getId()); 
-
             pstmt.executeUpdate();
 
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
@@ -81,7 +90,11 @@ public class MedicamentoDAO {
             System.out.println("O medicamento não existe na base de dados.");
             return; 
         }
-        String sql = "UPDATE medicamento SET nome = ?, dosagem = ?, formaFarmaceutica = ?, valorUnit = ?, dataValidade = ?, dataFabricacao = ?, tipoReceita = ?, qnt = ?, tipo = ?, categoria_id = ? WHERE id = ?";
+
+        int categoriaId = CategoriaDAO.criarCategoria(conn, m.getCategoria());
+        int fabricanteId = FabricanteDAO.criarFabricante(conn, m.getFabricante());
+    
+        String sql = "UPDATE medicamento SET nome = ?, dosagem = ?, formaFarmaceutica = ?, valorUnit = ?, dataValidade = ?, dataFabricacao = ?, tipoReceita = ?, qnt = ?, tipo = ?, categoria_id = ?, fabricante_id WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, m.getNome()); 
             pstmt.setString(2, m.getDosagem());
@@ -92,8 +105,9 @@ public class MedicamentoDAO {
             pstmt.setString(7, m.getTipoReceita().name());
             pstmt.setInt(8, m.getQnt()); 
             pstmt.setString(9, m.getTipo().name()); 
-            pstmt.setInt(10, m.getCategoria().getId()); 
-            pstmt.setInt(11, m.getId()); 
+            pstmt.setInt(10, categoriaId);
+            pstmt.setInt(11, fabricanteId);
+            pstmt.setInt(12, m.getId()); 
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar medicamento: " + e.getMessage());

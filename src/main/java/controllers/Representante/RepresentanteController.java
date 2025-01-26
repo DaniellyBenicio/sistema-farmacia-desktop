@@ -1,4 +1,4 @@
-package controllers.Represetante;
+package controllers.Representante;
 
 import java.sql.Connection;
 import java.sql.SQLException;
