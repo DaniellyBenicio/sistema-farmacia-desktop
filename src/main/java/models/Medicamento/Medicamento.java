@@ -23,13 +23,13 @@ public class Medicamento {
     private int qnt;
     private Tipo tipo;
     private Categoria categoria;
-    private List<Fabricante> fabricantes; 
-    private List<Fornecedor> fornecedores; 
-    private List<Funcionario> funcionarios;
+    private Fabricante fabricante;
+    private Fornecedor fornecedor;
+    private Funcionario funcionario;
 
     public Medicamento(){};
 
-    public Medicamento(String nome, String dosagem, String formaFarmaceutica, double valorUnit, LocalDate dataValidade, LocalDate dataFabricacao, TipoReceita tipoReceita, int qnt, Tipo tipo, Categoria categoria, List<Fabricante> fabricantes, List<Fornecedor> fornecedores, List<Funcionario> funcionarios){
+    public Medicamento(String nome, String dosagem, String formaFarmaceutica, double valorUnit, LocalDate dataValidade, LocalDate dataFabricacao, TipoReceita tipoReceita, int qnt, Tipo tipo, Categoria categoria, Fabricante fabricante, Fornecedor fornecedor, Funcionario funcionario) {
         this.nome = nome;
         this.dosagem = dosagem;
         this.formaFarmaceutica = formaFarmaceutica;
@@ -40,10 +40,10 @@ public class Medicamento {
         this.qnt = qnt;
         this.tipo = tipo;
         this.categoria = categoria;
-        this.fabricantes = fabricantes != null ? fabricantes : new ArrayList<>();
-        this.fornecedores = fornecedores != null ? fornecedores : new ArrayList<>();
-        this.funcionarios = funcionarios != null ? funcionarios : new ArrayList<>();
-    };
+        this.fabricante = fabricante;
+        this.fornecedor = fornecedor;
+        this.funcionario = funcionario;
+    }
     
     public enum TipoReceita {
         SIMPLES, ESPECIAL;
@@ -209,39 +209,36 @@ public class Medicamento {
         this.categoria = categoria;
     }
 
-    public List<Fabricante> getFabricantes() {
-        return fabricantes;
+    public Fabricante getFabricante() {
+        return fabricante;
     }
-
-    public void setFabricantes(List<Fabricante> fabricantes) {
-        if (fabricantes != null) {
-            this.fabricantes = fabricantes;
-        } else {
-            throw new IllegalArgumentException("A lista de fabricantes não pode ser nula.");
+    
+    public void setFabricante(Fabricante fabricante) {
+        if (fabricante == null) {
+            throw new IllegalArgumentException("O fabricante não pode ser nulo.");
         }
+        this.fabricante = fabricante;
     }
 
-    public List<Fornecedor> getFornecedores() {
-        return fornecedores;
+    public Fornecedor getFornecedor() {
+        return fornecedor;
     }
-
-    public void setFornecedores(List<Fornecedor> fornecedores) {
-        if (fornecedores != null) {
-            this.fornecedores = fornecedores;
-        } else {
-            throw new IllegalArgumentException("A lista de fornecedores não pode ser nula.");
+    
+    public void setFornecedor(Fornecedor fornecedor) {
+        if (fornecedor == null) {
+            throw new IllegalArgumentException("O fornecedor não pode ser nulo.");
         }
+        this.fornecedor = fornecedor;
     }
-
-    public List<Funcionario> getFuncionarios() {
-        return funcionarios;
+    
+    public Funcionario getFuncionario() {
+        return funcionario;
     }
-
-    public void setFuncionarios(List<Funcionario> funcionarios) {
-        if (funcionarios != null) {
-            this.funcionarios = funcionarios;
-        } else {
-            throw new IllegalArgumentException("A lista de funcionários não pode ser nula.");
+    
+    public void setFuncionario(Funcionario funcionario) {
+        if (funcionario == null) {
+            throw new IllegalArgumentException("O funcionário não pode ser nulo.");
         }
+        this.funcionario = funcionario;
     }
 }

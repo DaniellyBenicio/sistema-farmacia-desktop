@@ -33,6 +33,16 @@ create table representante(
     foreign key (fornecedor_id) references fornecedor(id) on delete cascade
 );
 
+create table categoria(
+	id int primary key auto_increment not null,
+    nome varchar(50) not null unique COLLATE utf8mb4_general_ci
+);
+
+create table fabricante(
+	id int primary key auto_increment not null,
+    nome varchar(50) not null unique COLLATE utf8mb4_general_ci
+);
+
 create  table medicamento(
 	id int primary key auto_increment not null,
     nome varchar(50) not null COLLATE utf8mb4_general_ci,
@@ -45,41 +55,15 @@ create  table medicamento(
     qnt int not null,
     tipo enum('ETICO', 'GENERICO', 'SIMILAR'),
     categoria_id int not null,
-    foreign key (categoria_id) references categoria (id) on delete cascade
-);
-
-create table categoria(
-	id int primary key auto_increment not null,
-    nome varchar(50) not null unique COLLATE utf8mb4_general_ci
-);
-
-create table fabricante(
-	id int primary key auto_increment not null,
-    nome varchar(50) not null unique COLLATE utf8mb4_general_ci
-);
-
-create table fabricanteMedicamento(
-	fabricante_id int,
-    medicamento_id int,
-    primary key(fabricante_id, medicamento_id),
-    foreign key (fabricante_id) references fabricante(id) on delete cascade,
-    foreign key (medicamento_id) references medicamento(id) on delete cascade
-);
-
-create table fornecedorMedicamento(
-	fornecedor_id int not null,
-    medicamento_id int not null,
-    primary key (fornecedor_id, medicamento_id),
-    foreign key (fornecedor_id) references fornecedor(id) on delete cascade,
-    foreign key (medicamento_id) references medicamento(id) on delete cascade
-);
-
-create table funcionarioMedicamento(
     funcionario_id int not null,
-    medicamento_id int not null,
-    primary key (funcionario_id, medicamento_id),
-    foreign key (funcionario_id) references funcionario(id) on delete cascade,
-    foreign key (medicamento_id) references medicamento(id) on delete cascade
+    fabricante_id int not null,
+    fornecedor_id int not null,
+    foreign key (categoria_id) references categoria (id) on delete cascade,
+    foreign key (funcionario_id) references funcionario (id),
+    foreign key (fabricante_id) references fabricante (id),
+    foreign key (fornecedor_id) references fornecedor (id)
+    
+    -- unique (nome, dosagem, formaFarmaceutica, dataValidade, dataFabricacao, fabricante_id)
 );
 
 create table cliente(
@@ -99,3 +83,7 @@ create table cliente(
 );
 
 drop database farmacia;
+insert into cargo values (1, 'Gerente');
+insert into funcionario values (1, 'Danielly', '88998045537', 'd@gmail.com', 1, true);
+
+
