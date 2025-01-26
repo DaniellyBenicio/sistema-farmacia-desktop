@@ -7,12 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.sql.Date;
-import java.time.LocalDate;
 import java.time.YearMonth;
 import models.Medicamento.Medicamento;
-import models.Medicamento.Medicamento.Tipo;
-import models.Medicamento.Medicamento.TipoReceita;
-import utils.Criptografia;
 import models.Categoria.Categoria;
 import models.Fabricante.Fabricante;
 import models.Fornecedor.Fornecedor;
@@ -43,7 +39,7 @@ public class MedicamentoDAO {
         }
         return false;
     }
-    
+
     public static void cadastrarMedicamento(Connection conn, Medicamento m) throws SQLException {
         if (medicamentoExiste(conn, m)) {
             System.out.println("O medicamento já existe na base de dados.");
