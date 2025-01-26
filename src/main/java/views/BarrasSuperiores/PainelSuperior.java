@@ -243,7 +243,7 @@ public class PainelSuperior extends JPanel {
         painel.setBackground(new Color(200, 200, 200));
         painel.setPreferredSize(new Dimension(getWidth(), 50));
 
-        String[] itensMenu = { "Vendas", "Medicamento", "Produtos", "Funcionário", "Fornecedor", "Cliente", "Estoque" };
+        String[] itensMenu = { "Vendas", "Medicamentos", "Produtos", "Funcionários", "Fornecedores", "Clientes", "Estoque" };
         botoesMenu = new JButton[itensMenu.length];
 
         for (int i = 0; i < itensMenu.length; i++) {
@@ -271,19 +271,19 @@ public class PainelSuperior extends JPanel {
             case "Vendas":
                 caminhoIcone += "";
                 break;
-            case "Fornecedor":
+            case "Fornecedores":
                 caminhoIcone += "";
                 break;
-            case "Medicamento":
+            case "Medicamentos":
                 caminhoIcone += "";
                 break;
             case "Produtos":
                 caminhoIcone += "";
                 break;
-            case "Funcionário":
+            case "Funcionários":
                 caminhoIcone += "";
                 break;
-            case "Cliente":
+            case "Clientes":
                 caminhoIcone += "";
                 break;
             case "Estoque":
@@ -342,16 +342,18 @@ public class PainelSuperior extends JPanel {
             case "Vendas":
                 layoutAlternativo.show(painelDeVisualizacao, "Vendas");
                 break;
-            case "Fornecedor":
+            case "Medicamentos":
+                layoutAlternativo.show(painelDeVisualizacao, "ListaDeMedicamentos");
+                break;
+            case "Fornecedores":
                 layoutAlternativo.show(painelDeVisualizacao, "ListaDeFornecedores");
                 break;
-            case "Funcionário":
+            case "Funcionários":
                 layoutAlternativo.show(painelDeVisualizacao, "ListaDeFuncionarios");
                 break;
-            case "Cliente":
+            case "Clientes":
                 layoutAlternativo.show(painelDeVisualizacao, "ListaDeClientes");
                 break;
-
         }
     }
 }

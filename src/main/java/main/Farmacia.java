@@ -21,6 +21,7 @@ import views.Fornecedor.CadastrarFornecedor;
 import views.Fornecedor.ListaDeFornecedores;
 import views.Funcionario.CadastrarFuncionario;
 import views.Funcionario.ListaDeFuncionarios;
+import views.Medicamentos.ListaDeMedicamentos;
 import views.Vendas.RealizarVenda;
 
 public class Farmacia extends JFrame {
@@ -54,6 +55,7 @@ public class Farmacia extends JFrame {
         painelCentral.add(new CadastrarFuncionario(), "CadastrarFuncionário");
         painelCentral.add(new ListaDeFuncionarios(conexão), "ListaDeFuncionarios");
         painelCentral.add(new ListaDeClientes(conexão), "ListaDeClientes");
+        painelCentral.add(new ListaDeMedicamentos(conexão), "ListaDeMedicamentos");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
         add(painelSuperior, BorderLayout.NORTH);
