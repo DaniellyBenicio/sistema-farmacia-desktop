@@ -197,6 +197,7 @@ public class PainelSuperior extends JPanel {
         }
     }
 
+
     private void atualizarEstadoDosBotoesDeAcordoComCargo() {
         boolean isGerente = "Gerente".equalsIgnoreCase(cargoFuncionario);
 
