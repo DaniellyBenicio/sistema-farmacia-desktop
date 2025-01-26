@@ -265,7 +265,7 @@ public class PainelSuperior extends JPanel {
         botao.setContentAreaFilled(false);
         botao.setFocusable(false);
 
-        String caminhoIcone = "../../icons/";
+        /*String caminhoIcone = "../../icons/";
 
         switch (itensMenu[indice]) {
             case "Vendas":
@@ -301,14 +301,14 @@ public class PainelSuperior extends JPanel {
         botao.setHorizontalTextPosition(SwingConstants.LEFT);
         botao.setIconTextGap(15);
         botao.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-
+         */
         botao.addActionListener(e -> {
             selecionarOpcaoMenu(botao);
             mostrarPainel(itensMenu[indice]);
         });
 
         return botao;
-    }
+    } 
 
     private void selecionarOpcaoMenu(JButton opcaoSelecionada) {
         for (JButton botao : botoesMenu) {
