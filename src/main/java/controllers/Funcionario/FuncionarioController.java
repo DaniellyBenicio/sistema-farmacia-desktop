@@ -83,4 +83,21 @@ public class FuncionarioController {
         }
     }
 
+    public static int buscarFuncionarioPorNome(Connection conn, String nome) throws SQLException {
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nome do funcionário não pode ser vazio ou nulo.");
+        }
+        try {
+            int id = FuncionarioDAO.buscarPorNome(conn, nome);
+            if (id == 0) {
+                System.out.println("Nenhum funcionário encontrado com o nome: " + nome);
+            } else {
+                System.out.println("Funcionário encontrado! ID: " + id);
+            }
+            return id;
+        } catch (SQLException e) {
+            throw e;
+        }
+    }
+
 } 

@@ -216,4 +216,23 @@ public class FuncionarioDAO {
     
         return false; 
     }
+
+    public static int buscarPorNome(Connection conn, String nome) throws SQLException {
+        String sql = "select id from funcionario where nome = ?";
+    
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, nome);
+    
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
+                return 0; 
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar funcionário por nome: " + e.getMessage());
+            throw e;
+        }
+    }
+    
 }
