@@ -3,16 +3,27 @@ package views.Medicamentos;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.MaskFormatter;
 
+import controllers.Medicamento.MedicamentoController;
 import dao.Fornecedor.FornecedorDAO;
 import main.ConexaoBD;
+import models.Cargo.Cargo;
+import models.Categoria.Categoria;
+import models.Fabricante.Fabricante;
+import models.Fornecedor.Fornecedor;
+import models.Medicamento.Medicamento;
+import models.Medicamento.Medicamento.Tipo;
+import models.Medicamento.Medicamento.TipoReceita;
 import views.BarrasSuperiores.PainelSuperior;
 import views.Fornecedor.CadastrarFornecedor;
 
@@ -27,6 +38,10 @@ public class CadastrarMedicamento extends JPanel {
     private JFormattedTextField dataValidadeField;
     private JTextField estoqueField;
     private JTextField valorUnitarioField;
+    private JTextComponent categoriaField;
+    private JComboBox<String> formaFarmaceuticaComboBox;
+    private JTextComponent formaFarmaceuticaField;
+    private JComboBox<String> receitaComboBox;
 
     public CadastrarMedicamento() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -76,26 +91,32 @@ public class CadastrarMedicamento extends JPanel {
 
         JLabel categoriaLabel = new JLabel("Categoria");
         categoriaLabel.setFont(labelFont);
-        gbc.gridx = 1; gbc.gridy = 0; camposPanel.add(categoriaLabel, gbc);
-        
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        camposPanel.add(categoriaLabel, gbc);
+
         String[] categorias = {
-            "Selecione", "Analgesico", "Anestesico", "Antitermico", "Antipiretico", "Antibiotico", 
-            "Antifungico", "Antiviral", "Antiinflamatorio", "Antidepressivo", "Antipsicotico", 
-            "Ansiolitico", "Antihipertensivo", "Antidiabetico", "Antiácidos", "Antialérgicos", 
-            "Anti-eméticos", "Outros" 
+                "Selecione", "Analgesico", "Anestesico", "Antitermico", "Antipiretico", "Antibiotico",
+                "Antifungico", "Antiviral", "Antiinflamatorio", "Antidepressivo", "Antipsicotico",
+                "Ansiolitico", "Antihipertensivo", "Antidiabetico", "Antiácidos", "Antialérgicos",
+                "Anti-eméticos", "Outros"
         };
-        
+
         categoriaComboBox = new JComboBox<>(categorias);
         categoriaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
-        gbc.gridx = 1; gbc.gridy = 1; camposPanel.add(categoriaComboBox, gbc);
-        
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        camposPanel.add(categoriaComboBox, gbc);
+
         JTextField categoriaField = new JTextField();
         categoriaField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(categoriaField, fieldFont);
         categoriaField.setVisible(false);
-        gbc.gridx = 1; gbc.gridy = 1; camposPanel.add(categoriaField, gbc);
-    
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        camposPanel.add(categoriaField, gbc);
+
         categoriaComboBox.addActionListener(e -> {
             if ("Outros".equals(categoriaComboBox.getSelectedItem())) {
                 categoriaComboBox.setVisible(false);
@@ -127,7 +148,7 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(tipoLabel, gbc);
 
-        String[] tipos = { "Selecione", "Ético", "Genérico", "Similar"};
+        String[] tipos = { "Selecione", "Etico", "Generico", "Similar" };
         tipoComboBox = new JComboBox<>(tipos);
         tipoComboBox.setPreferredSize(new Dimension(170, 40));
         estilizarComboBox(tipoComboBox, fieldFont);
@@ -171,7 +192,8 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 2;
         camposPanel.add(formaFarmaceuticaLabel, gbc);
 
-        JComboBox<String> formaFarmaceuticaComboBox = new JComboBox<>(obterFormasFarmaceuticas());
+        // Inicialização correta da variável de classe
+        formaFarmaceuticaComboBox = new JComboBox<>(obterFormasFarmaceuticas());
         formaFarmaceuticaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(formaFarmaceuticaComboBox, fieldFont);
         gbc.gridx = 1;
@@ -204,7 +226,7 @@ public class CadastrarMedicamento extends JPanel {
         camposPanel.add(receitaLabel, gbc);
 
         String[] receitas = { "Selecione", "Simples", "Especial" };
-        JComboBox<String> receitaComboBox = new JComboBox<>(receitas);
+        receitaComboBox = new JComboBox<>(receitas);
         receitaComboBox.setPreferredSize(new Dimension(170, 40));
         estilizarComboBox(receitaComboBox, fieldFont);
         gbc.gridx = 2;
@@ -244,7 +266,7 @@ public class CadastrarMedicamento extends JPanel {
         camposPanel.add(dataFabricacaoLabel, gbc);
 
         try {
-            MaskFormatter dataFormatter = new MaskFormatter("##/####");
+            MaskFormatter dataFormatter = new MaskFormatter("##/##/####");
             dataFabricacaoField = new JFormattedTextField(dataFormatter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -262,7 +284,7 @@ public class CadastrarMedicamento extends JPanel {
         camposPanel.add(dataValidadeLabel, gbc);
 
         try {
-            MaskFormatter dataFormatter = new MaskFormatter("##/####");
+            MaskFormatter dataFormatter = new MaskFormatter("##/##/####");
             dataValidadeField = new JFormattedTextField(dataFormatter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -346,7 +368,73 @@ public class CadastrarMedicamento extends JPanel {
         cadastrarButton.setPreferredSize(new Dimension(140, 35));
         botoesPanel.add(cadastrarButton);
 
-        int idFuncionario = PainelSuperior.getIdFuncionarioAtual();            
+        cadastrarButton.addActionListener(e -> {
+            try {
+                int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
+
+                String nome = nomeField.getText().trim();
+                String categoriaNome = (String) categoriaComboBox.getSelectedItem();
+                if ("Outros".equals(categoriaNome)) {
+                    categoriaNome = categoriaField.getText().trim();
+                }
+                String dosagem = dosagemField.getText().trim();
+                String tipoNome = (String) tipoComboBox.getSelectedItem();
+                Tipo tipo = Tipo.valueOf(tipoNome.toUpperCase());
+                String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
+                String formaFarmaceuticaNome = (String) formaFarmaceuticaComboBox.getSelectedItem();
+                if ("Outros".equals(formaFarmaceuticaNome)) {
+                    formaFarmaceuticaNome = formaFarmaceuticaField.getText().trim();
+                }
+                String tipoReceitaNome = (String) receitaComboBox.getSelectedItem();
+                TipoReceita tipoReceita = TipoReceita.valueOf(tipoReceitaNome.toUpperCase());
+                String estoqueTexto = estoqueField.getText().trim();
+                int estoque = Integer.parseInt(estoqueTexto);
+                String fabricanteNome = fabricanteField.getText().trim();
+
+                String dataFabricacaoTexto = dataFabricacaoField.getText().replace("/", "-");
+                String dataValidadeTexto = dataValidadeField.getText().replace("/", "-");
+
+                LocalDate dataFabricacao = LocalDate.parse(dataFabricacaoTexto,
+                        DateTimeFormatter.ofPattern("MM-dd-yyyy"));
+                LocalDate dataValidade = LocalDate.parse(dataValidadeTexto, DateTimeFormatter.ofPattern("MM-dd-yyyy"));
+                double valorUnitario = Double
+                        .parseDouble(valorUnitarioField.getText().replace("R$", "").trim().replace(",", "."));
+
+                try (Connection conn = ConexaoBD.getConnection()) {
+                    Categoria categoria = new Categoria();
+                    categoria.setNome(categoriaNome);
+
+                    Fabricante fabricante = new Fabricante();
+                    fabricante.setNome(fabricanteNome);
+
+                    Medicamento medicamento = new Medicamento(nome, dosagem, formaFarmaceuticaNome, valorUnitario,
+                            dataValidade, dataFabricacao, tipoReceita, estoque, tipo, categoria, fabricante, null,
+                            null);
+
+                    System.out.println(nome);
+                    System.out.println(dosagem);
+                    System.out.println(formaFarmaceuticaNome);
+                    System.out.println(valorUnitario);
+                    System.out.println(dataValidade);
+                    System.out.println(dataFabricacao);
+                    System.out.println(tipoReceita);
+                    System.out.println(estoque);
+                    System.out.println(tipo);
+                    System.out.println(categoria);
+                    System.out.println(fabricante);
+                    System.out.println(formaFarmaceuticaComboBox);
+
+                    MedicamentoController.cadastrarMedicamento(conn, medicamento);
+                    JOptionPane.showMessageDialog(this, "Medicamento cadastrado com sucesso!", "Sucesso",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    // limparCampos();
+                }
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao cadastrar medicamento: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         return botoesPanel;
     }
