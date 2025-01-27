@@ -205,7 +205,7 @@ public class EditarCliente extends JPanel {
 
         gbc.gridx = 2;
         gbc.gridy = 4;
-        JLabel pontoReferenciaLabel = new JLabel("Ponto de Referência");
+        JLabel pontoReferenciaLabel = new JLabel("Ponto de Referência/OBS");
         pontoReferenciaLabel.setFont(labelFont);
         camposPanel.add(pontoReferenciaLabel, gbc);
 
