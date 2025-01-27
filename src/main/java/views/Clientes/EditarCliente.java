@@ -205,7 +205,7 @@ public class EditarCliente extends JPanel {
 
         gbc.gridx = 2;
         gbc.gridy = 4;
-        JLabel pontoReferenciaLabel = new JLabel("Ponto de Referência");
+        JLabel pontoReferenciaLabel = new JLabel("Ponto de Referência/OBS");
         pontoReferenciaLabel.setFont(labelFont);
         camposPanel.add(pontoReferenciaLabel, gbc);
 
@@ -296,6 +296,9 @@ public class EditarCliente extends JPanel {
         if (nome.isEmpty()) {
             errorMessage.append("- Nome deve ser preenchido.\n");
             hasError = true;
+        } else if (!nome.matches("[A-Za-zÀ-ÿ\\s]+")) {
+            errorMessage.append("- Nome não pode conter números ou caracteres especiais.\n");
+            hasError = true;
         }
 
         if (cpf.isEmpty()) {
@@ -309,31 +312,48 @@ public class EditarCliente extends JPanel {
             hasError = true;
         }
 
-        if (rua.isEmpty()) {
+        if (rua == null || rua.trim().isEmpty()) {
             errorMessage.append("- Rua deve ser preenchida.\n");
+            hasError = true;
+        } else if (!rua.matches("[A-Za-zÀ-ÿ0-9\\s]+")) { 
+            errorMessage.append("- Rua inválida (não pode conter caracteres especiais).\n");
             hasError = true;
         }
 
         if (numero.isEmpty()) {
             errorMessage.append("- Número deve ser preenchido.\n");
             hasError = true;
-        }
+        } else if (!numero.matches("[A-Za-zÀ-ÿ0-9\\s]+")) {
+            errorMessage.append("- Número inválido (não pode conter caracteres especiais).\n");
+            hasError = true;
+        }            
 
         if (bairro.isEmpty()) {
             errorMessage.append("- Bairro deve ser preenchido.\n");
+            hasError = true;
+        } else if (!bairro.matches("[A-Za-zÀ-ÿ\\s]+")) { 
+            errorMessage.append("- Bairro inválido (não pode conter números ou caracteres especiais).\n");
             hasError = true;
         }
 
         if (cidade.isEmpty()) {
             errorMessage.append("- Cidade deve ser preenchida.\n");
             hasError = true;
-        }
-
-        if (estado == null || estado.isEmpty()) {
-            errorMessage.append("- Estado deve ser preenchido e válido.\n");
+        } else if (!cidade.matches("[A-Za-zÀ-ÿ\\s]+")) { 
+            errorMessage.append("- Cidade inválida (não pode conter números ou caracteres especiais).\n");
             hasError = true;
         }
 
+        if (estado == null || estado.equals("Selecione")) {
+            errorMessage.append("- Estado deve ser selecionado.\n");
+            hasError = true;
+        }
+
+        if (pontodereferencia != null && !pontodereferencia.isEmpty() && !pontodereferencia.matches("^[a-zA-Z0-9\\s]*$")) {
+            errorMessage.append("- O campo Ponto de Referência não pode conter caracteres especiais.\n");
+            hasError = true;
+        }
+        
         if (hasError) {
             JOptionPane.showMessageDialog(null, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
             return;
