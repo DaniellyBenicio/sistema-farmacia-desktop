@@ -1,4 +1,4 @@
-/*package views.Medicamentos;
+package views.Medicamentos;
 
 import javax.swing.*;
 import java.sql.Connection;
@@ -10,15 +10,16 @@ import main.ConexaoBD;
 
 public class ExcluirMedicamento {
 
-    public static void excluirMedicamento(int idMedicamento) {
-        if (idMedicamento <= 0) {
+    public static void excluirMedicamento(int medicamentoId) {
+        if (medicamentoId <= 0) {
             JOptionPane.showMessageDialog(null, "ID do medicamento inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         Medicamento medicamento;
+
         try (Connection conn = ConexaoBD.getConnection()) {
-            medicamento = MedicamentoDAO.medicamentoPorId(conn, idMedicamento);
+            medicamento = MedicamentoDAO.medicamentoPorID(conn, medicamentoId);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Erro ao recuperar medicamento.", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
@@ -56,4 +57,3 @@ public class ExcluirMedicamento {
         }
     }
 }
-*/
