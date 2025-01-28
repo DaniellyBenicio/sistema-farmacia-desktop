@@ -389,7 +389,6 @@ public class CadastrarMedicamento extends JPanel {
                 Fornecedor fornecedor;
                 try (Connection conn = ConexaoBD.getConnection()) {
                     fornecedor = FornecedorDAO.buscarFornecedorPorNome(conn, fornecedorNome);
-                    System.out.println("Objeto fornecedor por nome: " + fornecedor);
 
                     funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
                     System.out.println("Tentando buscar funcionário com ID: " + idFuncionario);
@@ -445,7 +444,7 @@ public class CadastrarMedicamento extends JPanel {
                     System.out.println(categoria);
                     System.out.println(fabricante);
                     System.out.println(fornecedor);
-                    System.out.println(funcionario);
+                    System.out.println(funcionario.getId());
 
                     MedicamentoController.cadastrarMedicamento(conn, medicamento);
                     JOptionPane.showMessageDialog(this, "Medicamento cadastrado com sucesso!", "Sucesso",
