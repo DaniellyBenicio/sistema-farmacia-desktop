@@ -250,6 +250,21 @@ public class MedicamentoDAO {
         }
     }
 
+    public static ArrayList<String> listarFormasFarmaceuticas(Connection conn) throws SQLException {
+        String sql = "SELECT DISTINCT formaFarmaceutica FROM medicamento ORDER BY formaFarmaceutica ASC";
+        ArrayList<String> formas = new ArrayList<>();
+    
+        try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                formas.add(rs.getString("formaFarmaceutica"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar formas farmacêuticas: " + e.getMessage());
+            throw e;
+        }
+        return formas;
+    }
+
 }
 
 // falta buscar por: categoria, nome, fornecedor, fabricante
