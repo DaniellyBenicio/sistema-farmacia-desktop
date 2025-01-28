@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -377,6 +378,8 @@ public class CadastrarMedicamento extends JPanel {
 
                 String nome = nomeField.getText().trim();
                 String categoriaNome = (String) categoriaComboBox.getSelectedItem();
+                System.out.println("Categoria: " + categoriaNome);
+
                 if ("Outros".equals(categoriaNome)) {
                     categoriaNome = categoriaField.getText().trim();
                 }
@@ -384,73 +387,97 @@ public class CadastrarMedicamento extends JPanel {
                 String tipoNome = (String) tipoComboBox.getSelectedItem();
                 Tipo tipo = Tipo.valueOf(tipoNome.toUpperCase());
                 String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
-                Funcionario funcionario;
+                Funcionario funcionario = null;
+                Fornecedor fornecedor = null;
 
-                Fornecedor fornecedor;
                 try (Connection conn = ConexaoBD.getConnection()) {
                     fornecedor = FornecedorDAO.buscarFornecedorPorNome(conn, fornecedorNome);
 
-                    funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
+                    funcionario = FuncionarioDAO.buscarFuncionarioId(conn, idFuncionario);
                     System.out.println("Tentando buscar funcionário com ID: " + idFuncionario);
+                    System.out.println("Objeto funcionário encontrado:" + funcionario);
 
-                    System.out.println("Objeto funcionário com ID: " + funcionario);
-
-                    if (funcionario == null) {
+                    if (funcionario != null) {
+                        System.out.println("Objeto funcionário encontrado: " + funcionario);
+                    } else {
                         JOptionPane.showMessageDialog(this, "Funcionário não encontrado com ID: " + idFuncionario,
                                 "Erro", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
+                } catch (SQLException ex) {
+                    System.err.println("Erro ao buscar funcionário ou fornecedor: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(this, "Erro na busca: " + ex.getMessage(),
+                            "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
 
                 String formaFarmaceuticaNome = (String) formaFarmaceuticaComboBox.getSelectedItem();
+                System.out.println("Forma Farmaceutica: " + formaFarmaceuticaNome);
+
                 if ("Outros".equals(formaFarmaceuticaNome)) {
                     formaFarmaceuticaNome = formaFarmaceuticaField.getText().trim();
                 }
                 String tipoReceitaNome = (String) receitaComboBox.getSelectedItem();
                 TipoReceita tipoReceita = TipoReceita.valueOf(tipoReceitaNome.toUpperCase());
+
                 String estoqueTexto = estoqueField.getText().trim();
-                int estoque = Integer.parseInt(estoqueTexto);
+                int estoque;
+
+                try {
+                    estoque = Integer.parseInt(estoqueTexto);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Estoque deve ser um número válido.",
+                            "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 String fabricanteNome = fabricanteField.getText().trim();
 
                 String dataFabricacaoTexto = dataFabricacaoField.getText().replace("/", "-");
                 String dataValidadeTexto = dataValidadeField.getText().replace("/", "-");
+                LocalDate dataFabricacao;
+                LocalDate dataValidade;
 
-                LocalDate dataFabricacao = LocalDate.parse(dataFabricacaoTexto,
-                        DateTimeFormatter.ofPattern("MM-dd-yyyy"));
-                LocalDate dataValidade = LocalDate.parse(dataValidadeTexto, DateTimeFormatter.ofPattern("MM-dd-yyyy"));
-                double valorUnitario = Double
-                        .parseDouble(valorUnitarioField.getText().replace("R$", "").trim().replace(",", "."));
+                try {
+                    dataFabricacao = LocalDate.parse(dataFabricacaoTexto, DateTimeFormatter.ofPattern("MM-dd-yyyy"));
+                    dataValidade = LocalDate.parse(dataValidadeTexto, DateTimeFormatter.ofPattern("MM-dd-yyyy"));
+                } catch (DateTimeParseException ex) {
+                    JOptionPane.showMessageDialog(this, "Formato de data inválido. Use MM-dd-yyyy.",
+                            "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                double valorUnitario;
+                try {
+                    valorUnitario = Double
+                            .parseDouble(valorUnitarioField.getText().replace("R$", "").trim().replace(",", "."));
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Valor unitário deve ser um número válido.",
+                            "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                Categoria categoria = new Categoria();
+                categoria.setNome(categoriaNome);
+
+                Fabricante fabricante = new Fabricante();
+                fabricante.setNome(fabricanteNome);
+
+                Medicamento medicamento = new Medicamento(nome, dosagem, formaFarmaceuticaNome, valorUnitario,
+                        dataValidade, dataFabricacao, tipoReceita, estoque, tipo, categoria, fabricante, fornecedor,
+                        funcionario);
+
+                System.out.println("1 - Informações do Medicamento:");
+                System.out.println(medicamento);
 
                 try (Connection conn = ConexaoBD.getConnection()) {
-                    Categoria categoria = new Categoria();
-                    categoria.setNome(categoriaNome);
-
-                    Fabricante fabricante = new Fabricante();
-                    fabricante.setNome(fabricanteNome);
-
-                    Medicamento medicamento = new Medicamento(nome, dosagem, formaFarmaceuticaNome, valorUnitario,
-                            dataValidade, dataFabricacao, tipoReceita, estoque, tipo, categoria, fabricante, fornecedor,
-                            funcionario);
-
-                    System.out.println(nome);
-                    System.out.println(dosagem);
-                    System.out.println(formaFarmaceuticaNome);
-                    System.out.println(valorUnitario);
-                    System.out.println(dataValidade);
-                    System.out.println(dataFabricacao);
-                    System.out.println(tipoReceita);
-                    System.out.println(estoque);
-                    System.out.println(tipo);
-                    System.out.println(categoria);
-                    System.out.println(fabricante);
-                    System.out.println(fornecedor);
-                    System.out.println(funcionario.getId());
-
                     MedicamentoController.cadastrarMedicamento(conn, medicamento);
-                    JOptionPane.showMessageDialog(this, "Medicamento cadastrado com sucesso!", "Sucesso",
-                            JOptionPane.INFORMATION_MESSAGE);
-                    // limparCampos(); // Se precisar limpar os campos após o cadastro
+                    System.out.println("2 - Informações do Medicamento:");
+                    System.out.println(medicamento);
 
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Erro ao cadastrar medicamento: " + ex.getMessage(),
+                            "Erro", JOptionPane.ERROR_MESSAGE);
                 }
 
             } catch (Exception ex) {

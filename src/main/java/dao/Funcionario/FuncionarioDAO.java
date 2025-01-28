@@ -14,7 +14,8 @@ import models.Funcionario.Funcionario;
 public class FuncionarioDAO {
     public static void cadastrarFuncionario(Connection conn, Funcionario f) throws SQLException {
         if (funcionarioExiste(conn, f.getNome(), f.getEmail(), f.getTelefone())) {
-            throw new SQLException("Já existe um funcionário com um dos dados informados no banco de dados:\n(nome, e-mail ou telefone)\nVerifique novamente!");
+            throw new SQLException(
+                    "Já existe um funcionário com um dos dados informados no banco de dados:\n(nome, e-mail ou telefone)\nVerifique novamente!");
         }
         int cargoId = CargoDAO.criarCargo(conn, f.getCargo());
 
@@ -197,13 +198,14 @@ public class FuncionarioDAO {
         }
     }
 
-    public static boolean funcionarioExiste(Connection conn, String nome, String telefone, String email) throws SQLException {
+    public static boolean funcionarioExiste(Connection conn, String nome, String telefone, String email)
+            throws SQLException {
         String sqlVerificarDuplicidade = "SELECT COUNT(*) FROM funcionario WHERE telefone = ? OR email = ? ";
-    
+
         try (PreparedStatement pstmt = conn.prepareStatement(sqlVerificarDuplicidade)) {
             pstmt.setString(1, telefone.replaceAll("[^0-9]", ""));
             pstmt.setString(2, email);
-    
+
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next() && rs.getInt(1) > 0) {
                     return true;
@@ -213,25 +215,59 @@ public class FuncionarioDAO {
             System.err.println("Erro ao verificar duplicidade de funcionário: " + e.getMessage());
             throw e;
         }
-    
-        return false; 
+
+        return false;
     }
 
     public static int buscarPorNome(Connection conn, String nome) throws SQLException {
         String sql = "select id from funcionario where nome = ?";
-    
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nome);
-    
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt("id");
                 }
-                return 0; 
+                return 0;
             }
         } catch (SQLException e) {
             System.err.println("Erro ao buscar funcionário por nome: " + e.getMessage());
             throw e;
         }
-    }    
+    }
+
+    public static Funcionario buscarFuncionarioId(Connection conn, int id) throws SQLException {
+        String sql = "SELECT f.id, f.nome, f.telefone, f.email, f.cargo_id, f.status, c.nome AS cargo "
+                + "FROM funcionario f "
+                + "JOIN cargo c ON f.cargo_id = c.id "
+                + "WHERE f.id = ?";
+
+        Funcionario funcionario = null;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String nome = rs.getString("nome");
+                    String telefone = rs.getString("telefone");
+                    String email = rs.getString("email");
+                    int cargoId = rs.getInt("cargo_id");
+                    String cargoNome = rs.getString("cargo");
+                    boolean status = rs.getBoolean("status");
+
+                    Cargo cargo = new Cargo(cargoId, cargoNome);
+
+                    funcionario = new Funcionario(nome, telefone, email, cargo, status);
+                    funcionario.setId(rs.getInt("id"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar funcionário por ID: " + e.getMessage());
+            throw e;
+        }
+
+        return funcionario;
+    }
 }

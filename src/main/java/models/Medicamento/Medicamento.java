@@ -97,10 +97,10 @@ public class Medicamento {
         }
 
         List<String> formasValidas = Arrays.asList(
-            "Comprimido", "Creme", "Pomada", "Injeção", "Xarope", "Solução",
-            "Spray", "Cápsula", "Gel", "Loção", "Gelatina", "Supositório",
-            "Pó", "Emulsão", "Colírio", "Gotejamento", "Aerossol",
-            "Spray Nasal", "Pastilha", "Suspensão", "Pasta", "Sachê"
+            "comprimido", "creme", "pomada", "injeção", "xarope", "solução",
+            "spray", "cápsula", "gel", "loção", "gelatina", "supositório",
+            "pó", "emulsão", "colírio", "gotejamento", "aerossol",
+            "spray nasal", "pastilha", "suspensão", "pasta", "sachê"
         );
 
         if (!formasValidas.contains(formaFarmaceutica.trim().toLowerCase())) {
