@@ -219,20 +219,24 @@ public class FornecedorDAO {
         Fornecedor fornecedor = null;
         String sql = "SELECT * FROM fornecedor WHERE nome = ?"; 
     
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) { // Corrigido: coloquei try-with-resources aqui
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, nome);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     fornecedor = new Fornecedor();
                     fornecedor.setId(rs.getInt("id"));
                     fornecedor.setNome(rs.getString("nome"));
-                    // Adicione aqui outros campos necessários, por exemplo:
-                    // fornecedor.setOutroCampo(rs.getString("outro_campo"));
+                    fornecedor.setCnpj(rs.getString("cnpj")); 
+                    fornecedor.setEmail(rs.getString("email")); 
+                    fornecedor.setTelefone(rs.getString("telefone"));
                 }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e; 
         }
         
-        return fornecedor; // Retorna o fornecedor encontrado, ou null se não encontrar
+        return fornecedor;
     }
 
 }
