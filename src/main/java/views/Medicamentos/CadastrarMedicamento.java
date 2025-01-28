@@ -100,7 +100,7 @@ public class CadastrarMedicamento extends JPanel {
 
         JLabel categoriaLabel = new JLabel("Categoria");
         categoriaLabel.setFont(labelFont);
-        gbc.gridx = 1;
+        gbc.gridx = 2;
         gbc.gridy = 0;
         camposPanel.add(categoriaLabel, gbc);
 
@@ -114,7 +114,7 @@ public class CadastrarMedicamento extends JPanel {
         categoriaComboBox = new JComboBox<>(categorias);
         categoriaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
-        gbc.gridx = 1;
+        gbc.gridx = 2;
         gbc.gridy = 1;
         camposPanel.add(categoriaComboBox, gbc);
 
@@ -122,7 +122,7 @@ public class CadastrarMedicamento extends JPanel {
         categoriaField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(categoriaField, fieldFont);
         categoriaField.setVisible(false);
-        gbc.gridx = 1;
+        gbc.gridx = 2;
         gbc.gridy = 1;
         camposPanel.add(categoriaField, gbc);
 
@@ -138,32 +138,32 @@ public class CadastrarMedicamento extends JPanel {
             }
         });
 
+        JLabel tipoLabel = new JLabel("Tipo de Medicamento");
+        tipoLabel.setFont(labelFont);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        camposPanel.add(tipoLabel, gbc);
+
+        String[] tipos = { "Selecione", "Etico", "Generico", "Similar" };
+        tipoComboBox = new JComboBox<>(tipos);
+        tipoComboBox.setPreferredSize(new Dimension(200, 40));
+        estilizarComboBox(tipoComboBox, fieldFont);
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        camposPanel.add(tipoComboBox, gbc);
+
         JLabel dosagemLabel = new JLabel("Dosagem");
         dosagemLabel.setFont(labelFont);
-        gbc.gridx = 2;
+        gbc.gridx = 3;
         gbc.gridy = 0;
         camposPanel.add(dosagemLabel, gbc);
 
         dosagemField = new JTextField();
         dosagemField.setPreferredSize(new Dimension(170, 40));
         estilizarCamposFormulario(dosagemField, fieldFont);
-        gbc.gridx = 2;
+        gbc.gridx = 3;
         gbc.gridy = 1;
         camposPanel.add(dosagemField, gbc);
-
-        JLabel tipoLabel = new JLabel("Tipo");
-        tipoLabel.setFont(labelFont);
-        gbc.gridx = 3;
-        gbc.gridy = 0;
-        camposPanel.add(tipoLabel, gbc);
-
-        String[] tipos = { "Selecione", "Etico", "Generico", "Similar" };
-        tipoComboBox = new JComboBox<>(tipos);
-        tipoComboBox.setPreferredSize(new Dimension(170, 40));
-        estilizarComboBox(tipoComboBox, fieldFont);
-        gbc.gridx = 3;
-        gbc.gridy = 1;
-        camposPanel.add(tipoComboBox, gbc);
 
         JLabel fornecedorLabel = new JLabel("Fornecedor");
         fornecedorLabel.setFont(labelFont);
@@ -235,7 +235,7 @@ public class CadastrarMedicamento extends JPanel {
 
         String[] receitas = { "Selecione", "Simples", "Especial" };
         receitaComboBox = new JComboBox<>(receitas);
-        receitaComboBox.setPreferredSize(new Dimension(170, 40));
+        receitaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(receitaComboBox, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 3;
@@ -267,13 +267,26 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 5;
         camposPanel.add(fabricanteComboBox, gbc);
 
-        JTextField fabricanteField = new JTextField();
+        fabricanteField = new JTextField();
         fabricanteField.setPreferredSize(new Dimension(400, 40));
         estilizarCamposFormulario(fabricanteField, fieldFont);
-        fabricanteField.setVisible(false);
+        fabricanteField.setVisible(false); // Oculto inicialmente
         gbc.gridx = 0;
         gbc.gridy = 5;
         camposPanel.add(fabricanteField, gbc);
+
+        fabricanteComboBox.addActionListener(e -> {
+            String selectedItem = (String) fabricanteComboBox.getSelectedItem();
+            if ("Outros".equals(selectedItem)) {
+                fabricanteComboBox.setVisible(false);
+                fabricanteField.setVisible(true);
+                fabricanteField.requestFocus();
+            } else {
+                fabricanteField.setText("");
+                fabricanteComboBox.setVisible(true);
+                fabricanteField.setVisible(false);
+            }
+        });
 
         fabricanteComboBox.addActionListener(e -> {
             String selectedItem = (String) fabricanteComboBox.getSelectedItem();
@@ -318,7 +331,7 @@ public class CadastrarMedicamento extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        dataValidadeField.setPreferredSize(new Dimension(170, 40));
+        dataValidadeField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(dataValidadeField, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 5;
@@ -480,7 +493,18 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 }
 
-                String fabricanteNome = fabricanteField.getText().trim();
+                String fabricanteNome;
+                if (fabricanteComboBox.isVisible()) {
+                    fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
+                } else {
+                    fabricanteNome = fabricanteField.getText().trim();
+                }
+
+                if (fabricanteNome.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Fabricante deve ser informado.",
+                            "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
                 String dataFabricacaoTexto = dataFabricacaoField.getText().replace("/", "-");
                 String dataValidadeTexto = dataValidadeField.getText().replace("/", "-");
@@ -521,6 +545,8 @@ public class CadastrarMedicamento extends JPanel {
 
                 try (Connection conn = ConexaoBD.getConnection()) {
                     MedicamentoController.cadastrarMedicamento(conn, medicamento);
+                    JOptionPane.showMessageDialog(null, "Medicamento cadastrado com sucesso!", "Sucesso",
+                            JOptionPane.INFORMATION_MESSAGE);
                     System.out.println("2 - Informações do Medicamento:");
                     System.out.println(medicamento);
 
