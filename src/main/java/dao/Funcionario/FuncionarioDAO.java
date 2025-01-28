@@ -233,30 +233,5 @@ public class FuncionarioDAO {
             System.err.println("Erro ao buscar funcionário por nome: " + e.getMessage());
             throw e;
         }
-    }
-
-    public static Funcionario buscarPorId(Connection conn, int id) throws SQLException {
-        String sql = "SELECT * FROM funcionario WHERE id = ?";
-
-        Funcionario funcionario = null; 
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) { 
-            pstmt.setInt(1, id); 
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    funcionario = new Funcionario(); 
-                    funcionario.setId(rs.getInt("id"));
-                    funcionario.setNome(rs.getString("nome"));
-                    funcionario.setEmail(rs.getString("email"));
-                    funcionario.setTelefone(rs.getString("telefone"));
-                    funcionario.setStatus(rs.getBoolean("status"));
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Erro ao buscar funcionário por ID: " + e.getMessage());
-            throw e;
-        }
-
-        return funcionario; 
-    }
-    
+    }    
 }

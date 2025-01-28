@@ -390,12 +390,16 @@ public class CadastrarMedicamento extends JPanel {
                 try (Connection conn = ConexaoBD.getConnection()) {
                     fornecedor = FornecedorDAO.buscarFornecedorPorNome(conn, fornecedorNome);
                     System.out.println("ID do Funcionário: " + idFuncionario);
-                    funcionario = FuncionarioDAO.buscarPorId(conn, idFuncionario);
+                    System.out.println("Tentando buscar funcionário com ID: " + idFuncionario);
+                    funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
+
+                    funcionario = FuncionarioDAO.funcionarioPorId(conn, idFuncionario);
 
                     if (funcionario == null) {
-                        throw new Exception("Funcionário não encontrado com ID: " + idFuncionario);
+                        JOptionPane.showMessageDialog(this, "Funcionário não encontrado com ID: " + idFuncionario,
+                                "Erro", JOptionPane.ERROR_MESSAGE);
+                        return; // ou retorne conforme a lógica necessária
                     }
-                    funcionario = FuncionarioDAO.buscarPorId(conn, idFuncionario);
                 }
 
                 String formaFarmaceuticaNome = (String) formaFarmaceuticaComboBox.getSelectedItem();
