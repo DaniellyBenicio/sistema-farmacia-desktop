@@ -7,15 +7,17 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import main.ConexaoBD;
 import models.Fornecedor.Fornecedor;
 import models.Representante.Representante;
 
 public class FornecedorDAO {
     public static void cadastrarFornecedor(Connection conn, Fornecedor forn) throws SQLException {
         if (fornecedorExiste(conn, forn.getNome(), forn.getCnpj(), forn.getEmail(), forn.getTelefone())) {
-            throw new SQLException("Já existe um fornecedor com um dos dados informados no banco de dados:\n(nome, e-mail, CNPJ ou telefone)\nVerifique novamente!");
+            throw new SQLException(
+                    "Já existe um fornecedor com um dos dados informados no banco de dados:\n(nome, e-mail, CNPJ ou telefone)\nVerifique novamente!");
         }
-        
+
         String sqlFuncionario = "SELECT f.status, c.nome AS cargo FROM funcionario f " +
                 "JOIN cargo c ON f.cargo_id = c.id " +
                 "WHERE f.id = ?";
@@ -163,14 +165,14 @@ public class FornecedorDAO {
     }
 
     public static ArrayList<String> listarNomesFornecedores(Connection conn) throws SQLException {
-        String sql = "SELECT nome FROM fornecedor ORDER BY nome ASC"; 
-    
-        ArrayList<String> nomesFornecedores = new ArrayList<>(); 
-    
+        String sql = "SELECT nome FROM fornecedor ORDER BY nome ASC";
+
+        ArrayList<String> nomesFornecedores = new ArrayList<>();
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                String nomeFornecedor = rs.getString("nome"); 
-                nomesFornecedores.add(nomeFornecedor);  
+                String nomeFornecedor = rs.getString("nome");
+                nomesFornecedores.add(nomeFornecedor);
             }
         } catch (SQLException e) {
             System.err.println("Erro ao listar nomes de fornecedores: " + e.getMessage());
@@ -178,8 +180,7 @@ public class FornecedorDAO {
         }
         return nomesFornecedores;
     }
-    
-    
+
     public static void deletarFornecedor(Connection conn, Fornecedor forn) throws SQLException {
         String sql = "DELETE FROM fornecedor WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -197,37 +198,41 @@ public class FornecedorDAO {
         }
     }
 
-    public static boolean fornecedorExiste(Connection conn, String nome, String cnpj, String email, String telefone) throws SQLException {
+    public static boolean fornecedorExiste(Connection conn, String nome, String cnpj, String email, String telefone)
+            throws SQLException {
         String sqlVerificarDuplicidade = "SELECT COUNT(*) FROM fornecedor WHERE nome = ? OR cnpj = ? OR email = ? or telefone = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sqlVerificarDuplicidade)) {
             pstmt.setString(1, nome);
-            pstmt.setString(2, cnpj.replaceAll("[^0-9]", ""));  
+            pstmt.setString(2, cnpj.replaceAll("[^0-9]", ""));
             pstmt.setString(3, email);
-            pstmt.setString(4, telefone.replaceAll("[^0-9]", ""));    
+            pstmt.setString(4, telefone.replaceAll("[^0-9]", ""));
             ResultSet rs = pstmt.executeQuery();
-            
+
             if (rs.next() && rs.getInt(1) > 0) {
                 return true;
             }
         }
-        return false; 
+        return false;
     }
 
-    public static int buscarFornecedorPorNome(Connection conn, String nome) throws SQLException {
-        String sql = "select id from fornecedor where nome = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, nome);
+    public static Fornecedor buscarFornecedorPorNome(Connection conn, String nome) throws SQLException {
+        Fornecedor fornecedor = null;
+        String sql = "SELECT * FROM fornecedor WHERE nome = ?"; 
     
-            try (ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) { // Corrigido: coloquei try-with-resources aqui
+            pstmt.setString(1, nome);
+            try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("id");
+                    fornecedor = new Fornecedor();
+                    fornecedor.setId(rs.getInt("id"));
+                    fornecedor.setNome(rs.getString("nome"));
+                    // Adicione aqui outros campos necessários, por exemplo:
+                    // fornecedor.setOutroCampo(rs.getString("outro_campo"));
                 }
-                return 0; 
             }
-        } catch (SQLException e) {
-            System.err.println("Erro ao buscar fornecedor por nome: " + e.getMessage());
-            throw e;
         }
+        
+        return fornecedor; // Retorna o fornecedor encontrado, ou null se não encontrar
     }
-    
+
 }

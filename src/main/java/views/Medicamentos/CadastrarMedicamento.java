@@ -16,11 +16,13 @@ import javax.swing.text.MaskFormatter;
 
 import controllers.Medicamento.MedicamentoController;
 import dao.Fornecedor.FornecedorDAO;
+import dao.Funcionario.FuncionarioDAO;
 import main.ConexaoBD;
 import models.Cargo.Cargo;
 import models.Categoria.Categoria;
 import models.Fabricante.Fabricante;
 import models.Fornecedor.Fornecedor;
+import models.Funcionario.Funcionario;
 import models.Medicamento.Medicamento;
 import models.Medicamento.Medicamento.Tipo;
 import models.Medicamento.Medicamento.TipoReceita;
@@ -371,6 +373,7 @@ public class CadastrarMedicamento extends JPanel {
         cadastrarButton.addActionListener(e -> {
             try {
                 int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
+                System.out.println("ID do Funcionário: " + idFuncionario);
 
                 String nome = nomeField.getText().trim();
                 String categoriaNome = (String) categoriaComboBox.getSelectedItem();
@@ -381,6 +384,20 @@ public class CadastrarMedicamento extends JPanel {
                 String tipoNome = (String) tipoComboBox.getSelectedItem();
                 Tipo tipo = Tipo.valueOf(tipoNome.toUpperCase());
                 String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
+                Funcionario funcionario;
+
+                Fornecedor fornecedor;
+                try (Connection conn = ConexaoBD.getConnection()) {
+                    fornecedor = FornecedorDAO.buscarFornecedorPorNome(conn, fornecedorNome);
+                    System.out.println("ID do Funcionário: " + idFuncionario);
+                    funcionario = FuncionarioDAO.buscarPorId(conn, idFuncionario);
+
+                    if (funcionario == null) {
+                        throw new Exception("Funcionário não encontrado com ID: " + idFuncionario);
+                    }
+                    funcionario = FuncionarioDAO.buscarPorId(conn, idFuncionario);
+                }
+
                 String formaFarmaceuticaNome = (String) formaFarmaceuticaComboBox.getSelectedItem();
                 if ("Outros".equals(formaFarmaceuticaNome)) {
                     formaFarmaceuticaNome = formaFarmaceuticaField.getText().trim();
@@ -408,8 +425,8 @@ public class CadastrarMedicamento extends JPanel {
                     fabricante.setNome(fabricanteNome);
 
                     Medicamento medicamento = new Medicamento(nome, dosagem, formaFarmaceuticaNome, valorUnitario,
-                            dataValidade, dataFabricacao, tipoReceita, estoque, tipo, categoria, fabricante, null,
-                            null);
+                            dataValidade, dataFabricacao, tipoReceita, estoque, tipo, categoria, fabricante, fornecedor,
+                            funcionario);
 
                     System.out.println(nome);
                     System.out.println(dosagem);
@@ -422,12 +439,14 @@ public class CadastrarMedicamento extends JPanel {
                     System.out.println(tipo);
                     System.out.println(categoria);
                     System.out.println(fabricante);
-                    System.out.println(formaFarmaceuticaComboBox);
+                    System.out.println(fornecedor);
+                    System.out.println(funcionario);
 
                     MedicamentoController.cadastrarMedicamento(conn, medicamento);
                     JOptionPane.showMessageDialog(this, "Medicamento cadastrado com sucesso!", "Sucesso",
                             JOptionPane.INFORMATION_MESSAGE);
-                    // limparCampos();
+                    // limparCampos(); // Se precisar limpar os campos após o cadastro
+
                 }
 
             } catch (Exception ex) {
