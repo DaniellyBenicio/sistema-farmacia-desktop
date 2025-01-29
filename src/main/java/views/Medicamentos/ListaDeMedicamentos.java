@@ -152,7 +152,7 @@ public class ListaDeMedicamentos extends JPanel {
         cadastrarButton.setBackground(new Color(24, 39, 55));
         cadastrarButton.setForeground(Color.WHITE);
         cadastrarButton.setFocusPainted(false);
-        cadastrarButton.setPreferredSize(new Dimension(220, 30));
+        cadastrarButton.setPreferredSize(new Dimension(180, 30));
         painelBuscaBotao.add(cadastrarButton);
 
         cadastrarButton.addActionListener(e -> {
@@ -202,8 +202,9 @@ public class ListaDeMedicamentos extends JPanel {
         tabela.setFont(new Font("Arial", Font.PLAIN, 12));
         tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 15));
         tabela.getTableHeader().setReorderingAllowed(false);
-        tabela.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tabela.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
@@ -293,6 +294,14 @@ public class ListaDeMedicamentos extends JPanel {
         @Override
         public Component getTableCellRendererComponent(JTable tabela, Object valor, boolean isSelected,
                                                        boolean hasFocus, int linha, int coluna) {
+                                                        setBackground(Color.WHITE);
+                                                        if (medicamentosFiltrados.isEmpty()) {
+                                                            botaoEditar.setVisible(false);
+                                                            botaoExcluir.setVisible(false);
+                                                        } else {
+                                                            botaoEditar.setVisible(true);
+                                                            botaoExcluir.setVisible(true);
+                                                        }
             return this;
         }
     }
