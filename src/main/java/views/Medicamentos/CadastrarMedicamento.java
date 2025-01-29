@@ -18,13 +18,11 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.MaskFormatter;
 
 import controllers.Medicamento.MedicamentoController;
-import dao.Categoria.CategoriaDAO;
 import dao.Fabricante.FabricanteDAO;
 import dao.Fornecedor.FornecedorDAO;
 import dao.Funcionario.FuncionarioDAO;
 import dao.Medicamento.MedicamentoDAO;
 import main.ConexaoBD;
-import models.Cargo.Cargo;
 import models.Categoria.Categoria;
 import models.Fabricante.Fabricante;
 import models.Fornecedor.Fornecedor;
@@ -435,169 +433,255 @@ public class CadastrarMedicamento extends JPanel {
 
         cadastrarButton.addActionListener(e -> {
             try {
-                int idFuncionario = PainelSuperior.getIdFuncionarioAtual();        
+                int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
 
                 String nome = nomeField.getText().trim();
                 if (nome.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "O nome do medicamento deve ser informado.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                
-                String tipoNome = (String) tipoComboBox.getSelectedItem();
-                if ("Selecione".equals(tipoNome)) {
-                    JOptionPane.showMessageDialog(this, "Por favor, selecione o tipo de medicamento.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-        
-                Tipo tipo = Tipo.valueOf(tipoNome.toUpperCase());
-        
-                String categoriaNome = (String) categoriaComboBox.getSelectedItem();
-                if ("Outros".equals(categoriaNome)) {
-                    categoriaNome = categoriaField.getText().trim();
-        
-                    if (categoriaNome.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Por favor, informe a categoria.", "Erro",
+                    JOptionPane.showMessageDialog(this, "O nome do medicamento não pode ser vazio.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
+                    return;
+                } else {
+                    if (!nome.matches("^[\\p{L}\\d\\s]*$")) {
+                        JOptionPane.showMessageDialog(this,
+                                "Nome inválido (apenas letras, números e espaços são permitidos).",
+                                "Erro",
+                                JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 }
-        
+
+                String tipoNome = (String) tipoComboBox.getSelectedItem();
+                if ("Selecione".equals(tipoNome)) {
+                    JOptionPane.showMessageDialog(this, "Por favor, selecione o tipo de medicamento.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                Tipo tipo = Tipo.valueOf(tipoNome.toUpperCase());
+
+                String categoriaNome = (String) categoriaComboBox.getSelectedItem();
+                if ("Outros".equals(categoriaNome)) {
+                    categoriaNome = categoriaField.getText().trim();
+
+                    if (categoriaNome.isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "A categoria não pode ser vazia.", "Erro",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+
                 if ("Selecione".equals(categoriaNome)) {
                     JOptionPane.showMessageDialog(this, "Por favor, selecione uma categoria.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-        
+
                 String dosagem = dosagemField.getText().trim();
                 if (dosagem.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "A dosagem deve ser informada.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "A dosagem não pode ser vazia.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
+                } else {
+                    if (!dosagem.matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
+                        JOptionPane.showMessageDialog(this, "Informe a unidade válida (mg, g, mcg, ml, l).", "Erro",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    double dosagemValor = Double.parseDouble(dosagem.replaceAll("[^\\d.]", ""));
+                    if (dosagemValor <= 0) {
+                        JOptionPane.showMessageDialog(this, "A dosagem deve ser um valor positivo.", "Erro",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                 }
-        
+
                 String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
                 if ("Selecione".equals(fornecedorNome)) {
                     JOptionPane.showMessageDialog(this, "Por favor, selecione um fornecedor.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-        
+
                 Funcionario funcionario;
                 Fornecedor fornecedor;
-        
+
                 // Conecta ao banco de dados para buscar fornecedor e funcionário
                 try (Connection conn = ConexaoBD.getConnection()) {
                     fornecedor = FornecedorDAO.buscarFornecedorPorNome(conn, fornecedorNome);
                     funcionario = FuncionarioDAO.buscarFuncionarioId(conn, idFuncionario);
-                    System.out.println("Tentando buscar funcionário com ID: " + idFuncionario);
-        
+
                     if (funcionario == null) {
                         JOptionPane.showMessageDialog(this, "Funcionário não encontrado com ID: " + idFuncionario,
-                            "Erro", JOptionPane.ERROR_MESSAGE);
+                                "Erro", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                     System.out.println("Objeto funcionário encontrado: " + funcionario);
                 } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(this, "Erro na busca: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Erro na busca: " + ex.getMessage(), "Erro",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-        
+
                 String formaFarmaceuticaNome = (String) formaFarmaceuticaComboBox.getSelectedItem();
                 if ("Selecione".equals(formaFarmaceuticaNome)) {
                     JOptionPane.showMessageDialog(this, "Por favor, selecione uma forma farmacêutica.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-        
+
                 if ("Outros".equals(formaFarmaceuticaNome)) {
                     formaFarmaceuticaNome = formaFarmaceuticaField.getText().trim();
                     if (formaFarmaceuticaNome.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Por favor, informe a forma farmacêutica.", "Erro",
-                            JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "A forma farmacêutica não pode ser vazia.", "Erro",
+                                JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 }
-        
+
+                List<String> formasValidas = Arrays.asList(
+                        "comprimido", "creme", "pomada", "injeção", "xarope", "solução",
+                        "spray", "cápsula", "gel", "loção", "gelatina", "supositório",
+                        "pó", "emulsão", "colírio", "gotejamento", "aerossol",
+                        "spray nasal", "pastilha", "suspensão", "pasta", "sachê");
+
+                if (!formasValidas.contains(formaFarmaceuticaNome.trim().toLowerCase())) {
+                    JOptionPane.showMessageDialog(this, "Forma farmacêutica inválida.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 String tipoReceitaNome = (String) receitaComboBox.getSelectedItem();
                 if ("Selecione".equals(tipoReceitaNome)) {
                     JOptionPane.showMessageDialog(this, "Por favor, selecione o tipo de receita.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-        
+
                 TipoReceita tipoReceita = TipoReceita.valueOf(tipoReceitaNome.toUpperCase());
-        
+
                 String estoqueTexto = estoqueField.getText().trim();
                 if (estoqueTexto.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "O estoque deve ser informado.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "O estoque não pode ser vazio.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-        
+
                 int estoque;
                 try {
                     estoque = Integer.parseInt(estoqueTexto);
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this, "Estoque deve ser um número válido.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-        
-                String fabricanteNome = fabricanteComboBox.isVisible() ? (String) fabricanteComboBox.getSelectedItem() : fabricanteField.getText().trim();
-        
+
+                if (estoque < 0) {
+                    JOptionPane.showMessageDialog(this, "Quantidade não pode ser negativa", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                String fabricanteNome = fabricanteComboBox.isVisible() ? (String) fabricanteComboBox.getSelectedItem()
+                        : fabricanteField.getText().trim();
+
                 if (fabricanteNome.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Fabricante deve ser informado.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Fabricante não pode ser vazio.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-        
+
                 String dataFabricacaoTexto = dataFabricacaoField.getText().replace("/", "-");
                 String dataValidadeTexto = dataValidadeField.getText().replace("/", "-");
                 LocalDate dataFabricacao, dataValidade;
-        
+
                 try {
                     dataFabricacao = LocalDate.parse(dataFabricacaoTexto, DateTimeFormatter.ofPattern("MM-dd-yyyy"));
                     dataValidade = LocalDate.parse(dataValidadeTexto, DateTimeFormatter.ofPattern("MM-dd-yyyy"));
                 } catch (DateTimeParseException ex) {
                     JOptionPane.showMessageDialog(this, "Formato de data inválido. Use MM-dd-yyyy.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-        
+
+                if (dataFabricacao.isAfter(LocalDate.now())) {
+                    JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser posterior à data atual.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (dataValidade.isBefore(dataFabricacao)) {
+                    JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser anterior à data de fabricação.",
+                            "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (dataValidade.isBefore(LocalDate.now())) {
+                    JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser anterior à data atual.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 double valorUnitario;
                 try {
-                    valorUnitario = Double.parseDouble(valorUnitarioField.getText().replace("R$", "").trim().replace(",", "."));
+                    valorUnitario = Double
+                            .parseDouble(valorUnitarioField.getText().replace("R$", "").trim().replace(",", "."));
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this, "Valor unitário deve ser um número válido.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-        
+
+                if (valorUnitario <= 0) {
+                    JOptionPane.showMessageDialog(this, "O valor unitário deve ser maior que zero.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 Categoria categoria = new Categoria();
                 categoria.setNome(categoriaNome);
-        
+
                 Fabricante fabricante = new Fabricante();
                 fabricante.setNome(fabricanteNome);
-        
+
                 Medicamento medicamento = new Medicamento(nome, dosagem, formaFarmaceuticaNome, valorUnitario,
-                        dataValidade, dataFabricacao, tipoReceita, estoque, tipo, categoria, fabricante, fornecedor, funcionario);
-        
-                System.out.println("1 - Informações do Medicamento:");
-                System.out.println(medicamento);
-        
+                        dataValidade, dataFabricacao, tipoReceita, estoque, tipo, categoria, fabricante, fornecedor,
+                        funcionario);
+
+    
                 try (Connection conn = ConexaoBD.getConnection()) {
                     MedicamentoController.cadastrarMedicamento(conn, medicamento);
-                    System.out.println("2 - Informações do Medicamento:");
-                    System.out.println(medicamento);
+                    JOptionPane.showMessageDialog(null, "Funcionário cadastrado com sucesso!", "Sucesso",
+                            JOptionPane.INFORMATION_MESSAGE);
+
+                    nomeField.setText("");
+                    dosagemField.setText("");
+                    estoqueField.setText("");
+                    valorUnitarioField.setText("");
+                    dataFabricacaoField.setText("");
+                    dataValidadeField.setText("");
+                    fabricanteField.setText("");
+                    tipoComboBox.setSelectedItem("");
+                    categoriaComboBox.setSelectedItem("");
+                    fornecedorComboBox.setSelectedItem("");
+                    formaFarmaceuticaComboBox.setSelectedItem("");
+                    receitaComboBox.setSelectedItem("");
+                    fabricanteComboBox.setSelectedItem("");
+
+                    categoriaField.setText(""); 
+                    categoriaField.setVisible(false); 
+                    formaFarmaceuticaField.setText("");
+                    formaFarmaceuticaField.setVisible(false);
+
+                    nomeField.requestFocus();
                 } catch (SQLException ex) {
                     JOptionPane.showMessageDialog(this, "Erro ao cadastrar medicamento: " + ex.getMessage(), "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
                 }
-        
+
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Erro ao cadastrar medicamento: " + ex.getMessage(), "Erro",
-                    JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
