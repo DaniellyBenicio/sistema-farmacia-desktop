@@ -2,6 +2,7 @@ package views.Medicamentos;
 
 import java.awt.*;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
-import dao.Medicamento.MedicamentoDAO; 
+import dao.Medicamento.MedicamentoDAO;
+import main.ConexaoBD;
 import models.Medicamento.Medicamento;
 import views.Clientes.CadastrarCliente; 
 
@@ -188,7 +190,7 @@ public class ListaDeMedicamentos extends JPanel {
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 7; // Apenas a coluna de ações é editável
+                return column == 7; 
             }
         };
 
@@ -247,7 +249,7 @@ public class ListaDeMedicamentos extends JPanel {
                             medicamento.getDosagem(),
                             medicamento.getDataValidade(),
                             medicamento.getQnt(),
-                            medicamento.getValorUnit(), // Adicione o preço unitário
+                            medicamento.getValorUnit(), 
                     })
                     .collect(Collectors.toList());
             carregarDados();
@@ -321,17 +323,75 @@ public class ListaDeMedicamentos extends JPanel {
         private void configurarAcoes() {
             botaoEditar.addActionListener(e -> {
                 fireEditingStopped();
-                // Lógica para editar medicamento (deve ser implementada)
-                JOptionPane.showMessageDialog(ListaDeMedicamentos.this, "Tela para editar medicamento ainda não implementada.");
+                
+                
+                if (medicamentosFiltrados.isEmpty()) {
+                    return;
+                }
+        
+              
+                indiceLinha = tabela.getSelectedRow();
+                if (indiceLinha >= 0) {
+                   
+                    int medicamentoId = medicamentos.get(indiceLinha).getId();  
+        
+                    
+                    JDialog dialogoEditar = new JDialog();
+                    dialogoEditar.setTitle("Editar Medicamento");
+                    dialogoEditar.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                    dialogoEditar.setSize(1200, 650);
+                    dialogoEditar.setLocationRelativeTo(null);
+                    dialogoEditar.setModal(true);
+        
+              
+                    Point localizacao = dialogoEditar.getLocation();
+                    localizacao.y = 150;
+                    dialogoEditar.setLocation(localizacao);
+        
+                   
+                    EditarMedicamento painelEditar = new EditarMedicamento(medicamentoId);
+                    dialogoEditar.add(painelEditar);
+        
+                    
+                    dialogoEditar.addWindowListener(new java.awt.event.WindowAdapter() {
+                        @Override
+                        public void windowClosed(java.awt.event.WindowEvent evento) {
+                            atualizarTabela();
+                        }
+                    });
+        
+                 
+                    dialogoEditar.setVisible(true);
+                }
             });
-
+        
             botaoExcluir.addActionListener(e -> {
                 fireEditingStopped();
-                // Lógica para excluir medicamento (deve ser implementada)
-                JOptionPane.showMessageDialog(ListaDeMedicamentos.this, "Exclusão de medicamento ainda não implementada.");
+                
+               
+                if (medicamentosFiltrados.isEmpty()) {
+                    return;
+                }
+        
+           
+                indiceLinha = tabela.getSelectedRow();
+                if (indiceLinha >= 0) {
+                 
+                    int medicamentoId = medicamentos.get(indiceLinha).getId();
+        
+                    
+                    try (Connection conn = ConexaoBD.getConnection()) {
+                        Medicamento medicamento = MedicamentoDAO.buscarPorId(conn, medicamentoId);
+                        MedicamentoDAO.deletarMedicamento(conn, medicamento);
+                        atualizarTabela(); 
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                }
             });
         }
-
+        
+        
         @Override
         public Component getTableCellEditorComponent(JTable tabela, Object valor, boolean isSelected, int linha,
                                                      int coluna) {
