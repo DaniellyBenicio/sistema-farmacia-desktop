@@ -37,7 +37,7 @@ public class CategoriaController {
         }
     }
 
-    public static ArrayList<Categoria> listarTodasCategorias(Connection conn) throws SQLException {
+    public static ArrayList<String> listarTodasCategorias(Connection conn) throws SQLException {
         try {
             return CategoriaDAO.listarTodasCategorias(conn);
         } catch (SQLException e) {

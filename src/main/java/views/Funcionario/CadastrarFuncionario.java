@@ -132,6 +132,7 @@ public class CadastrarFuncionario extends JPanel {
         List<String> cargos = obterCargos();
 
         cargoComboBox = new JComboBox<>(cargos.toArray(new String[0]));
+        cargoComboBox.setBackground(Color.WHITE);
         cargoComboBox.setPreferredSize(fieldSize);
         cargoComboBox.setFont(fieldFont);
         cargoComboBox.setFocusable(false);

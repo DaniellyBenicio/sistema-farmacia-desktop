@@ -39,6 +39,7 @@ public class CadastrarFornecedor extends JPanel {
     private JTextField cnpjField;
     private JTextField emailField;
     private JTextField telefoneField;
+    private String nomedoFornecedorCadastrado;
 
     public CadastrarFornecedor() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -258,6 +259,8 @@ public class CadastrarFornecedor extends JPanel {
                         JOptionPane.INFORMATION_MESSAGE);
                 representanteButton.setEnabled(true);
 
+                nomedoFornecedorCadastrado = nome;
+
                 representanteButton.addActionListener(event -> {
                     new CadastroRepresentante(null, nome, idFornecedor);
                 });
@@ -282,6 +285,10 @@ public class CadastrarFornecedor extends JPanel {
     private boolean validarEmail(String email) {
         String emailRegex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
         return Pattern.matches(emailRegex, email);
+    }
+
+    public String getNomeFornecedorCadastrado() {
+        return nomedoFornecedorCadastrado;
     }
 
     private void estilizarCamposFormulario(JComponent campo, Font font) {

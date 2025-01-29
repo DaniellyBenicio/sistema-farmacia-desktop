@@ -197,6 +197,7 @@ public class EditarCliente extends JPanel {
         camposPanel.add(estadoLabel, gbc);
 
         estadoComboBox = new JComboBox<>(estadosArray);
+        estadoComboBox.setBackground(Color.WHITE);
         estadoComboBox.setPreferredSize(new Dimension(200, 40));
         estadoComboBox.setFont(fieldFont);
         gbc.gridx = 1;
@@ -205,7 +206,7 @@ public class EditarCliente extends JPanel {
 
         gbc.gridx = 2;
         gbc.gridy = 4;
-        JLabel pontoReferenciaLabel = new JLabel("Ponto de Referência/OBS");
+        JLabel pontoReferenciaLabel = new JLabel("Ponto de Referência/Obs");
         pontoReferenciaLabel.setFont(labelFont);
         camposPanel.add(pontoReferenciaLabel, gbc);
 

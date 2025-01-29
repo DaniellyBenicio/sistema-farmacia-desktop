@@ -55,16 +55,14 @@ public class CategoriaDAO {
         }
     }
 
-    public static ArrayList<Categoria> listarTodasCategorias(Connection conn) throws SQLException {
-        String sql = "SELECT nome from categoria order by nome ASC";
+    public static ArrayList<String> listarTodasCategorias(Connection conn) throws SQLException {
+        String sql = "SELECT DISTINCT nome from categoria order by nome ASC";
 
-        ArrayList<Categoria> categorias = new ArrayList<>();
+        ArrayList<String> categorias = new ArrayList<>();
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                Categoria categoria = new Categoria();
-                categoria.setNome(rs.getString("nome"));
-                categorias.add(categoria);
+                categorias.add(rs.getString("nome"));
             }
         } catch (SQLException e) {
             System.err.println("Erro ao listar categorias: " + e.getMessage());

@@ -128,8 +128,6 @@ public class EditarFuncionario extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(emailField, gbc);
 
-        List<String> cargos = obterCargos();
-
         JLabel cargoLabel = new JLabel("Cargo");
         cargoLabel.setFont(labelFont);
         gbc.gridx = 1;
@@ -137,6 +135,7 @@ public class EditarFuncionario extends JPanel {
         camposPanel.add(cargoLabel, gbc);
 
         cargoComboBox = new JComboBox<>(obterCargos().toArray(new String[0]));
+        cargoComboBox.setBackground(Color.WHITE);
         cargoComboBox.setPreferredSize(fieldSize);
         cargoComboBox.setFont(fieldFont);
         cargoComboBox.setFocusable(false);

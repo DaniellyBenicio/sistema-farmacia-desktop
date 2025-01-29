@@ -53,7 +53,7 @@ create  table medicamento(
     dataFabricacao date not null,
     tipoReceita enum('SIMPLES', 'ESPECIAL'),
     qnt int not null,
-    tipo enum('ETICO', 'GENERICO', 'SIMILAR'),
+    tipo enum('ÉTICO', 'GENÉRICO', 'SIMILAR'),
     categoria_id int not null,
     funcionario_id int not null,
     fabricante_id int not null,

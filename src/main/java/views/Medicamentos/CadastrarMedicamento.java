@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -17,7 +18,10 @@ import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.MaskFormatter;
 
+import controllers.Categoria.CategoriaController;
+import controllers.Fabricante.FabricanteController;
 import controllers.Medicamento.MedicamentoController;
+import dao.Categoria.CategoriaDAO;
 import dao.Fabricante.FabricanteDAO;
 import dao.Fornecedor.FornecedorDAO;
 import dao.Funcionario.FuncionarioDAO;
@@ -102,13 +106,7 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(categoriaLabel, gbc);
 
-        String[] categorias = {
-                "Selecione", "Analgesico", "Anestesico", "Antitermico", "Antipiretico", "Antibiotico",
-                "Antifungico", "Antiviral", "Antiinflamatorio", "Antidepressivo", "Antipsicotico",
-                "Ansiolitico", "Antihipertensivo", "Antidiabetico", "Antiácidos", "Antialérgicos",
-                "Anti-eméticos", "Outros"
-        };
-
+        String[] categorias = obterCategorias();
         categoriaComboBox = new JComboBox<>(categorias);
         categoriaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
@@ -116,7 +114,7 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 1;
         camposPanel.add(categoriaComboBox, gbc);
 
-        JTextField categoriaField = new JTextField();
+        categoriaField = new JTextField();
         categoriaField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(categoriaField, fieldFont);
         categoriaField.setVisible(false);
@@ -131,8 +129,8 @@ public class CadastrarMedicamento extends JPanel {
                 categoriaField.requestFocus();
             } else {
                 categoriaField.setText("");
-                categoriaComboBox.setVisible(true);
                 categoriaField.setVisible(false);
+                categoriaComboBox.setVisible(true);
             }
         });
 
@@ -190,6 +188,12 @@ public class CadastrarMedicamento extends JPanel {
 
                 cadastroDialog.add(cadastroPanel);
                 cadastroDialog.setVisible(true);
+
+                String novoFornecedorNome = cadastroPanel.getNomeFornecedorCadastrado();
+                if (novoFornecedorNome != null) {
+                    fornecedorComboBox.addItem(novoFornecedorNome);
+                    fornecedorComboBox.setSelectedItem(novoFornecedorNome);
+                }
             }
         });
 
@@ -199,14 +203,15 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 2;
         camposPanel.add(formaFarmaceuticaLabel, gbc);
 
-        formaFarmaceuticaComboBox = new JComboBox<>(obterFormasFarmaceuticas());
+        String[] formasFarmautecia = obterFormasFarmaceuticas();
+        formaFarmaceuticaComboBox = new JComboBox<>(formasFarmautecia);
         formaFarmaceuticaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(formaFarmaceuticaComboBox, fieldFont);
         gbc.gridx = 1;
         gbc.gridy = 3;
         camposPanel.add(formaFarmaceuticaComboBox, gbc);
 
-        JTextField formaFarmaceuticaField = new JTextField();
+        formaFarmaceuticaField = new JTextField();
         formaFarmaceuticaField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(formaFarmaceuticaField, fieldFont);
         formaFarmaceuticaField.setVisible(false);
@@ -366,7 +371,29 @@ public class CadastrarMedicamento extends JPanel {
             e.printStackTrace();
             return new String[] { "Selecione" };
         }
+    }
 
+    private String[] obterCategorias() {
+        List<String> categoriasPreDefinidas = new ArrayList<>(Arrays.asList(
+                "Analgesico", "Anestesico", "Antitermico", "Antipiretico", "Antibiotico",
+                "Antifungico", "Antiviral", "Antiinflamatorio", "Antidepressivo", "Antipsicotico",
+                "Ansiolitico", "Antihipertensivo", "Antidiabetico", "Antiácidos", "Antialérgicos",
+                "Anti-eméticos"));
+
+        Set<String> categorias = new LinkedHashSet<>();
+        categorias.add("Selecione");
+        categorias.addAll(categoriasPreDefinidas);
+
+        try (Connection conn = ConexaoBD.getConnection()) {
+            List<String> categoriasDoBanco = CategoriaController.listarTodasCategorias(conn);
+            categorias.addAll(categoriasDoBanco);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        categorias.add("Outros");
+
+        return categorias.toArray(new String[0]);
     }
 
     private String[] obterFormasFarmaceuticas() {
@@ -376,7 +403,7 @@ public class CadastrarMedicamento extends JPanel {
                 "Pó", "Emulsão", "Colírio", "Gotejamento", "Aerossol",
                 "Spray Nasal", "Pastilha", "Suspensão", "Pasta", "Sachê"));
 
-        Set<String> formasFarmaceuticas = new HashSet<>();
+        Set<String> formasFarmaceuticas = new LinkedHashSet<>();
         formasFarmaceuticas.add("Selecione");
         formasFarmaceuticas.addAll(formasPreDefinidas);
 
@@ -387,17 +414,14 @@ public class CadastrarMedicamento extends JPanel {
             e.printStackTrace();
         }
 
-        List<String> formasOrdenadas = new ArrayList<>(formasFarmaceuticas);
-        Collections.sort(formasOrdenadas, String.CASE_INSENSITIVE_ORDER);
+        formasFarmaceuticas.add("Outros");
 
-        formasOrdenadas.add("Outros");
-
-        return formasOrdenadas.toArray(new String[0]);
+        return formasFarmaceuticas.toArray(new String[0]);
     }
 
     private String[] obterFabricantes() {
         try (Connection conn = ConexaoBD.getConnection()) {
-            ArrayList<Fabricante> fabricantes = FabricanteDAO.listarTodosFabricantes(conn);
+            ArrayList<Fabricante> fabricantes = FabricanteController.listarTodosFabricantes(conn);
             String[] nomes = new String[fabricantes.size() + 2];
             nomes[0] = "Selecione";
             for (int i = 0; i < fabricantes.size(); i++) {
@@ -648,10 +672,9 @@ public class CadastrarMedicamento extends JPanel {
                         dataValidade, dataFabricacao, tipoReceita, estoque, tipo, categoria, fabricante, fornecedor,
                         funcionario);
 
-    
                 try (Connection conn = ConexaoBD.getConnection()) {
                     MedicamentoController.cadastrarMedicamento(conn, medicamento);
-                    JOptionPane.showMessageDialog(null, "Funcionário cadastrado com sucesso!", "Sucesso",
+                    JOptionPane.showMessageDialog(null, "Medicamento cadastrado com sucesso!", "Sucesso",
                             JOptionPane.INFORMATION_MESSAGE);
 
                     nomeField.setText("");
@@ -668,10 +691,12 @@ public class CadastrarMedicamento extends JPanel {
                     receitaComboBox.setSelectedItem("");
                     fabricanteComboBox.setSelectedItem("");
 
-                    categoriaField.setText(""); 
-                    categoriaField.setVisible(false); 
+                    categoriaField.setText("");
+                    categoriaField.setVisible(false);
+                    categoriaComboBox.setVisible(true);
                     formaFarmaceuticaField.setText("");
                     formaFarmaceuticaField.setVisible(false);
+                    formaFarmaceuticaComboBox.setVisible(true);
 
                     nomeField.requestFocus();
                 } catch (SQLException ex) {
@@ -698,6 +723,7 @@ public class CadastrarMedicamento extends JPanel {
     }
 
     private void estilizarComboBox(JComboBox<String> comboBox, Font font) {
+        comboBox.setBackground(Color.WHITE);
 
         comboBox.setRenderer(new DefaultListCellRenderer() {
             @Override

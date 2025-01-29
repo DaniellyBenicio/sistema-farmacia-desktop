@@ -205,6 +205,7 @@ public class CadastrarCliente extends JPanel {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
                     boolean cellHasFocus) {
                 Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                estadoComboBox.setBackground(Color.WHITE);
                 if (isSelected) {
                     component.setBackground(new Color(24, 39, 55));
                     component.setForeground(Color.WHITE);
