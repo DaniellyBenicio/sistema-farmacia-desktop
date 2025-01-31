@@ -49,7 +49,7 @@ public class Medicamento {
     }
 
     public enum Tipo {
-        ETICO, GENERICO, SIMILAR
+        ÉTICO, GENÉRICO, SIMILAR
     }
 
     public int getId() {

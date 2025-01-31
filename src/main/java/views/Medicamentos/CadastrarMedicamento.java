@@ -140,7 +140,7 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(tipoLabel, gbc);
 
-        String[] tipos = { "Selecione", "Etico", "Generico", "Similar" };
+        String[] tipos = { "Selecione", "Ético", "Genérico", "Similar" };
         tipoComboBox = new JComboBox<>(tipos);
         tipoComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(tipoComboBox, fieldFont);
@@ -375,10 +375,10 @@ public class CadastrarMedicamento extends JPanel {
 
     private String[] obterCategorias() {
         List<String> categoriasPreDefinidas = new ArrayList<>(Arrays.asList(
-                "Analgesico", "Anestesico", "Antitermico", "Antipiretico", "Antibiotico",
-                "Antifungico", "Antiviral", "Antiinflamatorio", "Antidepressivo", "Antipsicotico",
-                "Ansiolitico", "Antihipertensivo", "Antidiabetico", "Antiácidos", "Antialérgicos",
-                "Anti-eméticos"));
+            "Analgésico", "Anestésico", "Antitérmico", "Antipirético", "Antibiótico",
+            "Antifúngico", "Antiviral", "Anti-inflamatório", "Antidepressivo", "Antipsicótico",
+            "Ansiolítico", "Antihipertensivo", "Antidiabético", "Antiácidos", "Antialérgicos",
+            "Antieméticos"));    
 
         Set<String> categorias = new LinkedHashSet<>();
         categorias.add("Selecione");
