@@ -217,8 +217,8 @@ public class FornecedorDAO {
 
     public static Fornecedor buscarFornecedorPorNome(Connection conn, String nome) throws SQLException {
         Fornecedor fornecedor = null;
-        String sql = "SELECT * FROM fornecedor WHERE nome = ?"; 
-    
+        String sql = "SELECT * FROM fornecedor WHERE nome = ?";
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, nome);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -226,16 +226,16 @@ public class FornecedorDAO {
                     fornecedor = new Fornecedor();
                     fornecedor.setId(rs.getInt("id"));
                     fornecedor.setNome(rs.getString("nome"));
-                    fornecedor.setCnpj(rs.getString("cnpj")); 
-                    fornecedor.setEmail(rs.getString("email")); 
+                    fornecedor.setCnpj(rs.getString("cnpj"));
+                    fornecedor.setEmail(rs.getString("email"));
                     fornecedor.setTelefone(rs.getString("telefone"));
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw e; 
+            throw e;
         }
-        
+
         return fornecedor;
     }
 

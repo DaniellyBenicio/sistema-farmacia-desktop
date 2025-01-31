@@ -33,7 +33,7 @@ public class FabricanteController {
         }
     }
 
-    public static ArrayList<Fabricante> listarTodosFabricantes(Connection conn) throws SQLException {
+    public static ArrayList<String> listarTodosFabricantes(Connection conn) throws SQLException {
         try {
             return FabricanteDAO.listarTodosFabricantes(conn);
         } catch (SQLException e) {

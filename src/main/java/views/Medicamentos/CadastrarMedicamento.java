@@ -20,6 +20,7 @@ import javax.swing.text.MaskFormatter;
 
 import controllers.Categoria.CategoriaController;
 import controllers.Fabricante.FabricanteController;
+import controllers.Fornecedor.FornecedorController;
 import controllers.Medicamento.MedicamentoController;
 import dao.Categoria.CategoriaDAO;
 import dao.Fabricante.FabricanteDAO;
@@ -363,7 +364,7 @@ public class CadastrarMedicamento extends JPanel {
 
     private String[] obterFornecedores() {
         try (Connection conn = ConexaoBD.getConnection()) {
-            ArrayList<String> fornecedores = FornecedorDAO.listarNomesFornecedores(conn);
+            ArrayList<String> fornecedores = FornecedorController.listarFornecedoresPorNome(conn);
             fornecedores.add(0, "Selecione");
             fornecedores.add("Outros");
             return fornecedores.toArray(new String[0]);
@@ -375,10 +376,10 @@ public class CadastrarMedicamento extends JPanel {
 
     private String[] obterCategorias() {
         List<String> categoriasPreDefinidas = new ArrayList<>(Arrays.asList(
-            "Analgésico", "Anestésico", "Antitérmico", "Antipirético", "Antibiótico",
-            "Antifúngico", "Antiviral", "Anti-inflamatório", "Antidepressivo", "Antipsicótico",
-            "Ansiolítico", "Antihipertensivo", "Antidiabético", "Antiácidos", "Antialérgicos",
-            "Antieméticos"));    
+                "Analgésico", "Anestésico", "Antitérmico", "Antipirético", "Antibiótico",
+                "Antifúngico", "Antiviral", "Anti-inflamatório", "Antidepressivo", "Antipsicótico",
+                "Ansiolítico", "Antihipertensivo", "Antidiabético", "Antiácidos", "Antialérgicos",
+                "Antieméticos"));
 
         Set<String> categorias = new LinkedHashSet<>();
         categorias.add("Selecione");
@@ -421,17 +422,45 @@ public class CadastrarMedicamento extends JPanel {
 
     private String[] obterFabricantes() {
         try (Connection conn = ConexaoBD.getConnection()) {
-            ArrayList<Fabricante> fabricantes = FabricanteController.listarTodosFabricantes(conn);
-            String[] nomes = new String[fabricantes.size() + 2];
-            nomes[0] = "Selecione";
-            for (int i = 0; i < fabricantes.size(); i++) {
-                nomes[i + 1] = fabricantes.get(i).getNome();
-            }
-            nomes[nomes.length - 1] = "Outros";
-            return nomes;
+            ArrayList<String> fabricantes = FabricanteController.listarTodosFabricantes(conn);
+            fabricantes.add(0, "Selecione");
+            fabricantes.add("Outros");
+            return fabricantes.toArray(new String[0]);
         } catch (SQLException e) {
             e.printStackTrace();
             return new String[] { "Selecione" };
+        }
+    }
+
+    private void atualizarCategorias() {
+        String[] categoriasAtualizadas = obterCategorias();
+        categoriaComboBox.removeAllItems();
+        for (String categoria : categoriasAtualizadas) {
+            categoriaComboBox.addItem(categoria);
+        }
+    }
+
+    private void atualizarFormasFarmaceuticas() {
+        String[] formasAtualizadas = obterFormasFarmaceuticas();
+        formaFarmaceuticaComboBox.removeAllItems();
+        for (String forma : formasAtualizadas) {
+            formaFarmaceuticaComboBox.addItem(forma);
+        }
+    }
+
+    private void atualizarFabricantes() {
+        String[] fabricantesAtualizadas = obterFabricantes();
+        fabricanteComboBox.removeAllItems();
+        for (String fabricante : fabricantesAtualizadas) {
+            fabricanteComboBox.addItem(fabricante);
+        }
+    }
+
+    private void atualizarFornecedores() {
+        String[] fornecedoresAtualizados = obterFornecedores();
+        fornecedorComboBox.removeAllItems();
+        for (String fornecedor : fornecedoresAtualizados) {
+            fornecedorComboBox.addItem(fornecedor);
         }
     }
 
@@ -562,18 +591,6 @@ public class CadastrarMedicamento extends JPanel {
                     }
                 }
 
-                List<String> formasValidas = Arrays.asList(
-                        "comprimido", "creme", "pomada", "injeção", "xarope", "solução",
-                        "spray", "cápsula", "gel", "loção", "gelatina", "supositório",
-                        "pó", "emulsão", "colírio", "gotejamento", "aerossol",
-                        "spray nasal", "pastilha", "suspensão", "pasta", "sachê");
-
-                if (!formasValidas.contains(formaFarmaceuticaNome.trim().toLowerCase())) {
-                    JOptionPane.showMessageDialog(this, "Forma farmacêutica inválida.", "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
                 String tipoReceitaNome = (String) receitaComboBox.getSelectedItem();
                 if ("Selecione".equals(tipoReceitaNome)) {
                     JOptionPane.showMessageDialog(this, "Por favor, selecione o tipo de receita.", "Erro",
@@ -605,15 +622,23 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 }
 
-                String fabricanteNome = fabricanteComboBox.isVisible() ? (String) fabricanteComboBox.getSelectedItem()
-                        : fabricanteField.getText().trim();
+                String fabricanteNome;
+                if (fabricanteField.isVisible()) {
+                    fabricanteNome = fabricanteField.getText().trim();
+                    if (fabricanteNome.isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "Por favor, insira o nome do fabricante.", "Erro",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                } else {
+                    fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
+                }
 
-                if (fabricanteNome.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Fabricante não pode ser vazio.", "Erro",
+                if ("Selecione".equals(fabricanteNome) || fabricanteNome.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Por favor, selecione um fabricante.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-
                 String dataFabricacaoTexto = dataFabricacaoField.getText().replace("/", "-");
                 String dataValidadeTexto = dataValidadeField.getText().replace("/", "-");
                 LocalDate dataFabricacao, dataValidade;
@@ -699,6 +724,11 @@ public class CadastrarMedicamento extends JPanel {
                     formaFarmaceuticaComboBox.setVisible(true);
 
                     nomeField.requestFocus();
+
+                    atualizarCategorias();
+                    atualizarFormasFarmaceuticas();
+                    atualizarFabricantes();
+                    atualizarFornecedores();
                 } catch (SQLException ex) {
                     JOptionPane.showMessageDialog(this, "Erro ao cadastrar medicamento: " + ex.getMessage(), "Erro",
                             JOptionPane.ERROR_MESSAGE);

@@ -51,22 +51,22 @@ public class FornecedorController {
         }
     }
 
-    public static ArrayList<Fornecedor> listarFornecedores(Connection conn) throws SQLException {
+    public static ArrayList<String> listarFornecedores(Connection conn) throws SQLException {
         try {
-            return FornecedorDAO.listarFornecedores(conn);
+            return FornecedorDAO.listarNomesFornecedores(conn);
         } catch (SQLException e) {
             throw new SQLException("Erro ao listar fornecedores.", e);
         }
     }
 
-    public static ArrayList<String> listarFornecedoresPorNome (Connection conn)throws SQLException {
+    public static ArrayList<String> listarFornecedoresPorNome(Connection conn) throws SQLException {
         try {
             return FornecedorDAO.listarNomesFornecedores(conn);
         } catch (SQLException e) {
             throw new SQLException("Erro ao listar fornecedores por nome.", e);
         }
     }
-        
+
     public static void excluirFornecedor(Connection conn, Fornecedor forn) throws SQLException {
         if (forn == null || forn.getId() <= 0) {
             throw new IllegalArgumentException("ID inválido.");

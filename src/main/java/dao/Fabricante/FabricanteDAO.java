@@ -1,6 +1,5 @@
 package dao.Fabricante;
 
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,7 +14,7 @@ public class FabricanteDAO {
         try (PreparedStatement pstmt = conn.prepareStatement(sqlVerificar)) {
             pstmt.setString(1, fab.getNome());
             ResultSet rs = pstmt.executeQuery();
-            
+
             if (rs.next()) {
                 return rs.getInt("id");
             } else {
@@ -26,45 +25,44 @@ public class FabricanteDAO {
 
     private static int inserirFabricante(Connection conn, Fabricante fab) throws SQLException {
         String sqlInserir = "insert into fabricante (nome) values (?)";
-        try (PreparedStatement pstmtInserir = conn.prepareStatement(sqlInserir, PreparedStatement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement pstmtInserir = conn.prepareStatement(sqlInserir,
+                PreparedStatement.RETURN_GENERATED_KEYS)) {
             pstmtInserir.setString(1, fab.getNome());
             pstmtInserir.executeUpdate();
 
             try (ResultSet rsInserir = pstmtInserir.getGeneratedKeys()) {
                 if (rsInserir.next()) {
-                    return rsInserir.getInt(1);  
+                    return rsInserir.getInt(1);
                 } else {
                     throw new SQLException("Falha ao obter o id do fabricante.");
                 }
             }
         }
     }
-     
+
     public static int buscarFabricantePorNome(Connection conn, String nome) throws SQLException {
         String sql = "select id from fabricante where nome = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, nome);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                return rs.getInt("id");  
+                return rs.getInt("id");
             }
-            return 0;  
+            return 0;
         } catch (SQLException e) {
             System.err.println("Erro ao buscar fabricante: " + e.getMessage());
             throw e;
         }
     }
 
-    public static ArrayList<Fabricante> listarTodosFabricantes(Connection conn) throws SQLException {
-        String sql = "SELECT nome from fabricante order by nome ASC";
+    public static ArrayList<String> listarTodosFabricantes(Connection conn) throws SQLException {
+        String sql = "SELECT DISTINCT nome FROM fabricante ORDER BY nome ASC";
 
-        ArrayList<Fabricante> fabricantes = new ArrayList<>();
+        ArrayList<String> fabricantes = new ArrayList<>();
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                Fabricante fab = new Fabricante();
-                fab.setNome(rs.getString("nome"));
-                fabricantes.add(fab);
+                fabricantes.add(rs.getString("nome"));
             }
         } catch (SQLException e) {
             System.err.println("Erro ao listar fabricantes: " + e.getMessage());
