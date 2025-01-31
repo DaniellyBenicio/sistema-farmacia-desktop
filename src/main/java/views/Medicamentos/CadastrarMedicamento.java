@@ -349,6 +349,7 @@ public class CadastrarMedicamento extends JPanel {
 
         try {
             MaskFormatter moedaFormatter = new MaskFormatter("R$ ##.##");
+            moedaFormatter.setPlaceholderCharacter('0');
             valorUnitarioField = new JFormattedTextField(moedaFormatter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -617,7 +618,7 @@ public class CadastrarMedicamento extends JPanel {
                 }
 
                 if (estoque < 0) {
-                    JOptionPane.showMessageDialog(this, "Quantidade não pode ser negativa", "Erro",
+                    JOptionPane.showMessageDialog(this, "A quantidade informada para estoque não pode ser negativa", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -639,15 +640,16 @@ public class CadastrarMedicamento extends JPanel {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+
                 String dataFabricacaoTexto = dataFabricacaoField.getText().replace("/", "-");
                 String dataValidadeTexto = dataValidadeField.getText().replace("/", "-");
                 LocalDate dataFabricacao, dataValidade;
 
                 try {
-                    dataFabricacao = LocalDate.parse(dataFabricacaoTexto, DateTimeFormatter.ofPattern("MM-dd-yyyy"));
-                    dataValidade = LocalDate.parse(dataValidadeTexto, DateTimeFormatter.ofPattern("MM-dd-yyyy"));
+                    dataFabricacao = LocalDate.parse(dataFabricacaoTexto, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                    dataValidade = LocalDate.parse(dataValidadeTexto, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
                 } catch (DateTimeParseException ex) {
-                    JOptionPane.showMessageDialog(this, "Formato de data inválido. Use MM-dd-yyyy.", "Erro",
+                    JOptionPane.showMessageDialog(this, "Formato de data inválido. Use dd/MM/yyyy.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
