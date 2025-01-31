@@ -95,17 +95,6 @@ public class Medicamento {
         if (formaFarmaceutica == null || formaFarmaceutica.trim().isEmpty()) {
             throw new IllegalArgumentException("A forma farmacêutica não pode ser vazia.");
         }
-
-        List<String> formasValidas = Arrays.asList(
-            "comprimido", "creme", "pomada", "injeção", "xarope", "solução",
-            "spray", "cápsula", "gel", "loção", "gelatina", "supositório",
-            "pó", "emulsão", "colírio", "gotejamento", "aerossol",
-            "spray nasal", "pastilha", "suspensão", "pasta", "sachê"
-        );
-
-        if (!formasValidas.contains(formaFarmaceutica.trim().toLowerCase())) {
-            throw new IllegalArgumentException("Forma farmacêutica inválida.");
-        }
         this.formaFarmaceutica = formaFarmaceutica;
     }
 
