@@ -74,7 +74,8 @@ public class Medicamento {
         if (dosagem == null || dosagem.trim().isEmpty()) {
             throw new IllegalArgumentException("A dosagem não pode ser vazia.");
         }
-        if (!dosagem.matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
+        String dosagemLower = dosagem.toLowerCase();
+        if (!dosagemLower.matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
             throw new IllegalArgumentException("Informe a unidade válida (mg, g, mcg, ml, l).");
         }
         double dosagemValor = Double.parseDouble(dosagem.replaceAll("[^\\d.]", ""));
@@ -82,8 +83,7 @@ public class Medicamento {
             throw new IllegalArgumentException("A dosagem deve ser um valor positivo.");
         }
         this.dosagem = dosagem;
-    }
-    
+    }    
 
     public String getFormaFarmaceutica() {
         return formaFarmaceutica;
@@ -112,29 +112,46 @@ public class Medicamento {
     }
 
     public void setDataValidade(YearMonth dataValidade) {
-        LocalDate validade = dataValidade.atDay(1);
-        if (validade.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Data inválida! Não pode ser anterior à data atual.");
+        LocalDate validade = dataValidade.atDay(30);
+        LocalDate hoje = LocalDate.now();
+
+        if (validade.isBefore(hoje)) {
+            throw new IllegalArgumentException("Data inválida! A data de validade não pode ser anterior à data atual.");
         }
+
         if (dataFabricacao != null && validade.isBefore(dataFabricacao)) {
-            throw new IllegalArgumentException("Data inválida! Não pode ser anterior à data de fabricação.");
+            throw new IllegalArgumentException("Data inválida! A data de validade não pode ser anterior à data de fabricação.");
+        }
+
+        LocalDate limiteSuperiorValidade = dataFabricacao != null ? dataFabricacao.plusYears(5) : hoje.plusYears(5);
+
+        if (validade.isAfter(limiteSuperiorValidade)) {
+            throw new IllegalArgumentException("Data inválida! A data de validade não pode ser mais do que 5 anos após a data de fabricação.");
         }
 
         this.dataValidade = validade;
+    }
 
-    }    
 
     public LocalDate getDataFabricacao() {
         return dataFabricacao;
     }
 
    public void setDataFabricacao(YearMonth dataFabricacao) {
-        LocalDate fabricacao = dataFabricacao.atDay(1); 
-        if (fabricacao.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Data inválida! Não pode ser posterior à data atual.");
+        LocalDate fabricacao = dataFabricacao.atDay(30); 
+
+        LocalDate hoje = LocalDate.now();
+
+        if (fabricacao.isAfter(hoje)) {
+            throw new IllegalArgumentException("Data inválida! A data de fabricação não pode ser posterior à data atual.");
         }
+
+        if (fabricacao.isBefore(hoje.minusYears(10))) {
+            throw new IllegalArgumentException("Data inválida! A data de fabricação não pode ser anterior a 10 anos.");
+        }
+
         if (dataValidade != null && fabricacao.isAfter(dataValidade)) {
-            throw new IllegalArgumentException("Data inválida! Não pode ser posterior à data de validade.");
+            throw new IllegalArgumentException("Data inválida! A data de fabricação não pode ser posterior à data de validade.");
         }
 
         this.dataFabricacao = fabricacao;

@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -345,7 +346,7 @@ public class CadastrarMedicamento extends JPanel {
         camposPanel.add(dataFabricacaoLabel, gbc);
 
         try {
-            MaskFormatter dataFormatter = new MaskFormatter("##/##/####");
+            MaskFormatter dataFormatter = new MaskFormatter("##/####");
             dataFabricacaoField = new JFormattedTextField(dataFormatter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -363,11 +364,12 @@ public class CadastrarMedicamento extends JPanel {
         camposPanel.add(dataValidadeLabel, gbc);
 
         try {
-            MaskFormatter dataFormatter = new MaskFormatter("##/##/####");
+            MaskFormatter dataFormatter = new MaskFormatter("##/####");
             dataValidadeField = new JFormattedTextField(dataFormatter);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         dataValidadeField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(dataValidadeField, fieldFont);
         gbc.gridx = 2;
@@ -522,7 +524,7 @@ public class CadastrarMedicamento extends JPanel {
             try {
                 int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
 
-                String nomeMedicamento = nomedoMedicamentoField.getText().trim();
+                String nomeMedicamento = nomedoMedicamentoField.getText().trim().toLowerCase();;
                 if (nomeMedicamento.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "O nome do medicamento não pode ser vazio.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
@@ -569,7 +571,7 @@ public class CadastrarMedicamento extends JPanel {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 } else {
-                    if (!dosagem.matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
+                    if (!dosagem.toLowerCase().matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
                         JOptionPane.showMessageDialog(this,
                                 "Informe a dosagem com as seguintes unidades válidas:\n" +
                                         "(mg, g, mcg, ml, l).\n" +
@@ -678,19 +680,38 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 }
 
-                String dataFabricacaoTexto = dataFabricacaoField.getText().replace("/", "-");
-                String dataValidadeTexto = dataValidadeField.getText().replace("/", "-");
+                String dataFabricacaoTexto = dataFabricacaoField.getText().trim(); 
+                String dataValidadeTexto = dataValidadeField.getText().trim();
+
+                if (dataFabricacaoTexto.isEmpty() || dataValidadeTexto.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "As datas de fabricação e validade devem ser preenchidas.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }         
+                
                 LocalDate dataFabricacao, dataValidade;
 
                 try {
-                    dataFabricacao = LocalDate.parse(dataFabricacaoTexto, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                    dataValidade = LocalDate.parse(dataValidadeTexto, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
+                    YearMonth ymFabricacao = YearMonth.parse(dataFabricacaoTexto, formatter);
+                    YearMonth ymValidade = YearMonth.parse(dataValidadeTexto, formatter);
+                
+                    dataFabricacao = ymFabricacao.atDay(30);
+                    dataValidade = ymValidade.atDay(30);
                 } catch (DateTimeParseException ex) {
-                    JOptionPane.showMessageDialog(this, "Formato de data inválido. Use dd/MM/yyyy.", "Erro",
+                    JOptionPane.showMessageDialog(this, "Formato de data inválido. Use MM/yyyy.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
+                LocalDate dataMinima = LocalDate.now().minusYears(10);
+
+                if (dataFabricacao.isBefore(dataMinima)) {
+                    JOptionPane.showMessageDialog(this, "Data de fabricação inválida! Deve ser posterior a " + dataMinima.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ".", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
                 if (dataFabricacao.isAfter(LocalDate.now())) {
                     JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser posterior à data atual.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
@@ -706,6 +727,13 @@ public class CadastrarMedicamento extends JPanel {
 
                 if (dataValidade.isBefore(LocalDate.now())) {
                     JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser anterior à data atual.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                LocalDate dataValidadeMaxima = dataFabricacao.plusYears(5);
+                if (dataValidade.isAfter(dataValidadeMaxima)) {
+                    JOptionPane.showMessageDialog(this, "Data de validade inválida! Não pode ser superior a 5 anos a partir da data de fabricação.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
