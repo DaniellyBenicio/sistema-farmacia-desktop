@@ -1,6 +1,9 @@
 package views.Medicamentos;
 
 import javax.swing.*;
+
+import controllers.Medicamento.MedicamentoController;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import dao.Medicamento.MedicamentoDAO;
@@ -27,7 +30,7 @@ public class ExcluirMedicamento {
         if (medicamento == null) {
             JOptionPane.showMessageDialog(null, "Medicamento não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
-        }
+        } 
 
         String mensagemConfirmacao = "Você realmente deseja excluir o medicamento \"" + medicamento.getNome() + "\"?";
 
@@ -44,7 +47,7 @@ public class ExcluirMedicamento {
 
         if (resposta == 0) {
             try (Connection conn = ConexaoBD.getConnection()) {
-                MedicamentoDAO.deletarMedicamento(conn, medicamento); 
+                MedicamentoController.excluirMedicamento(conn, medicamento); 
                 JOptionPane.showMessageDialog(null, "Medicamento excluído com sucesso!", "Sucesso",
                         JOptionPane.INFORMATION_MESSAGE);
             } catch (SQLException e) {

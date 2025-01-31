@@ -65,15 +65,15 @@ public class ListaDeMedicamentos extends JPanel {
         medicamentosFiltrados.clear();
 
         for (Medicamento medicamento : medicamentos) {
-            Object[] dadosMedicamento = new Object[8]; // Ajuste para 8 colunas
+            Object[] dadosMedicamento = new Object[8]; 
             dadosMedicamento[0] = medicamento.getNome();
-            dadosMedicamento[1] = medicamento.getCategoria();
+            dadosMedicamento[1] = medicamento.getCategoria().getNome();
             dadosMedicamento[2] = medicamento.getFormaFarmaceutica();
             dadosMedicamento[3] = medicamento.getDosagem();
             dadosMedicamento[4] = medicamento.getDataValidade();
             dadosMedicamento[5] = medicamento.getQnt();
-            dadosMedicamento[6] = medicamento.getValorUnit(); // Adicione o preço unitário
-            dadosMedicamento[7] = ""; // Para ações
+            dadosMedicamento[6] = medicamento.getValorUnit(); 
+            dadosMedicamento[7] = ""; 
 
             medicamentosFiltrados.add(dadosMedicamento);
         }
@@ -185,7 +185,7 @@ public class ListaDeMedicamentos extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Nome", "Categoria", "F. Farmacêutica", "Dosagem", "Validade", "Qnt", "Preço Unitário", "Ações" };
+        String[] colunas = { "Nome", "Categoria", "F. Farmacêutica", "Dosagem", "Validade", "Estoque", "Preço Unitário", "Ações" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
@@ -387,16 +387,9 @@ public class ListaDeMedicamentos extends JPanel {
                 if (indiceLinha >= 0) {
                  
                     int medicamentoId = medicamentos.get(indiceLinha).getId();
-        
-                    
-                    try (Connection conn = ConexaoBD.getConnection()) {
-                        Medicamento medicamento = MedicamentoDAO.buscarPorId(conn, medicamentoId);
-                        MedicamentoDAO.deletarMedicamento(conn, medicamento);
-                        atualizarTabela(); 
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }
-                }
+                    ExcluirMedicamento.excluirMedicamento(medicamentoId);
+                    atualizarTabela();
+                }  
             });
         }
         
