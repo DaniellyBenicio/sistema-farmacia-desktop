@@ -3,6 +3,7 @@ package views.Medicamentos;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -17,6 +18,7 @@ import java.util.Set;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.MaskFormatter;
+import javax.swing.text.NumberFormatter;
 
 import controllers.Categoria.CategoriaController;
 import controllers.Fabricante.FabricanteController;
@@ -39,7 +41,7 @@ import views.BarrasSuperiores.PainelSuperior;
 import views.Fornecedor.CadastrarFornecedor;
 
 public class CadastrarMedicamento extends JPanel {
-    private JTextField nomeField;
+    private JTextField nomedoMedicamentoField;
     private JComboBox<String> categoriaComboBox;
     private JTextField fabricanteField;
     private JTextField dosagemField;
@@ -82,7 +84,7 @@ public class CadastrarMedicamento extends JPanel {
         JPanel camposPanel = new JPanel();
         camposPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 30, 0, 10);
+        gbc.insets = new Insets(5, 20, 0, 10);
         gbc.anchor = GridBagConstraints.WEST;
 
         Font labelFont = new Font("Arial", Font.BOLD, 15);
@@ -94,12 +96,12 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(nomeLabel, gbc);
 
-        nomeField = new JTextField();
-        nomeField.setPreferredSize(new Dimension(400, 40));
-        estilizarCamposFormulario(nomeField, fieldFont);
+        nomedoMedicamentoField = new JTextField();
+        nomedoMedicamentoField.setPreferredSize(new Dimension(400, 40));
+        estilizarCamposFormulario(nomedoMedicamentoField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
-        camposPanel.add(nomeField, gbc);
+        camposPanel.add(nomedoMedicamentoField, gbc);
 
         JLabel categoriaLabel = new JLabel("Categoria");
         categoriaLabel.setFont(labelFont);
@@ -156,8 +158,30 @@ public class CadastrarMedicamento extends JPanel {
         camposPanel.add(dosagemLabel, gbc);
 
         dosagemField = new JTextField();
-        dosagemField.setPreferredSize(new Dimension(170, 40));
+        dosagemField.setPreferredSize(new Dimension(180, 40));
         estilizarCamposFormulario(dosagemField, fieldFont);
+
+        dosagemField.setText("Medidas: mg, g, mcg, ml, l");
+        dosagemField.setForeground(Color.GRAY);
+
+        dosagemField.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (dosagemField.getText().equals("Medidas: mg, g, mcg, ml, l")) {
+                    dosagemField.setText("");
+                    dosagemField.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (dosagemField.getText().isEmpty()) {
+                    dosagemField.setText("Medidas: mg, g, mcg, ml, l");
+                    dosagemField.setForeground(Color.GRAY);
+                }
+            }
+        });
+
         gbc.gridx = 3;
         gbc.gridy = 1;
         camposPanel.add(dosagemField, gbc);
@@ -245,14 +269,23 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 3;
         camposPanel.add(receitaComboBox, gbc);
 
+        NumberFormatter estoqueFormatter = new NumberFormatter();
+        estoqueFormatter.setValueClass(Integer.class);
+        estoqueFormatter.setAllowsInvalid(false);
+        estoqueFormatter.setCommitsOnValidEdit(true);
+        estoqueFormatter.setMinimum(1);
+        estoqueFormatter.setMaximum(Integer.MAX_VALUE);
+
+        estoqueFormatter.setFormat(NumberFormat.getInstance());
+
         JLabel estoqueLabel = new JLabel("Estoque");
         estoqueLabel.setFont(labelFont);
         gbc.gridx = 3;
         gbc.gridy = 2;
         camposPanel.add(estoqueLabel, gbc);
 
-        estoqueField = new JTextField();
-        estoqueField.setPreferredSize(new Dimension(170, 40));
+        estoqueField = new JFormattedTextField(estoqueFormatter);
+        estoqueField.setPreferredSize(new Dimension(180, 40));
         estilizarCamposFormulario(estoqueField, fieldFont);
         gbc.gridx = 3;
         gbc.gridy = 3;
@@ -274,7 +307,7 @@ public class CadastrarMedicamento extends JPanel {
         fabricanteField = new JTextField();
         fabricanteField.setPreferredSize(new Dimension(400, 40));
         estilizarCamposFormulario(fabricanteField, fieldFont);
-        fabricanteField.setVisible(false); // Oculto inicialmente
+        fabricanteField.setVisible(false);
         gbc.gridx = 0;
         gbc.gridy = 5;
         camposPanel.add(fabricanteField, gbc);
@@ -354,7 +387,7 @@ public class CadastrarMedicamento extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        valorUnitarioField.setPreferredSize(new Dimension(170, 40));
+        valorUnitarioField.setPreferredSize(new Dimension(180, 40));
         estilizarCamposFormulario(valorUnitarioField, fieldFont);
         gbc.gridx = 3;
         gbc.gridy = 5;
@@ -489,13 +522,13 @@ public class CadastrarMedicamento extends JPanel {
             try {
                 int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
 
-                String nome = nomeField.getText().trim();
-                if (nome.isEmpty()) {
+                String nomeMedicamento = nomedoMedicamentoField.getText().trim();
+                if (nomeMedicamento.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "O nome do medicamento não pode ser vazio.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 } else {
-                    if (!nome.matches("^[\\p{L}\\d\\s]*$")) {
+                    if (!nomeMedicamento.matches("^[\\p{L}\\d\\s]*$")) {
                         JOptionPane.showMessageDialog(this,
                                 "Nome inválido (apenas letras, números e espaços são permitidos).",
                                 "Erro",
@@ -537,7 +570,11 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 } else {
                     if (!dosagem.matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
-                        JOptionPane.showMessageDialog(this, "Informe a unidade válida (mg, g, mcg, ml, l).", "Erro",
+                        JOptionPane.showMessageDialog(this,
+                                "Informe a dosagem com as seguintes unidades válidas:\n" +
+                                        "(mg, g, mcg, ml, l).\n" +
+                                        "Exemplo: 500mg, 10g",
+                                "Erro",
                                 JOptionPane.ERROR_MESSAGE);
                         return;
                     }
@@ -608,17 +645,17 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 }
 
-                int estoque;
-                try {
-                    estoque = Integer.parseInt(estoqueTexto);
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(this, "Estoque deve ser um número válido.", "Erro",
+                Integer estoque = (Integer) ((JFormattedTextField) estoqueField).getValue();
+
+                if (estoque == null) {
+                    JOptionPane.showMessageDialog(this, "O estoque não pode ser vazio.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
                 if (estoque < 0) {
-                    JOptionPane.showMessageDialog(this, "A quantidade informada para estoque não pode ser negativa", "Erro",
+                    JOptionPane.showMessageDialog(this, "A quantidade informada para estoque não pode ser negativa",
+                            "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -695,7 +732,8 @@ public class CadastrarMedicamento extends JPanel {
                 Fabricante fabricante = new Fabricante();
                 fabricante.setNome(fabricanteNome);
 
-                Medicamento medicamento = new Medicamento(nome, dosagem, formaFarmaceuticaNome, valorUnitario,
+                Medicamento medicamento = new Medicamento(nomeMedicamento, dosagem, formaFarmaceuticaNome,
+                        valorUnitario,
                         dataValidade, dataFabricacao, tipoReceita, estoque, tipo, categoria, fabricante, fornecedor,
                         funcionario);
 
@@ -704,7 +742,7 @@ public class CadastrarMedicamento extends JPanel {
                     JOptionPane.showMessageDialog(null, "Medicamento cadastrado com sucesso!", "Sucesso",
                             JOptionPane.INFORMATION_MESSAGE);
 
-                    nomeField.setText("");
+                    nomedoMedicamentoField.setText("");
                     dosagemField.setText("");
                     estoqueField.setText("");
                     valorUnitarioField.setText("");
@@ -725,7 +763,7 @@ public class CadastrarMedicamento extends JPanel {
                     formaFarmaceuticaField.setVisible(false);
                     formaFarmaceuticaComboBox.setVisible(true);
 
-                    nomeField.requestFocus();
+                    nomedoMedicamentoField.requestFocus();
 
                     atualizarCategorias();
                     atualizarFormasFarmaceuticas();

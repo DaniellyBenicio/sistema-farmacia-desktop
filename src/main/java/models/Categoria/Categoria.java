@@ -24,9 +24,14 @@ public class Categoria {
     }
 
     public void setNome(String nome) {
-        if (nome == null || nome.trim().isEmpty() || !nome.matches("^[\\p{L}\\s]+$")){
-            throw new IllegalArgumentException("O nome deve conter apenas letras e espaços, e não pode estar vazio.");
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new IllegalArgumentException("O nome não pode estar vazio.");
         }
+    
+        if (!nome.matches("^[\\p{L}\\s-()\\/]+$")) {
+            throw new IllegalArgumentException("O nome deve conter apenas letras, espaços e caracteres especiais permitidos, e não pode conter números.");
+        }
+        
         this.nome = nome;
     }
 }
