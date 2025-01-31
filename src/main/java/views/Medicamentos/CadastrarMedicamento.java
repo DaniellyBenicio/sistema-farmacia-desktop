@@ -408,7 +408,7 @@ public class CadastrarMedicamento extends JPanel {
         formasFarmaceuticas.addAll(formasPreDefinidas);
 
         try (Connection conn = ConexaoBD.getConnection()) {
-            List<String> formasDoBanco = MedicamentoDAO.listarFormasFarmaceuticas(conn);
+            List<String> formasDoBanco = MedicamentoController.listarFormasFarmaceuticas(conn);
             formasFarmaceuticas.addAll(formasDoBanco);
         } catch (SQLException e) {
             e.printStackTrace();

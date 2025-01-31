@@ -69,4 +69,12 @@ public class MedicamentoController {
         }
     }
 
+    public static List<String> listarFormasFarmaceuticas(Connection conn) throws SQLException {
+        try {
+            return MedicamentoDAO.listarFormasFarmaceuticas(conn);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao listar formas farmacêuticas.", e);
+        }
+    }
+
 }
