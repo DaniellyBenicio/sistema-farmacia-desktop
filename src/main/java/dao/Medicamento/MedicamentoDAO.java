@@ -279,7 +279,7 @@ public class MedicamentoDAO {
     }
 
     public static ArrayList<String> listarFormasFarmaceuticas(Connection conn) throws SQLException {
-        String sql = "SELECT DISTINCT formaFarmaceutica FROM medicamento ORDER BY formaFarmaceutica ASC";
+        String sql = "SELECT formaFarmaceutica FROM medicamento ORDER BY formaFarmaceutica ASC";
         ArrayList<String> formas = new ArrayList<>();
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
@@ -294,7 +294,7 @@ public class MedicamentoDAO {
     }
 
     public static ArrayList<String> listarTiposDeMedicamentos(Connection conn) throws SQLException {
-        String sql = "SELECT DISTINCT tipo FROM medicamento ORDER BY tipo ASC";
+        String sql = "SELECT tipo FROM medicamento ORDER BY tipo ASC";
         ArrayList<String> formas = new ArrayList<>();
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
@@ -309,12 +309,12 @@ public class MedicamentoDAO {
     }
 
     public static ArrayList<String> listarTiposDeReceitas(Connection conn) throws SQLException {
-        String sql = "select distinct tipoReceita from medicamento order by tipo asc";
+        String sql = "select tipoReceita from medicamento order by tipoReceita asc";
         ArrayList<String> receitas = new ArrayList<>();
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                receitas.add(rs.getString("tipo"));
+                receitas.add(rs.getString("tipoReceita"));
             }
         } catch (SQLException e) {
             System.err.println("Erro ao listar os tipos de receitas: " + e.getMessage());

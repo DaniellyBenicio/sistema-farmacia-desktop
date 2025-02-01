@@ -345,7 +345,7 @@ public class EditarMedicamento extends JPanel {
         camposPanel.add(dataFabricacaoLabel, gbc);
 
         try {
-            MaskFormatter dataFormatter = new MaskFormatter("##/##/####");
+            MaskFormatter dataFormatter = new MaskFormatter("##/####");
             dataFabricacaoField = new JFormattedTextField(dataFormatter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -363,7 +363,7 @@ public class EditarMedicamento extends JPanel {
         camposPanel.add(dataValidadeLabel, gbc);
 
         try {
-            MaskFormatter dataFormatter = new MaskFormatter("##/##/####");
+            MaskFormatter dataFormatter = new MaskFormatter("##/####");
             dataValidadeField = new JFormattedTextField(dataFormatter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -402,52 +402,27 @@ public class EditarMedicamento extends JPanel {
             Medicamento medicamento = MedicamentoController.buscarMedicamentoPorId(conn, medicamentoId);
             if (medicamento != null) {
                 nomedoMedicamentoField.setText(medicamento.getNome());
-                System.out.println("Nome do Medicamento: " + nomedoMedicamentoField.getText());
-
                 dosagemField.setText(medicamento.getDosagem());
-                System.out.println("Dosagem: " + dosagemField.getText());
-
                 String categoriaNome = medicamento.getCategoria().getNome();
                 categoriaComboBox.setSelectedItem(categoriaNome);
-                System.out.println("Categoria: " + categoriaNome);
-
                 String fornecedorNome = medicamento.getFornecedor().getNome();
                 fornecedorComboBox.setSelectedItem(fornecedorNome);
-                System.out.println("Fornecedor: " + fornecedorNome);
-
                 String fabricanteNome = medicamento.getFabricante().getNome();
                 fabricanteComboBox.setSelectedItem(fabricanteNome);
-                System.out.println("Fabricante: " + fabricanteNome);
-
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/yyyy");
                 String dataFabricacao = medicamento.getDataFabricacao().format(dtf);
                 dataFabricacaoField.setText(dataFabricacao);
-                System.out.println("Data de Fabricação: " + dataFabricacao);
-
                 String dataValidade = medicamento.getDataValidade().format(dtf);
                 dataValidadeField.setText(dataValidade);
-                System.out.println("Data de Validade: " + dataValidade);
-
                 estoqueField.setValue(medicamento.getQnt());
-                System.out.println("Estoque: " + medicamento.getQnt());
-
                 Double valorUnitario = medicamento.getValorUnit();
                 valorUnitarioField.setValue(valorUnitario);
-                System.out.println("Valor Unitário: " + valorUnitario);
-
                 Tipo tipoMedicamento = medicamento.getTipo();
-                System.out.println("Tipo de Medicamento: " + tipoMedicamento);
                 tipoComboBox.setSelectedItem(tipoMedicamento.toString());
-
                 TipoReceita tipoReceita = medicamento.getTipoReceita();
-                System.out.println("Tipo de Receita: " + tipoReceita);
                 receitaComboBox.setSelectedItem(tipoReceita.toString());
-
                 formaFarmaceuticaField.setText(medicamento.getFormaFarmaceutica());
-                System.out.println("Forma Farmacêutica: " + medicamento.getFormaFarmaceutica());
-
                 formaFarmaceuticaComboBox.setSelectedItem(medicamento.getFormaFarmaceutica());
-                System.out.println("Forma Farmacêutica (ComboBox): " + medicamento.getFormaFarmaceutica());
             } else {
                 System.out.println("Medicamento não encontrado!");
             }
@@ -593,7 +568,6 @@ public class EditarMedicamento extends JPanel {
         }
     }
 
-    /*
     private void salvarMedicamento(int idMedicamento) {
         String nomeMedicamento = nomedoMedicamentoField.getText().trim().toLowerCase();
         String dosagem = dosagemField.getText().trim();
@@ -711,7 +685,6 @@ public class EditarMedicamento extends JPanel {
             JOptionPane.showMessageDialog(null, "Erro ao atualizar medicamento: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
-*/
 
     private void estilizarCamposFormulario(JComponent campo, Font font) {
         campo.setBackground(Color.WHITE);
