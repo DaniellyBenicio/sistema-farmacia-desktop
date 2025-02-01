@@ -85,4 +85,12 @@ public class MedicamentoController {
         }
     }
 
+    public static List<String> TiposDeReceitas(Connection conn) throws SQLException {
+        try {
+            return MedicamentoDAO.listarTiposDeReceitas(conn);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao listar tipos de receitas.", e);
+        }
+    }
+
 }

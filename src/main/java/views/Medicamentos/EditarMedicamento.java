@@ -152,7 +152,7 @@ public class EditarMedicamento extends JPanel {
         estilizarCamposFormulario(dosagemField, fieldFont);
 
         dosagemField.setText("Medidas: mg, g, mcg, ml, l");
-        dosagemField.setForeground(Color.GRAY);
+        dosagemField.setForeground(Color.BLACK);
 
         dosagemField.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
@@ -245,13 +245,14 @@ public class EditarMedicamento extends JPanel {
                 formaFarmaceuticaField.setVisible(false);
             }
         });
+
         JLabel receitaLabel = new JLabel("Receita");
         receitaLabel.setFont(labelFont);
         gbc.gridx = 2;
         gbc.gridy = 2;
         camposPanel.add(receitaLabel, gbc);
 
-        receitaComboBox = new JComboBox<>(obterTipoDeMedicamentos());
+        receitaComboBox = new JComboBox<>(obterTipoDeReceita());
         receitaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(receitaComboBox, fieldFont);
         gbc.gridx = 2;
@@ -426,11 +427,11 @@ public class EditarMedicamento extends JPanel {
 
                 Tipo tipoMedicamento = medicamento.getTipo();
                 System.out.println("Tipo de Medicamento: " + tipoMedicamento);
-                tipoComboBox.setSelectedItem(tipoMedicamento);
+                tipoComboBox.setSelectedItem(tipoMedicamento.toString());
 
                 TipoReceita tipoReceita = medicamento.getTipoReceita();
                 System.out.println("Tipo de Receita: " + tipoReceita);
-                receitaComboBox.setSelectedItem(tipoReceita);
+                receitaComboBox.setSelectedItem(tipoReceita.toString());
 
                 formaFarmaceuticaField.setText(medicamento.getFormaFarmaceutica());
                 System.out.println("Forma Farmacêutica: " + medicamento.getFormaFarmaceutica());
@@ -538,20 +539,37 @@ public class EditarMedicamento extends JPanel {
     }
 
     private String[] obterTipoDeMedicamentos() {
-        List<String> receitasPreDefinidas = new ArrayList<>(Arrays.asList("ÉTICO", "GENÉRICO", "SIMILAR"));
-        Set<String> tiposReceitas = new LinkedHashSet<>();
-        tiposReceitas.add("Selecione");
-        tiposReceitas.addAll(receitasPreDefinidas);
+        List<String> medicamentosPreDefinidos = new ArrayList<>(Arrays.asList("ÉTICO", "GENÉRICO", "SIMILAR"));
+        Set<String> tipoMedicamento = new LinkedHashSet<>();
+        tipoMedicamento.add("Selecione");
+        tipoMedicamento.addAll(medicamentosPreDefinidos);
 
         try (Connection conn = ConexaoBD.getConnection()) {
             List<String> tiposDoBanco = MedicamentoController.listarTiposDeMedicamentos(conn);
-            tiposReceitas.addAll(tiposDoBanco);
+            tipoMedicamento.addAll(tiposDoBanco);
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return tiposReceitas.toArray(new String[0]);
+        return tipoMedicamento.toArray(new String[0]);
     }
+
+    private String[] obterTipoDeReceita() {
+        List<String> receitasPreDefinidas = new ArrayList<>(Arrays.asList("ESPECIAL", "SIMPLES"));
+        Set<String> tipoReceita = new LinkedHashSet<>();
+        tipoReceita.add("Selecione");
+        tipoReceita.addAll(receitasPreDefinidas);
+
+        try (Connection conn = ConexaoBD.getConnection()) {
+            List<String> tiposDoBanco = MedicamentoController.TiposDeReceitas(conn);
+            tipoReceita.addAll(tiposDoBanco);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return tipoReceita.toArray(new String[0]);
+    }
+    
 
     private String[] obterFabricantes() {
         try (Connection conn = ConexaoBD.getConnection()) {

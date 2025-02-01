@@ -308,6 +308,20 @@ public class MedicamentoDAO {
         return formas;
     }
 
+    public static ArrayList<String> listarTiposDeReceitas(Connection conn) throws SQLException {
+        String sql = "select distinct tipoReceita from medicamento order by tipo asc";
+        ArrayList<String> receitas = new ArrayList<>();
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                receitas.add(rs.getString("tipo"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar os tipos de receitas: " + e.getMessage());
+            throw e;
+        }
+        return receitas;
+    }
     
 
 }
