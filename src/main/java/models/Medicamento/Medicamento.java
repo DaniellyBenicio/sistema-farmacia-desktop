@@ -112,7 +112,7 @@ public class Medicamento {
     }
 
     public void setDataValidade(YearMonth dataValidade) {
-        LocalDate validade = dataValidade.atDay(30);
+        LocalDate validade = dataValidade.atDay(28);
         LocalDate hoje = LocalDate.now();
 
         if (validade.isBefore(hoje)) {
@@ -146,8 +146,8 @@ public class Medicamento {
             throw new IllegalArgumentException("Data inválida! A data de fabricação não pode ser posterior à data atual.");
         }
 
-        if (fabricacao.isBefore(hoje.minusYears(10))) {
-            throw new IllegalArgumentException("Data inválida! A data de fabricação não pode ser anterior a 10 anos.");
+        if (fabricacao.isBefore(hoje.minusYears(5))) {
+            throw new IllegalArgumentException("Data inválida! A data de fabricação não pode ser anterior a 05 anos.");
         }
 
         if (dataValidade != null && fabricacao.isAfter(dataValidade)) {

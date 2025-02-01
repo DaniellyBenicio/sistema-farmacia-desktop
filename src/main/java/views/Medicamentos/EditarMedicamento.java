@@ -455,7 +455,7 @@ public class EditarMedicamento extends JPanel {
 
         salvarButton.addActionListener(e -> {
             try {
-                // atualizarMedicamento();
+                salvarMedicamento(medicamentoId);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Erro ao atualizar medicamento: " + ex.getMessage(), "Erro",
                         JOptionPane.ERROR_MESSAGE);
@@ -572,7 +572,7 @@ public class EditarMedicamento extends JPanel {
         String nomeMedicamento = nomedoMedicamentoField.getText().trim().toLowerCase();
         String dosagem = dosagemField.getText().trim();
         String estoqueTexto = estoqueField.getText().trim();
-        String valorUnitarioTexto = valorUnitarioField.getText().trim().replace("R$", "").replace(",", ".");
+        String valorUnitarioTexto = valorUnitarioField.getText().trim();
         String categoriaNome = (String) categoriaComboBox.getSelectedItem();
         String fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
         String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
@@ -617,9 +617,24 @@ public class EditarMedicamento extends JPanel {
             hasError = true;
         }
 
-        if (valorUnitarioTexto.isEmpty() || Double.parseDouble(valorUnitarioTexto) <= 0) {
+        if (valorUnitarioTexto.isEmpty()) {
             errorMessage.append("- O valor unitário deve ser maior que zero.\n");
             hasError = true;
+        } else {
+            valorUnitarioTexto = valorUnitarioTexto.replace("R$", "").replace(".", "").replace(",", ".");
+            System.out.println("Valor Unitário Processado: " + valorUnitarioTexto);
+
+            try {
+                double valorUnitario = Double.parseDouble(valorUnitarioTexto);
+                
+                if (valorUnitario <= 0) {
+                    errorMessage.append("- O valor unitário deve ser maior que zero.\n");
+                    hasError = true;
+                }
+            } catch (NumberFormatException e) {
+                errorMessage.append("- O valor unitário é inválido.\n");
+                hasError = true;
+            }
         }
 
         if ("Selecione".equals(fornecedorNome)) {

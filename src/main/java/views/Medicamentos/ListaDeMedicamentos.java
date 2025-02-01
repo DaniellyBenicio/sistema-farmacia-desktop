@@ -239,13 +239,13 @@ public class ListaDeMedicamentos extends JPanel {
 
     private void filtrarMedicamentos(String filtro) {
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
-            carregarDados();
+            atualizarMedicamentosFiltrados(medicamentos);
         } else {
             medicamentosFiltrados = medicamentos.stream()
                     .filter(medicamento -> medicamento.getNome().toLowerCase().contains(filtro.toLowerCase()))
                     .map(medicamento -> new Object[]{
                             medicamento.getNome(),
-                            medicamento.getCategoria(),
+                            medicamento.getCategoria().getNome(),
                             medicamento.getFormaFarmaceutica(),
                             medicamento.getDosagem(),
                             medicamento.getDataValidade(),
@@ -253,8 +253,8 @@ public class ListaDeMedicamentos extends JPanel {
                             medicamento.getValorUnit(), 
                     })
                     .collect(Collectors.toList());
-            carregarDados();
         }
+        carregarDados();
     }
 
     private void carregarDados() {

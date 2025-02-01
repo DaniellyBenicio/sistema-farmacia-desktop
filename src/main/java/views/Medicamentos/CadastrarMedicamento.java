@@ -696,8 +696,8 @@ public class CadastrarMedicamento extends JPanel {
                     YearMonth ymFabricacao = YearMonth.parse(dataFabricacaoTexto, formatter);
                     YearMonth ymValidade = YearMonth.parse(dataValidadeTexto, formatter);
                 
-                    dataFabricacao = ymFabricacao.atDay(30);
-                    dataValidade = ymValidade.atDay(30);
+                    dataFabricacao = ymFabricacao.atDay(28);
+                    dataValidade = ymValidade.atDay(28);
                 } catch (DateTimeParseException ex) {
                     JOptionPane.showMessageDialog(this, "Formato de data inválido. Use MM/yyyy.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
