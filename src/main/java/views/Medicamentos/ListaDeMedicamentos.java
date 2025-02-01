@@ -152,7 +152,7 @@ public class ListaDeMedicamentos extends JPanel {
         cadastrarButton.setBackground(new Color(24, 39, 55));
         cadastrarButton.setForeground(Color.WHITE);
         cadastrarButton.setFocusPainted(false);
-        cadastrarButton.setPreferredSize(new Dimension(180, 30));
+        cadastrarButton.setPreferredSize(new Dimension(220, 30));
         painelBuscaBotao.add(cadastrarButton);
 
         cadastrarButton.addActionListener(e -> {
