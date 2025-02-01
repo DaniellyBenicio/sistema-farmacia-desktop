@@ -184,6 +184,19 @@ public class MedicamentoDAO {
                     fornecedor.setId(rs.getInt("fornecedor_id"));
                     fornecedor.setNome(rs.getString("fornecedor_nome"));
                     medicamento.setFornecedor(fornecedor);
+
+                    System.out.println("Medicamento: " + medicamento.getNome() +
+                    ", Tipo de medicamento: " + medicamento.getTipo() +
+                   ", Categoria: " + categoria.getNome() +
+                   ", Dosagem: " + medicamento.getDosagem() +
+                   ", Fornecedor: " + fornecedor.getNome() +
+                   ", Forma Farmaceutica: " + medicamento.getFormaFarmaceutica() +
+                   ", Receita: " + medicamento.getTipoReceita() +
+                   ", Estoque: " + medicamento.getQnt() +
+                   ", Fabricante: " + fabricante.getNome() +
+                   ", Fabricação: " + medicamento.getDataFabricacao() +
+                   ", Validade: " + medicamento.getDataValidade() +
+                   ", Valor Unitário: " + medicamento.getValorUnit());
                 }
             }
         } catch (SQLException e) {
@@ -279,6 +292,23 @@ public class MedicamentoDAO {
         }
         return formas;
     }
+
+    public static ArrayList<String> listarTiposDeMedicamentos(Connection conn) throws SQLException {
+        String sql = "SELECT DISTINCT tipo FROM medicamento ORDER BY tipo ASC";
+        ArrayList<String> formas = new ArrayList<>();
+    
+        try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                formas.add(rs.getString("tipo"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar os tipos de medicamentos: " + e.getMessage());
+            throw e;
+        }
+        return formas;
+    }
+
+    
 
 }
 
