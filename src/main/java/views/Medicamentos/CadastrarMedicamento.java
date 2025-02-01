@@ -704,7 +704,7 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 }
 
-                LocalDate dataMinima = LocalDate.now().minusYears(10);
+                LocalDate dataMinima = LocalDate.now().minusYears(5);
 
                 if (dataFabricacao.isBefore(dataMinima)) {
                     JOptionPane.showMessageDialog(this, "Data de fabricação inválida! Deve ser posterior a " + dataMinima.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ".", "Erro",

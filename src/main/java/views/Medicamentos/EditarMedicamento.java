@@ -621,19 +621,23 @@ public class EditarMedicamento extends JPanel {
             errorMessage.append("- O valor unitário deve ser maior que zero.\n");
             hasError = true;
         } else {
-            valorUnitarioTexto = valorUnitarioTexto.replace("R$", "").replace(".", "").replace(",", ".");
-            System.out.println("Valor Unitário Processado: " + valorUnitarioTexto);
-
-            try {
-                double valorUnitario = Double.parseDouble(valorUnitarioTexto);
-                
-                if (valorUnitario <= 0) {
-                    errorMessage.append("- O valor unitário deve ser maior que zero.\n");
+            valorUnitarioTexto = valorUnitarioTexto.trim();
+            if (!valorUnitarioTexto.matches("^(R\\$\\s?\\d+(?:[.,]\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?)$")) {
+                errorMessage.append("- O valor unitário deve estar no formato 'R$ 12,34' ou '12,34'.\n");
+                hasError = true;
+            } else {
+                try {
+                    valorUnitarioTexto = valorUnitarioTexto.replace("R$", "").trim();
+                    valorUnitarioTexto = valorUnitarioTexto.replace(".", "").replace(",", "."); // Formato padrão
+                    double valorUnitario = Double.parseDouble(valorUnitarioTexto);
+                    if (valorUnitario <= 0) {
+                        errorMessage.append("- O valor unitário deve ser maior que zero.\n");
+                        hasError = true;
+                    }
+                } catch (NumberFormatException e) {
+                    errorMessage.append("- O valor unitário é inválido. Certifique-se de que está no formato correto.\n");
                     hasError = true;
                 }
-            } catch (NumberFormatException e) {
-                errorMessage.append("- O valor unitário é inválido.\n");
-                hasError = true;
             }
         }
 

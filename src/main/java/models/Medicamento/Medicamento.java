@@ -138,7 +138,7 @@ public class Medicamento {
     }
 
    public void setDataFabricacao(YearMonth dataFabricacao) {
-        LocalDate fabricacao = dataFabricacao.atDay(30); 
+        LocalDate fabricacao = dataFabricacao.atDay(28); 
 
         LocalDate hoje = LocalDate.now();
 
