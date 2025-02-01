@@ -4,7 +4,10 @@ import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.time.DateTimeException;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +23,14 @@ import controllers.Categoria.CategoriaController;
 import controllers.Fabricante.FabricanteController;
 import controllers.Fornecedor.FornecedorController;
 import controllers.Medicamento.MedicamentoController;
+import dao.Categoria.CategoriaDAO;
+import dao.Fornecedor.FornecedorDAO;
+import dao.Medicamento.MedicamentoDAO;
+import dao.Fabricante.FabricanteDAO;
 import main.ConexaoBD;
+import models.Categoria.Categoria;
+import models.Fabricante.Fabricante;
+import models.Fornecedor.Fornecedor;
 import models.Medicamento.Medicamento;
 import models.Medicamento.Medicamento.Tipo;
 import models.Medicamento.Medicamento.TipoReceita;
@@ -582,6 +592,126 @@ public class EditarMedicamento extends JPanel {
             return new String[] { "Selecione" };
         }
     }
+
+    /*
+    private void salvarMedicamento(int idMedicamento) {
+        String nomeMedicamento = nomedoMedicamentoField.getText().trim().toLowerCase();
+        String dosagem = dosagemField.getText().trim();
+        String estoqueTexto = estoqueField.getText().trim();
+        String valorUnitarioTexto = valorUnitarioField.getText().trim().replace("R$", "").replace(",", ".");
+        String categoriaNome = (String) categoriaComboBox.getSelectedItem();
+        String fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
+        String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
+        String formaFarmaceuticaNome = (String) formaFarmaceuticaComboBox.getSelectedItem();
+        String tipoNome = (String) tipoComboBox.getSelectedItem();
+        String tipoReceitaNome = (String) receitaComboBox.getSelectedItem();
+
+        String dataFabricacaoTexto = dataFabricacaoField.getText().trim();
+        String dataValidadeTexto = dataValidadeField.getText().trim();
+
+        StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
+        boolean hasError = false;
+
+        if (nomeMedicamento.isEmpty()) {
+            errorMessage.append("- O nome do medicamento não pode ser vazio.\n");
+            hasError = true;
+        } else if (!nomeMedicamento.matches("^[\\p{L}\\d\\s]*$")) {
+            errorMessage.append("- Nome inválido (apenas letras, números e espaços são permitidos).\n");
+            hasError = true;
+        }
+
+        if ("Selecione".equals(tipoNome)) {
+            errorMessage.append("- Por favor, selecione o tipo de medicamento.\n");
+            hasError = true;
+        }
+
+        if (categoriaNome == null || "Selecione".equals(categoriaNome)) {
+            errorMessage.append("- Por favor, selecione uma categoria.\n");
+            hasError = true;
+        }
+
+        if (dosagem.isEmpty()) {
+            errorMessage.append("- A dosagem não pode ser vazia.\n");
+            hasError = true;
+        } else if (!dosagem.toLowerCase().matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
+            errorMessage.append("- Informe a dosagem com unidades válidas (mg, g, mcg, ml, l).\n");
+            hasError = true;
+        }
+
+        if (estoqueTexto.isEmpty() || !estoqueTexto.matches("\\d+")) {
+            errorMessage.append("- O estoque deve ser um número válido.\n");
+            hasError = true;
+        }
+
+        if (valorUnitarioTexto.isEmpty() || Double.parseDouble(valorUnitarioTexto) <= 0) {
+            errorMessage.append("- O valor unitário deve ser maior que zero.\n");
+            hasError = true;
+        }
+
+        if ("Selecione".equals(fornecedorNome)) {
+            errorMessage.append("- Por favor, selecione um fornecedor.\n");
+            hasError = true;
+        }
+
+        if ("Selecione".equals(formaFarmaceuticaNome)) {
+            errorMessage.append("- Por favor, selecione uma forma farmacêutica.\n");
+            hasError = true;
+        }
+
+        if ("Selecione".equals(tipoReceitaNome)) {
+            errorMessage.append("- Por favor, selecione o tipo de receita.\n");
+            hasError = true;
+        }
+
+        if (dataFabricacaoTexto.isEmpty() || dataValidadeTexto.isEmpty()) {
+            errorMessage.append("- As datas de fabricação e validade devem ser preenchidas.\n");
+            hasError = true;
+        } else {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
+                YearMonth.parse(dataFabricacaoTexto, formatter);
+                YearMonth.parse(dataValidadeTexto, formatter);
+            } catch (DateTimeParseException ex) {
+                errorMessage.append("- Formato de data inválido. Use MM/yyyy.\n");
+                hasError = true;
+            }
+        }
+
+        if (hasError) {
+            JOptionPane.showMessageDialog(null, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection conn = ConexaoBD.getConnection()) {
+            Categoria categoriaExistente = CategoriaController.buscarCategoriaPorNome(conn, categoriaNome);
+            if (categoriaExistente == null) {
+                Categoria novaCategoria = new Categoria();
+                novaCategoria.setNome(categoriaNome);
+                CategoriaController.cadastrarCategoria(conn, novaCategoria); 
+                categoriaExistente = novaCategoria; 
+            }
+            
+            Medicamento medicamento = MedicamentoController.buscarMedicamentoPorId(conn, idMedicamento);
+            if (medicamento == null) {
+                JOptionPane.showMessageDialog(null, "Medicamento não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            medicamento.setNome(nomeMedicamento);
+            medicamento.setDosagem(dosagem);
+            medicamento.setQnt(Integer.parseInt(estoqueTexto));
+            medicamento.setValorUnit(Double.parseDouble(valorUnitarioTexto));
+            medicamento.setCategoria(categoriaExistente);
+            medicamento.setFormaFarmaceutica(formaFarmaceuticaNome);
+            medicamento.setTipoReceita(TipoReceita.valueOf(tipoReceitaNome.toUpperCase()));
+
+            MedicamentoController.atualizarMedicamento(conn, medicamento);
+            JOptionPane.showMessageDialog(null, "Medicamento atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar medicamento: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+*/
 
     private void estilizarCamposFormulario(JComponent campo, Font font) {
         campo.setBackground(Color.WHITE);

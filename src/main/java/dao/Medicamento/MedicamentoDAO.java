@@ -323,7 +323,4 @@ public class MedicamentoDAO {
         return receitas;
     }
     
-
 }
-
-// falta buscar por: categoria, nome, fornecedor, fabricante
