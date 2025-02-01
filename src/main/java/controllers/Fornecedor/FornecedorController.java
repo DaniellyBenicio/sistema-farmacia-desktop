@@ -78,4 +78,16 @@ public class FornecedorController {
             System.err.println("Erro ao excluir fornecedor: " + e.getMessage());
         }
     }
+
+    public static boolean fornecedorExiste(Connection conn, String nome, String cnpj, String email, String telefone) throws SQLException {
+        if (nome == null || cnpj == null || email == null || telefone == null) {
+            throw new IllegalArgumentException("Os dados do fornecedor não podem ser nulos.");
+        }
+        try {
+            return FornecedorDAO.fornecedorExiste(conn, nome, cnpj, email, telefone);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao verificar a existência do fornecedor.", e);
+        }
+    }
+    
 }
