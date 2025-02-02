@@ -807,6 +807,11 @@ public class CadastrarMedicamento extends JPanel {
                 JOptionPane.showMessageDialog(this, "Erro ao cadastrar medicamento: " + ex.getMessage(), "Erro",
                         JOptionPane.ERROR_MESSAGE);
             }
+            
+        });
+
+        cancelarButton.addActionListener(e -> {
+            SwingUtilities.getWindowAncestor(this).dispose();
         });
 
         return botoesPanel;
