@@ -1,6 +1,7 @@
 package views.Medicamentos;
 
 import java.awt.*;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.NumberFormat;
@@ -738,17 +739,17 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 }
 
-                double valorUnitario;
+                BigDecimal valorUnitario;
                 try {
-                    valorUnitario = Double
-                            .parseDouble(valorUnitarioField.getText().replace("R$", "").trim().replace(",", "."));
+                    String valorTexto = valorUnitarioField.getText().replace("R$", "").trim().replace(",", ".");
+                    valorUnitario = new BigDecimal(valorTexto);
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this, "Valor unitário deve ser um número válido.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                if (valorUnitario <= 0) {
+                if (valorUnitario.compareTo(BigDecimal.ZERO) <= 0) {
                     JOptionPane.showMessageDialog(this, "O valor unitário deve ser maior que zero.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;

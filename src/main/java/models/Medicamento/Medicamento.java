@@ -1,5 +1,6 @@
 package models.Medicamento;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 
@@ -13,7 +14,7 @@ public class Medicamento {
     private String nome;
     private String dosagem;
     private String formaFarmaceutica;
-    private double valorUnit;
+    private BigDecimal valorUnit;
     private LocalDate dataValidade;
     private LocalDate dataFabricacao;
     private TipoReceita tipoReceita;
@@ -26,7 +27,7 @@ public class Medicamento {
 
     public Medicamento(){};
 
-    public Medicamento(String nome, String dosagem, String formaFarmaceutica, double valorUnit, LocalDate dataValidade, LocalDate dataFabricacao, TipoReceita tipoReceita, int qnt, Tipo tipo, Categoria categoria, Fabricante fabricante, Fornecedor fornecedor, Funcionario funcionario) {
+    public Medicamento(String nome, String dosagem, String formaFarmaceutica, BigDecimal valorUnit, LocalDate dataValidade, LocalDate dataFabricacao, TipoReceita tipoReceita, int qnt, Tipo tipo, Categoria categoria, Fabricante fabricante, Fornecedor fornecedor, Funcionario funcionario) {
         this.nome = nome;
         this.dosagem = dosagem;
         this.formaFarmaceutica = formaFarmaceutica;
@@ -96,12 +97,12 @@ public class Medicamento {
         this.formaFarmaceutica = formaFarmaceutica;
     }
 
-    public double getValorUnit() {
+    public BigDecimal getValorUnit() {
         return valorUnit;
     }
 
-    public void setValorUnit(double valorUnit) {
-        if (valorUnit <= 0) {
+    public void setValorUnit(BigDecimal valorUnit) {
+        if (valorUnit == null || valorUnit.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor unitário deve ser maior que zero.");
         }
         this.valorUnit = valorUnit;

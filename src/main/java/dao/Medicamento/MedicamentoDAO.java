@@ -67,7 +67,7 @@ public class MedicamentoDAO {
             pstmt.setString(1, m.getNome());
             pstmt.setString(2, m.getDosagem());
             pstmt.setString(3, m.getFormaFarmaceutica());
-            pstmt.setDouble(4, m.getValorUnit());
+            pstmt.setBigDecimal(4, m.getValorUnit());
             pstmt.setDate(5, Date.valueOf(m.getDataValidade()));
             pstmt.setDate(6, Date.valueOf(m.getDataFabricacao()));
             pstmt.setString(7, m.getTipoReceita().name());
@@ -114,7 +114,7 @@ public class MedicamentoDAO {
             pstmt.setString(1, m.getNome());
             pstmt.setString(2, m.getDosagem());
             pstmt.setString(3, m.getFormaFarmaceutica());
-            pstmt.setDouble(4, m.getValorUnit());
+            pstmt.setBigDecimal(4, m.getValorUnit());
             pstmt.setDate(5, Date.valueOf(m.getDataValidade()));
             pstmt.setDate(6, Date.valueOf(m.getDataFabricacao()));
             pstmt.setString(7, m.getTipoReceita().name());
@@ -154,7 +154,7 @@ public class MedicamentoDAO {
                     medicamento.setNome(rs.getString("nome"));
                     medicamento.setDosagem(rs.getString("dosagem"));
                     medicamento.setFormaFarmaceutica(rs.getString("formaFarmaceutica"));
-                    medicamento.setValorUnit(rs.getDouble("valorUnit"));
+                    medicamento.setValorUnit(rs.getBigDecimal("valorUnit"));
                     medicamento.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
                     medicamento.setDataFabricacao(YearMonth.from(rs.getDate("dataFabricacao").toLocalDate()));
                     medicamento.setTipoReceita(Medicamento.TipoReceita.valueOf(rs.getString("tipoReceita")));
@@ -224,7 +224,7 @@ public class MedicamentoDAO {
                 med.setNome(rs.getString("nome"));
                 med.setDosagem(rs.getString("dosagem"));
                 med.setFormaFarmaceutica(rs.getString("formaFarmaceutica"));
-                med.setValorUnit(rs.getDouble("valorUnit"));
+                med.setValorUnit(rs.getBigDecimal("valorUnit"));
                 med.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
                 med.setDataFabricacao(YearMonth.from(rs.getDate("dataFabricacao").toLocalDate()));
                 med.setTipoReceita(Medicamento.TipoReceita.valueOf(rs.getString("tipoReceita")));

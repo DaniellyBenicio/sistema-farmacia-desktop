@@ -4,7 +4,6 @@ import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.time.DateTimeException;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -13,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.LinkedHashSet;
+import java.math.BigDecimal;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -23,14 +23,9 @@ import controllers.Categoria.CategoriaController;
 import controllers.Fabricante.FabricanteController;
 import controllers.Fornecedor.FornecedorController;
 import controllers.Medicamento.MedicamentoController;
-import dao.Categoria.CategoriaDAO;
-import dao.Fornecedor.FornecedorDAO;
-import dao.Medicamento.MedicamentoDAO;
-import dao.Fabricante.FabricanteDAO;
 import main.ConexaoBD;
 import models.Categoria.Categoria;
 import models.Fabricante.Fabricante;
-import models.Fornecedor.Fornecedor;
 import models.Medicamento.Medicamento;
 import models.Medicamento.Medicamento.Tipo;
 import models.Medicamento.Medicamento.TipoReceita;
@@ -276,8 +271,6 @@ public class EditarMedicamento extends JPanel {
         estoqueFormatter.setMinimum(1);
         estoqueFormatter.setMaximum(Integer.MAX_VALUE);
 
-        estoqueFormatter.setFormat(NumberFormat.getInstance());
-
         JLabel estoqueLabel = new JLabel("Estoque");
         estoqueLabel.setFont(labelFont);
         gbc.gridx = 3;
@@ -380,14 +373,15 @@ public class EditarMedicamento extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(valorUnitarioLabel, gbc);
 
-        NumberFormatter moedaFormatter = new NumberFormatter();
-        moedaFormatter.setValueClass(Double.class);
-        moedaFormatter.setAllowsInvalid(false);
-        moedaFormatter.setCommitsOnValidEdit(true);
-        moedaFormatter.setMinimum(0.0);
-        moedaFormatter.setFormat(NumberFormat.getCurrencyInstance());
-        valorUnitarioField = new JFormattedTextField(moedaFormatter);
-
+        NumberFormat format = NumberFormat.getNumberInstance();
+        format.setMaximumFractionDigits(2); 
+        NumberFormatter formatter = new NumberFormatter(format);
+        formatter.setMinimum(0.0);
+        formatter.setMaximum(999999.99);
+        formatter.setAllowsInvalid(false);
+        formatter.setOverwriteMode(true);
+        valorUnitarioField = new JFormattedTextField(formatter);
+   
         valorUnitarioField.setPreferredSize(new Dimension(180, 40));
         estilizarCamposFormulario(valorUnitarioField, fieldFont);
         gbc.gridx = 3;
@@ -415,7 +409,7 @@ public class EditarMedicamento extends JPanel {
                 String dataValidade = medicamento.getDataValidade().format(dtf);
                 dataValidadeField.setText(dataValidade);
                 estoqueField.setValue(medicamento.getQnt());
-                Double valorUnitario = medicamento.getValorUnit();
+                BigDecimal valorUnitario = medicamento.getValorUnit();
                 valorUnitarioField.setValue(valorUnitario);
                 Tipo tipoMedicamento = medicamento.getTipo();
                 tipoComboBox.setSelectedItem(tipoMedicamento.toString());
@@ -621,23 +615,18 @@ public class EditarMedicamento extends JPanel {
             errorMessage.append("- O valor unitário deve ser maior que zero.\n");
             hasError = true;
         } else {
-            valorUnitarioTexto = valorUnitarioTexto.trim();
-            if (!valorUnitarioTexto.matches("^(R\\$\\s?\\d+(?:[.,]\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?)$")) {
-                errorMessage.append("- O valor unitário deve estar no formato 'R$ 12,34' ou '12,34'.\n");
-                hasError = true;
-            } else {
-                try {
-                    valorUnitarioTexto = valorUnitarioTexto.replace("R$", "").trim();
-                    valorUnitarioTexto = valorUnitarioTexto.replace(".", "").replace(",", "."); // Formato padrão
-                    double valorUnitario = Double.parseDouble(valorUnitarioTexto);
-                    if (valorUnitario <= 0) {
-                        errorMessage.append("- O valor unitário deve ser maior que zero.\n");
-                        hasError = true;
-                    }
-                } catch (NumberFormatException e) {
-                    errorMessage.append("- O valor unitário é inválido. Certifique-se de que está no formato correto.\n");
+            try {
+                String valorTexto = valorUnitarioTexto.replace("R$", "").trim().replace(".", "").replace(",", ".");
+                System.out.println("Texto formatado para valor: " + valorTexto); 
+                
+                BigDecimal valorUnitario = new BigDecimal(valorTexto);
+                if (valorUnitario.compareTo(BigDecimal.ZERO) <= 0) {
+                    errorMessage.append("- O valor unitário deve ser maior que zero.\n");
                     hasError = true;
                 }
+            } catch (NumberFormatException e) {
+                errorMessage.append("- O valor unitário é inválido. Certifique-se de que está no formato correto.\n");
+                hasError = true;
             }
         }
 
@@ -684,6 +673,18 @@ public class EditarMedicamento extends JPanel {
                 categoriaExistente = novaCategoria; 
             }
             
+            Fabricante fabricanteExistente = null;
+            int fabricanteId = FabricanteController.buscarFabricantePorNome(conn, fabricanteNome);
+            if (fabricanteId == -1) {
+                Fabricante novoFabricante = new Fabricante();
+                novoFabricante.setNome(fabricanteNome);
+                fabricanteId = FabricanteController.criarFabricante(conn, novoFabricante);
+                fabricanteExistente = novoFabricante;
+            } else {
+                fabricanteExistente = new Fabricante(); 
+                fabricanteExistente.setId(fabricanteId);
+            }     
+
             Medicamento medicamento = MedicamentoController.buscarMedicamentoPorId(conn, idMedicamento);
             if (medicamento == null) {
                 JOptionPane.showMessageDialog(null, "Medicamento não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -693,8 +694,10 @@ public class EditarMedicamento extends JPanel {
             medicamento.setNome(nomeMedicamento);
             medicamento.setDosagem(dosagem);
             medicamento.setQnt(Integer.parseInt(estoqueTexto));
-            medicamento.setValorUnit(Double.parseDouble(valorUnitarioTexto));
+            String valorTexto = valorUnitarioTexto.replace("R$", "").trim().replace(",", ".");
+            medicamento.setValorUnit(new BigDecimal(valorTexto));
             medicamento.setCategoria(categoriaExistente);
+            medicamento.setFabricante(fabricanteExistente);
             medicamento.setFormaFarmaceutica(formaFarmaceuticaNome);
             medicamento.setTipoReceita(TipoReceita.valueOf(tipoReceitaNome.toUpperCase()));
 
