@@ -23,20 +23,13 @@ import models.Funcionario.Funcionario;
 public class MedicamentoDAO {
 
     public static boolean medicamentoExiste(Connection conn, Medicamento m) throws SQLException {
-        String sql = "Select count(*) FROM medicamento WHERE nome = ? and dosagem = ? and formaFarmaceutica = ? " +
-                "and dataValidade = ? and dataFabricacao = ? and fabricante_id = ?";
-
+        String sql = "SELECT count(*) FROM medicamento WHERE id = ?"; 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, m.getNome());
-            pstmt.setString(2, m.getDosagem());
-            pstmt.setString(3, m.getFormaFarmaceutica());
-            pstmt.setDate(4, Date.valueOf(m.getDataValidade()));
-            pstmt.setDate(5, Date.valueOf(m.getDataFabricacao()));
-            pstmt.setInt(6, m.getFabricante().getId());
-
+            pstmt.setInt(1, m.getId()); 
+    
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0;
+                    return rs.getInt(1) > 0; 
                 }
             }
         } catch (SQLException e) {
@@ -129,8 +122,7 @@ public class MedicamentoDAO {
             System.err.println("Erro ao atualizar medicamento: " + e.getMessage());
             throw e;
         }
-    }
-    
+    }    
 
     public static Medicamento buscarPorId(Connection conn, int id) throws SQLException {
         String sql = "SELECT m.*, c.nome AS categoria_nome, f.nome AS funcionario_nome, "

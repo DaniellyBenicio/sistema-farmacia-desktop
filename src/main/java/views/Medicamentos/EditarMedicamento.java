@@ -26,6 +26,7 @@ import controllers.Medicamento.MedicamentoController;
 import main.ConexaoBD;
 import models.Categoria.Categoria;
 import models.Fabricante.Fabricante;
+import models.Fornecedor.Fornecedor;
 import models.Medicamento.Medicamento;
 import models.Medicamento.Medicamento.Tipo;
 import models.Medicamento.Medicamento.TipoReceita;
@@ -683,14 +684,14 @@ public class EditarMedicamento extends JPanel {
             } else {
                 fabricanteExistente = new Fabricante(); 
                 fabricanteExistente.setId(fabricanteId);
-            }     
-
+            }
+                       
             Medicamento medicamento = MedicamentoController.buscarMedicamentoPorId(conn, idMedicamento);
             if (medicamento == null) {
                 JOptionPane.showMessageDialog(null, "Medicamento não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
+ 
             medicamento.setNome(nomeMedicamento);
             medicamento.setDosagem(dosagem);
             medicamento.setQnt(Integer.parseInt(estoqueTexto));
