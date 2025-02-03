@@ -581,6 +581,15 @@ public class EditarMedicamento extends JPanel {
         StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
         boolean hasError = false;
 
+        if(nomeMedicamento.isEmpty() || tipoNome.equals("Selecione") || categoriaNome.equals("Selecione") 
+        || dosagem.isEmpty() || estoqueTexto.isEmpty() || valorUnitarioTexto.isEmpty() ||  fornecedorNome.equals("Selecione")
+        || formaFarmaceuticaNome.equals("Selecione") ||  tipoReceitaNome.equals("Selecione") || dataFabricacaoTexto.isEmpty() 
+        || dataValidadeTexto.isEmpty()) {
+            errorMessage.append("- Todos os campos devem ser preenchidos.\n");
+            hasError = true;
+        }
+    
+
         if (nomeMedicamento.isEmpty()) {
             errorMessage.append("- O nome do medicamento não pode ser vazio.\n");
             hasError = true;

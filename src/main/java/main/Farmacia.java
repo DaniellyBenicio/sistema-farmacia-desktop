@@ -72,11 +72,10 @@ public class Farmacia extends JFrame {
     }
 
     private void ajusteLayout() {
-        // Método para ajustar o layout ou o tamanho dos componentes conforme necessário
         for (Component comp : painelCentral.getComponents()) {
             if (comp instanceof JComponent) {
-                ((JComponent) comp).revalidate(); // Solicitar a revalidação do layout
-                ((JComponent) comp).repaint(); // Repaint para atualização visual
+                ((JComponent) comp).revalidate();
+                ((JComponent) comp).repaint();
             }
         }
         painelCentral.repaint();

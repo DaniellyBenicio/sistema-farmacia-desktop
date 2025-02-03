@@ -525,7 +525,37 @@ public class CadastrarMedicamento extends JPanel {
             try {
                 int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
 
-                String nomeMedicamento = nomedoMedicamentoField.getText().trim().toLowerCase();;
+                String nomeMedicamento = nomedoMedicamentoField.getText().trim().toLowerCase();
+                String tipoNome = (String) tipoComboBox.getSelectedItem();
+                String categoriaNome = (String) categoriaComboBox.getSelectedItem();
+                String dosagem = dosagemField.getText().trim();
+                String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
+                String formaFarmaceuticaNome = (String) formaFarmaceuticaComboBox.getSelectedItem();
+                String tipoReceitaNome = (String) receitaComboBox.getSelectedItem();
+                String fabricanteNome = fabricanteField.getText().trim();
+                String estoqueTexto = estoqueField.getText().trim();
+                String dataFabricacaoTexto = dataFabricacaoField.getText().trim();
+                String dataValidadeTexto = dataValidadeField.getText().trim();
+                String valorTexto = valorUnitarioField.getText().replace("R$", "").trim().replace(",", ".");
+
+                if (nomeMedicamento.isEmpty() ||
+                        (tipoNome == null || tipoNome.isEmpty()) ||
+                        (categoriaNome == null || categoriaNome.isEmpty()) ||
+                        dosagem.isEmpty() ||
+                        (fornecedorNome == null || fornecedorNome.isEmpty()) ||
+                        (formaFarmaceuticaNome == null || formaFarmaceuticaNome.isEmpty()) ||
+                        (tipoReceitaNome == null || tipoReceitaNome.isEmpty()) ||
+                        fabricanteNome.isEmpty() ||
+                        estoqueTexto.isEmpty() ||
+                        dataFabricacaoTexto.isEmpty() ||
+                        dataValidadeTexto.isEmpty() ||
+                        valorTexto.isEmpty()) {
+
+                    JOptionPane.showMessageDialog(this, "Todos os campos devem ser preechidos.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 if (nomeMedicamento.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "O nome do medicamento não pode ser vazio.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
@@ -540,7 +570,6 @@ public class CadastrarMedicamento extends JPanel {
                     }
                 }
 
-                String tipoNome = (String) tipoComboBox.getSelectedItem();
                 if ("Selecione".equals(tipoNome)) {
                     JOptionPane.showMessageDialog(this, "Por favor, selecione o tipo de medicamento.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
@@ -549,7 +578,6 @@ public class CadastrarMedicamento extends JPanel {
 
                 Tipo tipo = Tipo.valueOf(tipoNome.toUpperCase());
 
-                String categoriaNome = (String) categoriaComboBox.getSelectedItem();
                 if ("Outros".equals(categoriaNome)) {
                     categoriaNome = categoriaField.getText().trim();
 
@@ -566,7 +594,6 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 }
 
-                String dosagem = dosagemField.getText().trim();
                 if (dosagem.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "A dosagem não pode ser vazia.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
@@ -589,7 +616,6 @@ public class CadastrarMedicamento extends JPanel {
                     }
                 }
 
-                String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
                 if ("Selecione".equals(fornecedorNome)) {
                     JOptionPane.showMessageDialog(this, "Por favor, selecione um fornecedor.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
@@ -616,7 +642,6 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 }
 
-                String formaFarmaceuticaNome = (String) formaFarmaceuticaComboBox.getSelectedItem();
                 if ("Selecione".equals(formaFarmaceuticaNome)) {
                     JOptionPane.showMessageDialog(this, "Por favor, selecione uma forma farmacêutica.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
@@ -632,7 +657,6 @@ public class CadastrarMedicamento extends JPanel {
                     }
                 }
 
-                String tipoReceitaNome = (String) receitaComboBox.getSelectedItem();
                 if ("Selecione".equals(tipoReceitaNome)) {
                     JOptionPane.showMessageDialog(this, "Por favor, selecione o tipo de receita.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
@@ -641,7 +665,6 @@ public class CadastrarMedicamento extends JPanel {
 
                 TipoReceita tipoReceita = TipoReceita.valueOf(tipoReceitaNome.toUpperCase());
 
-                String estoqueTexto = estoqueField.getText().trim();
                 if (estoqueTexto.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "O estoque não pode ser vazio.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
@@ -663,7 +686,6 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 }
 
-                String fabricanteNome;
                 if (fabricanteField.isVisible()) {
                     fabricanteNome = fabricanteField.getText().trim();
                     if (fabricanteNome.isEmpty()) {
@@ -681,22 +703,20 @@ public class CadastrarMedicamento extends JPanel {
                     return;
                 }
 
-                String dataFabricacaoTexto = dataFabricacaoField.getText().trim(); 
-                String dataValidadeTexto = dataValidadeField.getText().trim();
-
                 if (dataFabricacaoTexto.isEmpty() || dataValidadeTexto.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "As datas de fabricação e validade devem ser preenchidas.", "Erro",
+                    JOptionPane.showMessageDialog(this, "As datas de fabricação e validade devem ser preenchidas.",
+                            "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
-                }         
-                
+                }
+
                 LocalDate dataFabricacao, dataValidade;
 
                 try {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
                     YearMonth ymFabricacao = YearMonth.parse(dataFabricacaoTexto, formatter);
                     YearMonth ymValidade = YearMonth.parse(dataValidadeTexto, formatter);
-                
+
                     dataFabricacao = ymFabricacao.atDay(28);
                     dataValidade = ymValidade.atDay(28);
                 } catch (DateTimeParseException ex) {
@@ -708,11 +728,14 @@ public class CadastrarMedicamento extends JPanel {
                 LocalDate dataMinima = LocalDate.now().minusYears(5);
 
                 if (dataFabricacao.isBefore(dataMinima)) {
-                    JOptionPane.showMessageDialog(this, "Data de fabricação inválida! Deve ser posterior a " + dataMinima.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ".", "Erro",
+                    JOptionPane.showMessageDialog(this,
+                            "Data de fabricação inválida! Deve ser posterior a "
+                                    + dataMinima.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ".",
+                            "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                
+
                 if (dataFabricacao.isAfter(LocalDate.now())) {
                     JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser posterior à data atual.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
@@ -734,14 +757,15 @@ public class CadastrarMedicamento extends JPanel {
 
                 LocalDate dataValidadeMaxima = dataFabricacao.plusYears(5);
                 if (dataValidade.isAfter(dataValidadeMaxima)) {
-                    JOptionPane.showMessageDialog(this, "Data de validade inválida! Não pode ser superior a 5 anos a partir da data de fabricação.", "Erro",
+                    JOptionPane.showMessageDialog(this,
+                            "Data de validade inválida! Não pode ser superior a 5 anos a partir da data de fabricação.",
+                            "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
                 BigDecimal valorUnitario;
                 try {
-                    String valorTexto = valorUnitarioField.getText().replace("R$", "").trim().replace(",", ".");
                     valorUnitario = new BigDecimal(valorTexto);
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this, "Valor unitário deve ser um número válido.", "Erro",
@@ -807,7 +831,7 @@ public class CadastrarMedicamento extends JPanel {
                 JOptionPane.showMessageDialog(this, "Erro ao cadastrar medicamento: " + ex.getMessage(), "Erro",
                         JOptionPane.ERROR_MESSAGE);
             }
-            
+
         });
 
         cancelarButton.addActionListener(e -> {
