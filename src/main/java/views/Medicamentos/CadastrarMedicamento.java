@@ -532,7 +532,7 @@ public class CadastrarMedicamento extends JPanel {
             try {
                 int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
 
-                String nomeMedicamento = nomedoMedicamentoField.getText().trim().toLowerCase();
+                String nomeMedicamento = nomedoMedicamentoField.getText().trim();
                 String tipoNome = (String) tipoComboBox.getSelectedItem();
                 String categoriaNome = (String) categoriaComboBox.getSelectedItem();
                 String dosagem = dosagemField.getText().trim();

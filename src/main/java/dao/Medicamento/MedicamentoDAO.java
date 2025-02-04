@@ -10,7 +10,6 @@ import java.util.List;
 import dao.Categoria.CategoriaDAO;
 import dao.Fabricante.FabricanteDAO;
 import dao.Fornecedor.FornecedorDAO;
-import dao.Funcionario.FuncionarioDAO;
 
 import java.sql.Date;
 import java.time.YearMonth;

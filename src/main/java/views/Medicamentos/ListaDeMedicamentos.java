@@ -3,6 +3,7 @@ package views.Medicamentos;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -71,6 +72,8 @@ public class ListaDeMedicamentos extends JPanel {
     private void atualizarMedicamentosFiltrados(List<Medicamento> medicamentos) {
         medicamentosFiltrados.clear();
 
+        NumberFormat numberFormat = NumberFormat.getInstance();
+
         for (Medicamento medicamento : medicamentos) {
             Object[] dadosMedicamento = new Object[8];
             dadosMedicamento[0] = medicamento.getNome();
@@ -78,7 +81,7 @@ public class ListaDeMedicamentos extends JPanel {
             dadosMedicamento[2] = medicamento.getFormaFarmaceutica();
             dadosMedicamento[3] = medicamento.getDosagem();
             dadosMedicamento[4] = formatarData(medicamento.getDataValidade());
-            dadosMedicamento[5] = medicamento.getQnt();
+            dadosMedicamento[5] = numberFormat.format(medicamento.getQnt());
             dadosMedicamento[6] = medicamento.getValorUnit();
             dadosMedicamento[7] = "";
 
@@ -244,6 +247,7 @@ public class ListaDeMedicamentos extends JPanel {
     }
 
     private void filtrarMedicamentos(String filtro) {
+        NumberFormat numberFormat = NumberFormat.getInstance();
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
             atualizarMedicamentosFiltrados(medicamentos);
         } else {
@@ -255,7 +259,7 @@ public class ListaDeMedicamentos extends JPanel {
                             medicamento.getFormaFarmaceutica(),
                             medicamento.getDosagem(),
                             formatarData(medicamento.getDataValidade()),
-                            medicamento.getQnt(),
+                            numberFormat.format(medicamento.getQnt()),
                             medicamento.getValorUnit(),
                     })
                     .collect(Collectors.toList());
