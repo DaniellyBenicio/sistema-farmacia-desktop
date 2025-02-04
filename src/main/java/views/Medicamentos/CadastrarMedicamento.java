@@ -561,12 +561,14 @@ public class CadastrarMedicamento extends JPanel {
                 if ("Selecione".equals(tipoNome)) {
                     errorMessage.append("Tipo de medicamento deve ser selecionado.\n");
                     hasError = true;
-                }
-
+                } 
                 if ("Outros".equals(categoriaNome)) {
                     categoriaNome = categoriaField.getText().trim();
                     if (categoriaNome.isEmpty()) {
                         errorMessage.append("Categoria deve ser preenchida.\n");
+                        hasError = true;
+                    } else if (!categoriaNome.matches("^[\\p{L}\\s]*$")) {
+                        errorMessage.append("Categoria inválida (apenas letras e espaços são permitidos.).\n");
                         hasError = true;
                     }
                 } else if ("Selecione".equals(categoriaNome)) {
