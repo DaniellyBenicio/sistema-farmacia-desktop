@@ -382,7 +382,8 @@ public class EditarMedicamento extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(valorUnitarioLabel, gbc);
 
-        NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
+        NumberFormat format = NumberFormat.getNumberInstance(Locale.getDefault());
+        format.setGroupingUsed(false);
         format.setMinimumFractionDigits(2);
         format.setMaximumFractionDigits(2);
         NumberFormatter formatter = new NumberFormatter(format) {
