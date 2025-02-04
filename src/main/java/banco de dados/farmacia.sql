@@ -45,9 +45,9 @@ create table fabricante(
 
 create  table medicamento(
 	id int primary key auto_increment not null,
-    nome varchar(50) not null COLLATE utf8mb4_general_ci,
-    dosagem varchar (50) not null COLLATE utf8mb4_general_ci,
-    formaFarmaceutica varchar (50) not null COLLATE utf8mb4_general_ci,
+    nome varchar(50) not null COLLATE utf8mb4_bin,
+    dosagem varchar (50) not null COLLATE utf8mb4_bin,
+    formaFarmaceutica varchar (50) not null COLLATE utf8mb4_bin,
     valorUnit decimal(10,2) not null,
     dataValidade date not null,
     dataFabricacao date not null,
@@ -61,9 +61,8 @@ create  table medicamento(
     foreign key (categoria_id) references categoria (id) on delete cascade,
     foreign key (funcionario_id) references funcionario (id),
     foreign key (fabricante_id) references fabricante (id),
-    foreign key (fornecedor_id) references fornecedor (id)
-    
-    -- unique (nome, dosagem, formaFarmaceutica, dataValidade, dataFabricacao, fabricante_id)
+    foreign key (fornecedor_id) references fornecedor (id),    
+	unique (nome, dosagem, formaFarmaceutica, dataValidade, dataFabricacao, fabricante_id)
 );
 
 create table cliente(
@@ -85,4 +84,5 @@ create table cliente(
 drop database farmacia;
 insert into cargo values (1, 'Gerente');
 insert into funcionario values (1, 'Danielly', '88998045537', 'd@gmail.com', 1, true);
+
 
