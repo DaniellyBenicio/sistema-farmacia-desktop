@@ -602,89 +602,54 @@ public class EditarMedicamento extends JPanel {
             String dataValidadeTexto = dataValidadeField.getText().trim();
             String valorTexto = valorUnitarioField.getText().replace("R$", "").trim().replace(",", ".");
 
-            boolean allFieldsEmpty = nomeMedicamento.isEmpty() &&
-                    ("Selecione".equals(tipoNome)) &&
-                    (categoriaNome == null || categoriaNome.isEmpty() || "Selecione".equals(categoriaNome)) &&
-                    (dosagem == null || dosagem.isEmpty()) &&
-                    (fornecedorNome == null || fornecedorNome.isEmpty() || "Selecione".equals(fornecedorNome)) &&
-                    (formaFarmaceuticaNome == null || formaFarmaceuticaNome.isEmpty()
-                            || "Selecione".equals(formaFarmaceuticaNome))
-                    &&
-                    (tipoReceitaNome == null || tipoReceitaNome.isEmpty() || "Selecione".equals(tipoReceitaNome)) &&
-                    (fabricanteNome == null || fabricanteNome.isEmpty() || "Selecione".equals(fabricanteNome)) &&
-                    (estoqueTexto == null || estoqueTexto.isEmpty()) &&
-                    (valorTexto == null || valorTexto.isEmpty());
-
-            if (allFieldsEmpty) {
-                JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
+            boolean hasError = false;
 
             if (nomeMedicamento.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "O nome do medicamento não pode ser vazio.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+                errorMessage.append("Nome deve ser preenchido.\n");
+                hasError = true;
             } else {
                 if (!nomeMedicamento.matches("^[\\p{L}\\d\\s]*$")) {
-                    JOptionPane.showMessageDialog(this,
-                            "Nome inválido (apenas letras, números e espaços são permitidos).",
-                            "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
+                    errorMessage.append("Nome inválido (apenas letras, números e espaços são permitidos).\n");
+                    hasError = true;
                 }
             }
 
             if ("Selecione".equals(tipoNome)) {
-                JOptionPane.showMessageDialog(this, "Por favor, selecione o tipo de medicamento.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+                errorMessage.append("Tipo de medicamento deve ser selecionado.\n");
+                hasError = true;
             }
-
-            Tipo tipo = Tipo.valueOf(tipoNome.toUpperCase());
 
             if ("Outros".equals(categoriaNome)) {
                 categoriaNome = categoriaField.getText().trim();
-
                 if (categoriaNome.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "A categoria não pode ser vazia.", "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
+                    errorMessage.append("Categoria deve ser preenchida.\n");
+                    hasError = true;
                 }
-            }
-
-            if ("Selecione".equals(categoriaNome)) {
-                JOptionPane.showMessageDialog(this, "Por favor, selecione uma categoria.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+            } else if ("Selecione".equals(categoriaNome)) {
+                errorMessage.append("Categoria deve ser selecionada.\n");
+                hasError = true;
             }
 
             if (dosagem.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "A dosagem não pode ser vazia.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+                errorMessage.append("Dosagem deve ser informada.\n");
+                hasError = true;
+            } else if (!dosagem.toLowerCase().matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
+                errorMessage.append("Informe a dosagem com as seguintes unidades válidas:\n" +
+                        "(mg, g, mcg, ml, l).\n" +
+                        "Exemplo: 500mg, 10g\n");
+                hasError = true;
             } else {
-                if (!dosagem.toLowerCase().matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
-                    JOptionPane.showMessageDialog(this,
-                            "Informe a dosagem com as seguintes unidades válidas:\n" +
-                                    "(mg, g, mcg, ml, l).\n" +
-                                    "Exemplo: 500mg, 10g",
-                            "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
                 double dosagemValor = Double.parseDouble(dosagem.replaceAll("[^\\d.]", ""));
                 if (dosagemValor <= 0) {
-                    JOptionPane.showMessageDialog(this, "A dosagem deve ser um valor positivo.", "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
+                    errorMessage.append("A dosagem deve ser um valor positivo.\n");
+                    hasError = true;
                 }
             }
 
             if ("Selecione".equals(fornecedorNome)) {
-                JOptionPane.showMessageDialog(this, "Por favor, selecione um fornecedor.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+                errorMessage.append("Fornecedor deve ser selecionado.\n");
+                hasError = true;
             }
 
             Funcionario funcionario;
@@ -699,7 +664,6 @@ public class EditarMedicamento extends JPanel {
                             "Erro", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                System.out.println("Objeto funcionário encontrado: " + funcionario);
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(this, "Erro na busca: " + ex.getMessage(), "Erro",
                         JOptionPane.ERROR_MESSAGE);
@@ -707,135 +671,115 @@ public class EditarMedicamento extends JPanel {
             }
 
             if ("Selecione".equals(formaFarmaceuticaNome)) {
-                JOptionPane.showMessageDialog(this, "Por favor, selecione uma forma farmacêutica.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if ("Outros".equals(formaFarmaceuticaNome)) {
+                errorMessage.append("Forma farmacêutica deve ser selecionada.\n");
+                hasError = true;
+            } else if ("Outros".equals(formaFarmaceuticaNome)) {
                 formaFarmaceuticaNome = formaFarmaceuticaField.getText().trim();
                 if (formaFarmaceuticaNome.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "A forma farmacêutica não pode ser vazia.", "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
+                    errorMessage.append("Forma farmacêutica deve ser preenchida.\n");
+                    hasError = true;
                 }
             }
 
             if ("Selecione".equals(tipoReceitaNome)) {
-                JOptionPane.showMessageDialog(this, "Por favor, selecione o tipo de receita.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            TipoReceita tipoReceita = TipoReceita.valueOf(tipoReceitaNome.toUpperCase());
-
-            if (estoqueTexto.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "O estoque não pode ser vazio.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+                errorMessage.append("Tipo de receita deve ser informado.\n");
+                hasError = true;
             }
 
             Integer estoque = (Integer) ((JFormattedTextField) estoqueField).getValue();
-
             if (estoque == null) {
-                JOptionPane.showMessageDialog(this, "O estoque não pode ser vazio.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (estoque < 0) {
-                JOptionPane.showMessageDialog(this, "A quantidade informada para estoque não pode ser negativa",
-                        "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+                errorMessage.append("O estoque não pode ser vazio.\n");
+                hasError = true;
+            } else if (estoque < 0) {
+                errorMessage.append("A quantidade informada para estoque não pode ser negativa.\n");
+                hasError = true;
             }
 
             if (fabricanteField.isVisible()) {
                 fabricanteNome = fabricanteField.getText().trim();
                 if (fabricanteNome.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Por favor, insira o nome do fabricante.", "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
+                    errorMessage.append("Fabricante deve ser informado.\n");
+                    hasError = true;
                 }
             } else {
                 fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
+                if ("Selecione".equals(fabricanteNome) || fabricanteNome.isEmpty()) {
+                    errorMessage.append("Fabricante deve ser selecionado.\n");
+                    hasError = true;
+                }
             }
 
-            if ("Selecione".equals(fabricanteNome) || fabricanteNome.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, selecione um fabricante.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+            LocalDate dataFabricacao = null, dataValidade = null;
+            if (dataFabricacaoTexto.equals("/") || dataValidadeTexto.equals("/")) {
+                errorMessage.append("As datas de fabricação e validade devem ser preenchidas corretamente.\n");
+                hasError = true;
+            } else {
+                try {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
+                    YearMonth ymFabricacao = YearMonth.parse(dataFabricacaoTexto, formatter);
+                    YearMonth ymValidade = YearMonth.parse(dataValidadeTexto, formatter);
+                    dataFabricacao = ymFabricacao.atDay(28);
+                    dataValidade = ymValidade.atDay(28);
+                } catch (DateTimeParseException ex) {
+                    errorMessage.append("Formato de data inválido. Use Mês/Ano, ex: 08/2023\n");
+                    hasError = true;
+                }
             }
 
-            if (dataFabricacaoTexto.isEmpty() || dataValidadeTexto.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "As datas de fabricação e validade devem ser preenchidas.",
-                        "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+            if (dataFabricacao != null) {
+                LocalDate dataMinima = LocalDate.now().minusYears(5);
+                if (dataFabricacao.isBefore(dataMinima)) {
+                    errorMessage.append("Data de fabricação inválida! Deve ser posterior a " +
+                            dataMinima.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ".\n");
+                    hasError = true;
+                } else if (dataFabricacao.isAfter(LocalDate.now())) {
+                    errorMessage.append("Data de fabricação inválida! Não pode ser posterior à data atual.\n");
+                    hasError = true;
+                }
             }
 
-            LocalDate dataFabricacao, dataValidade;
+            if (dataValidade != null) {
+                if (dataValidade.isBefore(dataFabricacao)) {
+                    errorMessage.append("Data de validade inválida! Não pode ser anterior à data de fabricação.\n");
+                    hasError = true;
+                } else if (dataValidade.isBefore(LocalDate.now())) {
+                    errorMessage.append("Data de validade inválida! Não pode ser anterior à data atual.\n");
+                    hasError = true;
+                }
 
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
-                YearMonth ymFabricacao = YearMonth.parse(dataFabricacaoTexto, formatter);
-                YearMonth ymValidade = YearMonth.parse(dataValidadeTexto, formatter);
-
-                dataFabricacao = ymFabricacao.atDay(28);
-                dataValidade = ymValidade.atDay(28);
-            } catch (DateTimeParseException ex) {
-                JOptionPane.showMessageDialog(this, "Formato de data inválido. Use MM/yyyy.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+                LocalDate dataValidadeMaxima = dataFabricacao != null ? dataFabricacao.plusYears(5) : null;
+                if (dataValidadeMaxima != null && dataValidade.isAfter(dataValidadeMaxima)) {
+                    errorMessage.append(
+                            "Data de validade inválida! Não pode ser superior a 5 anos a partir da data de fabricação.\n");
+                    hasError = true;
+                }
             }
 
-            LocalDate dataMinima = LocalDate.now().minusYears(5);
-
-            if (dataFabricacao.isBefore(dataMinima)) {
-                JOptionPane.showMessageDialog(this,
-                        "Data de fabricação inválida! Deve ser posterior a "
-                                + dataMinima.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ".",
-                        "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+            if (valorTexto.isEmpty()) {
+                errorMessage.append("O valor unitário deve ser informado.\n");
+                hasError = true;
             }
 
-            if (dataFabricacao.isAfter(LocalDate.now())) {
-                JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser posterior à data atual.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (dataValidade.isBefore(dataFabricacao)) {
-                JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser anterior à data de fabricação.",
-                        "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (dataValidade.isBefore(LocalDate.now())) {
-                JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser anterior à data atual.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            LocalDate dataValidadeMaxima = dataFabricacao.plusYears(5);
-            if (dataValidade.isAfter(dataValidadeMaxima)) {
-                JOptionPane.showMessageDialog(this,
-                        "Data de validade inválida! Não pode ser superior a 5 anos a partir da data de fabricação.",
-                        "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+            if (hasError) {
+                JOptionPane.showMessageDialog(this, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             BigDecimal valorUnitario;
-            try {
-                valorUnitario = new BigDecimal(valorTexto);
-            } catch (NumberFormatException ex) {
+
+            if (valorTexto.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "O valor unitário deve ser informado.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (!valorTexto.matches("\\d+(\\.\\d{1,2})?")) {
                 JOptionPane.showMessageDialog(this, "Valor unitário deve ser um número válido.", "Erro",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
+            valorUnitario = new BigDecimal(valorTexto);
 
             if (valorUnitario.compareTo(BigDecimal.ZERO) <= 0) {
                 JOptionPane.showMessageDialog(this, "O valor unitário deve ser maior que zero.", "Erro",
@@ -861,11 +805,13 @@ public class EditarMedicamento extends JPanel {
                     return;
                 }
 
+                Tipo tipo = Tipo.valueOf(tipoNome.toUpperCase());
+                TipoReceita tipoReceita = TipoReceita.valueOf(tipoReceitaNome.toUpperCase());
+
                 medicamentoExistente.setNome(nomeMedicamento);
                 medicamentoExistente.setTipo(tipo);
                 medicamentoExistente.setCategoria(categoria);
                 medicamentoExistente.setDosagem(dosagem);
-                ;
                 medicamentoExistente.setFornecedor(fornecedor);
                 medicamentoExistente.setFormaFarmaceutica(formaFarmaceuticaNome);
                 medicamentoExistente.setTipoReceita(tipoReceita);

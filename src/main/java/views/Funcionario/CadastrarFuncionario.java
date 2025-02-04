@@ -329,11 +329,15 @@ public class CadastrarFuncionario extends JPanel {
             } catch (SQLException ex) {
                 String message = ex.getMessage();
                 if (message.contains("email")) {
-                    JOptionPane.showMessageDialog(null, "O e-mail informado já está associado a um funcionário existente. Por favor, utilize outro e-mail.", "Erro",
+                    JOptionPane.showMessageDialog(null,
+                            "O e-mail informado já está associado a um funcionário existente. Por favor, utilize outro e-mail.",
+                            "Erro",
                             JOptionPane.ERROR_MESSAGE);
                 }
                 if (message.contains("telefone")) {
-                    JOptionPane.showMessageDialog(null, "O telefone informado já está associado a um funcionário existente. Por favor, informe outro número.", "Erro",
+                    JOptionPane.showMessageDialog(null,
+                            "O telefone informado já está associado a um funcionário existente. Por favor, informe outro número.",
+                            "Erro",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }
