@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -15,6 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.swing.*;
@@ -383,13 +385,23 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(valorUnitarioLabel, gbc);
 
-        try {
-            MaskFormatter moedaFormatter = new MaskFormatter("R$ ##.##");
-            moedaFormatter.setPlaceholderCharacter('0');
-            valorUnitarioField = new JFormattedTextField(moedaFormatter);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
+        format.setMinimumFractionDigits(2);
+        format.setMaximumFractionDigits(2);
+        NumberFormatter formatter = new NumberFormatter(format) {
+            public Object stringToValue(String text) throws ParseException {
+                if (text == null || text.isEmpty()) {
+                    return null; 
+                }
+                return super.stringToValue(text);
+            }
+        };
+        formatter.setAllowsInvalid(false);
+        formatter.setOverwriteMode(true);
+        formatter.setMinimum(0.0);
+        formatter.setMaximum(999999.99);
+
+        valorUnitarioField = new JFormattedTextField(formatter);
         valorUnitarioField.setPreferredSize(new Dimension(180, 40));
         estilizarCamposFormulario(valorUnitarioField, fieldFont);
         gbc.gridx = 3;

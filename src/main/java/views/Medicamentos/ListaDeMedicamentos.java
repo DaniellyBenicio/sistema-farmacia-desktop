@@ -2,8 +2,9 @@ package views.Medicamentos;
 
 import java.awt.*;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,9 +17,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import dao.Medicamento.MedicamentoDAO;
-import main.ConexaoBD;
 import models.Medicamento.Medicamento;
-import views.Clientes.CadastrarCliente; 
 
 public class ListaDeMedicamentos extends JPanel {
 
@@ -61,19 +60,27 @@ public class ListaDeMedicamentos extends JPanel {
         }
     }
 
+    private String formatarData(LocalDate data) {
+        if (data != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
+            return data.format(formatter);
+        }
+        return "";
+    }
+
     private void atualizarMedicamentosFiltrados(List<Medicamento> medicamentos) {
         medicamentosFiltrados.clear();
 
         for (Medicamento medicamento : medicamentos) {
-            Object[] dadosMedicamento = new Object[8]; 
+            Object[] dadosMedicamento = new Object[8];
             dadosMedicamento[0] = medicamento.getNome();
             dadosMedicamento[1] = medicamento.getCategoria().getNome();
             dadosMedicamento[2] = medicamento.getFormaFarmaceutica();
             dadosMedicamento[3] = medicamento.getDosagem();
-            dadosMedicamento[4] = medicamento.getDataValidade();
+            dadosMedicamento[4] = formatarData(medicamento.getDataValidade());
             dadosMedicamento[5] = medicamento.getQnt();
-            dadosMedicamento[6] = medicamento.getValorUnit(); 
-            dadosMedicamento[7] = ""; 
+            dadosMedicamento[6] = medicamento.getValorUnit();
+            dadosMedicamento[7] = "";
 
             medicamentosFiltrados.add(dadosMedicamento);
         }
@@ -176,7 +183,6 @@ public class ListaDeMedicamentos extends JPanel {
             cadastroDialog.setVisible(true);
         });
 
-
         painelSuperior.add(painelTitulo, BorderLayout.NORTH);
         painelSuperior.add(painelBuscarTitulo, BorderLayout.CENTER);
         painelSuperior.add(painelBuscaBotao, BorderLayout.SOUTH);
@@ -185,12 +191,13 @@ public class ListaDeMedicamentos extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Nome", "Categoria", "F. Farmacêutica", "Dosagem", "Validade", "Estoque", "Preço Unitário", "Ações" };
+        String[] colunas = { "Nome", "Categoria", "F. Farmacêutica", "Dosagem", "Validade", "Estoque", "Preço Unitário",
+                "Ações" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 7; 
+                return column == 7;
             }
         };
 
@@ -204,7 +211,6 @@ public class ListaDeMedicamentos extends JPanel {
         tabela.getTableHeader().setReorderingAllowed(false);
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabela.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
@@ -215,7 +221,7 @@ public class ListaDeMedicamentos extends JPanel {
 
         tabela.getColumnModel().getColumn(7).setCellRenderer(new RenderizadorBotoes());
         tabela.getColumnModel().getColumn(7).setCellEditor(new EditorBotoes(new JTextField()));
-        
+
         // Ajustando a largura das colunas
         tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
@@ -243,14 +249,14 @@ public class ListaDeMedicamentos extends JPanel {
         } else {
             medicamentosFiltrados = medicamentos.stream()
                     .filter(medicamento -> medicamento.getNome().toLowerCase().contains(filtro.toLowerCase()))
-                    .map(medicamento -> new Object[]{
+                    .map(medicamento -> new Object[] {
                             medicamento.getNome(),
                             medicamento.getCategoria().getNome(),
                             medicamento.getFormaFarmaceutica(),
                             medicamento.getDosagem(),
-                            medicamento.getDataValidade(),
+                            formatarData(medicamento.getDataValidade()),
                             medicamento.getQnt(),
-                            medicamento.getValorUnit(), 
+                            medicamento.getValorUnit(),
                     })
                     .collect(Collectors.toList());
         }
@@ -261,7 +267,7 @@ public class ListaDeMedicamentos extends JPanel {
         modeloTabela.setRowCount(0);
 
         if (medicamentosFiltrados.isEmpty()) {
-            modeloTabela.addRow(new Object[]{"Medicamento não encontrado.", "", "", "", "", "", ""});
+            modeloTabela.addRow(new Object[] { "Medicamento não encontrado.", "", "", "", "", "", "" });
         } else {
             for (Object[] medicamento : medicamentosFiltrados) {
                 modeloTabela.addRow(medicamento);
@@ -293,15 +299,15 @@ public class ListaDeMedicamentos extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(JTable tabela, Object valor, boolean isSelected,
-                                                       boolean hasFocus, int linha, int coluna) {
-                                                        setBackground(Color.WHITE);
-                                                        if (medicamentosFiltrados.isEmpty()) {
-                                                            botaoEditar.setVisible(false);
-                                                            botaoExcluir.setVisible(false);
-                                                        } else {
-                                                            botaoEditar.setVisible(true);
-                                                            botaoExcluir.setVisible(true);
-                                                        }
+                boolean hasFocus, int linha, int coluna) {
+            setBackground(Color.WHITE);
+            if (medicamentosFiltrados.isEmpty()) {
+                botaoEditar.setVisible(false);
+                botaoExcluir.setVisible(false);
+            } else {
+                botaoEditar.setVisible(true);
+                botaoExcluir.setVisible(true);
+            }
             return this;
         }
     }
@@ -332,71 +338,61 @@ public class ListaDeMedicamentos extends JPanel {
         private void configurarAcoes() {
             botaoEditar.addActionListener(e -> {
                 fireEditingStopped();
-                
-                
+
                 if (medicamentosFiltrados.isEmpty()) {
                     return;
                 }
-        
-              
+
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
-                   
-                    int medicamentoId = medicamentos.get(indiceLinha).getId();  
-        
-                    
+
+                    int medicamentoId = medicamentos.get(indiceLinha).getId();
+
                     JDialog dialogoEditar = new JDialog();
                     dialogoEditar.setTitle("Editar Medicamento");
                     dialogoEditar.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
                     dialogoEditar.setSize(1200, 650);
                     dialogoEditar.setLocationRelativeTo(null);
                     dialogoEditar.setModal(true);
-        
-              
+
                     Point localizacao = dialogoEditar.getLocation();
                     localizacao.y = 150;
                     dialogoEditar.setLocation(localizacao);
-        
-                   
+
                     EditarMedicamento painelEditar = new EditarMedicamento(medicamentoId);
                     dialogoEditar.add(painelEditar);
-        
-                    
+
                     dialogoEditar.addWindowListener(new java.awt.event.WindowAdapter() {
                         @Override
                         public void windowClosed(java.awt.event.WindowEvent evento) {
                             atualizarTabela();
                         }
                     });
-        
-                 
+
                     dialogoEditar.setVisible(true);
                 }
             });
-        
+
             botaoExcluir.addActionListener(e -> {
                 fireEditingStopped();
-                
-               
+
                 if (medicamentosFiltrados.isEmpty()) {
                     return;
                 }
-        
-           
+
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
-                 
+
                     int medicamentoId = medicamentos.get(indiceLinha).getId();
                     ExcluirMedicamento.excluirMedicamento(medicamentoId);
                     atualizarTabela();
-                }  
+                }
             });
         }
-        
-        
+
         @Override
         public Component getTableCellEditorComponent(JTable tabela, Object valor, boolean isSelected, int linha,
-                                                     int coluna) {
+                int coluna) {
             JPanel painel = new JPanel();
             painel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
             painel.setBackground(Color.WHITE);
