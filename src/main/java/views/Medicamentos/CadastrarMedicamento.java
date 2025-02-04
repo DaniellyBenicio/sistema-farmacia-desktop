@@ -392,7 +392,7 @@ public class CadastrarMedicamento extends JPanel {
         NumberFormatter formatter = new NumberFormatter(format) {
             public Object stringToValue(String text) throws ParseException {
                 if (text == null || text.isEmpty()) {
-                    return null; 
+                    return null;
                 }
                 return super.stringToValue(text);
             }
@@ -551,24 +551,24 @@ public class CadastrarMedicamento extends JPanel {
                 String dataValidadeTexto = dataValidadeField.getText().trim();
                 String valorTexto = valorUnitarioField.getText().replace("R$", "").trim().replace(",", ".");
 
-                /*if (nomeMedicamento.isEmpty() ||
-                        (tipoNome == null || tipoNome.isEmpty()) ||
-                        (categoriaNome == null || categoriaNome.isEmpty()) ||
-                        dosagem.isEmpty() ||
-                        (fornecedorNome == null || fornecedorNome.isEmpty()) ||
-                        (formaFarmaceuticaNome == null || formaFarmaceuticaNome.isEmpty()) ||
-                        (tipoReceitaNome == null || tipoReceitaNome.isEmpty()) ||
-                        fabricanteNome.isEmpty() ||
-                        estoqueTexto.isEmpty() ||
-                        dataFabricacaoTexto.isEmpty() ||
-                        dataValidadeTexto.isEmpty() ||
-                        valorTexto.isEmpty()) {
+                boolean allFieldsEmpty = nomeMedicamento.isEmpty() &&
+                        ("Selecione".equals(tipoNome)) &&
+                        (categoriaNome == null || categoriaNome.isEmpty() || "Selecione".equals(categoriaNome)) &&
+                        (dosagem == null || dosagem.isEmpty()) &&
+                        (fornecedorNome == null || fornecedorNome.isEmpty() || "Selecione".equals(fornecedorNome)) &&
+                        (formaFarmaceuticaNome == null || formaFarmaceuticaNome.isEmpty()
+                                || "Selecione".equals(formaFarmaceuticaNome))
+                        &&
+                        (tipoReceitaNome == null || tipoReceitaNome.isEmpty() || "Selecione".equals(tipoReceitaNome)) &&
+                        (fabricanteNome == null || fabricanteNome.isEmpty() || "Selecione".equals(fabricanteNome)) &&
+                        (estoqueTexto == null || estoqueTexto.isEmpty()) &&
+                        (valorTexto == null || valorTexto.isEmpty());
 
-                    JOptionPane.showMessageDialog(this, "Todos os campos devem ser preechidos.", "Erro",
+                if (allFieldsEmpty) {
+                    JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
-                } */
-
+                }
                 if (nomeMedicamento.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "O nome do medicamento não pode ser vazio.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
