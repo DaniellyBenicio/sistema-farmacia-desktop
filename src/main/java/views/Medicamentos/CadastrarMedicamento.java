@@ -385,6 +385,7 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(valorUnitarioLabel, gbc);
 
+        // Usando Locale para o Brasil
         NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
         format.setMinimumFractionDigits(2);
         format.setMaximumFractionDigits(2);
@@ -397,7 +398,7 @@ public class CadastrarMedicamento extends JPanel {
             }
         };
         formatter.setAllowsInvalid(false);
-        formatter.setOverwriteMode(true);
+        formatter.setOverwriteMode(false); // Permitir que o usuário digite livremente
         formatter.setMinimum(0.0);
         formatter.setMaximum(999999.99);
 
@@ -550,7 +551,7 @@ public class CadastrarMedicamento extends JPanel {
                 String dataValidadeTexto = dataValidadeField.getText().trim();
                 String valorTexto = valorUnitarioField.getText().replace("R$", "").trim().replace(",", ".");
 
-                if (nomeMedicamento.isEmpty() ||
+                /*if (nomeMedicamento.isEmpty() ||
                         (tipoNome == null || tipoNome.isEmpty()) ||
                         (categoriaNome == null || categoriaNome.isEmpty()) ||
                         dosagem.isEmpty() ||
@@ -566,7 +567,7 @@ public class CadastrarMedicamento extends JPanel {
                     JOptionPane.showMessageDialog(this, "Todos os campos devem ser preechidos.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
-                }
+                } */
 
                 if (nomeMedicamento.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "O nome do medicamento não pode ser vazio.", "Erro",

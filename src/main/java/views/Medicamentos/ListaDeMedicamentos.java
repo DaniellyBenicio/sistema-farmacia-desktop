@@ -248,7 +248,7 @@ public class ListaDeMedicamentos extends JPanel {
             atualizarMedicamentosFiltrados(medicamentos);
         } else {
             medicamentosFiltrados = medicamentos.stream()
-                    .filter(medicamento -> medicamento.getNome().toLowerCase().contains(filtro.toLowerCase()))
+                    .filter(medicamento -> medicamento.getNome().contains(filtro))
                     .map(medicamento -> new Object[] {
                             medicamento.getNome(),
                             medicamento.getCategoria().getNome(),

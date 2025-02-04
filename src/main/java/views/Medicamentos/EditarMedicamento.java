@@ -388,7 +388,7 @@ public class EditarMedicamento extends JPanel {
         NumberFormatter formatter = new NumberFormatter(format) {
             public Object stringToValue(String text) throws ParseException {
                 if (text == null || text.isEmpty()) {
-                    return null; 
+                    return null;
                 }
                 return super.stringToValue(text);
             }
@@ -473,6 +473,10 @@ public class EditarMedicamento extends JPanel {
                 JOptionPane.showMessageDialog(this, "Erro ao atualizar medicamento: " + ex.getMessage(), "Erro",
                         JOptionPane.ERROR_MESSAGE);
             }
+        });
+
+        cancelarButton.addActionListener(e -> {
+            SwingUtilities.getWindowAncestor(this).dispose();
         });
 
         return botoesPanel;
