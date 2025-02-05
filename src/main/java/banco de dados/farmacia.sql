@@ -83,6 +83,6 @@ create table cliente(
 
 drop database farmacia;
 insert into cargo values (1, 'Gerente');
-insert into funcionario values (1, 'Danielly', '88998045537', 'd@gmail.com', 1, true);
+insert into funcionario values (1, 'Daniel', '88998045537', 'd@gmail.com', 1, true);
 
 

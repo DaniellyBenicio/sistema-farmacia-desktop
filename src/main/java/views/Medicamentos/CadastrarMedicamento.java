@@ -449,10 +449,10 @@ public class CadastrarMedicamento extends JPanel {
 
     private String[] obterFormasFarmaceuticas() {
         List<String> formasPreDefinidas = new ArrayList<>(Arrays.asList(
-                "Comprimido", "Creme", "Pomada", "Injeção", "Xarope", "Solução",
-                "Spray", "Cápsula", "Gel", "Loção", "Gelatina", "Supositório",
-                "Pó", "Emulsão", "Colírio", "Gotejamento", "Aerossol",
-                "Spray Nasal", "Pastilha", "Suspensão", "Pasta", "Sachê"));
+                "Aerossol", "Cápsula", "Colírio", "Comprimido", "Creme", "Emulsão",
+                "Gel", "Gelatina", "Gotejamento", "Injeção", "Loção", "Pastilha",
+                "Pasta", "Pomada", "Pó", "Sachê", "Solução", "Spray", "Spray Nasal",
+                "Supositório", "Suspensão", "Xarope"));
 
         Set<String> formasFarmaceuticas = new LinkedHashSet<>();
         formasFarmaceuticas.add("Selecione");
