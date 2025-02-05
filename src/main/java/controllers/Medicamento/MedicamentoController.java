@@ -19,11 +19,16 @@ public class MedicamentoController {
             throw new SQLException("Erro ao verificar a existência do medicamento.", e);
         }
     }
+
     public static void cadastrarMedicamento(Connection conn, Medicamento m) throws SQLException {
         try {
             MedicamentoDAO.cadastrarMedicamento(conn, m);
         } catch (SQLException e) {
-            throw new SQLException("Erro ao cadastrar medicamento.", e);
+            if (e.getMessage().contains("Duplicate entry")) {
+                throw new SQLException("Medicamento já cadastrado na base de dados.");
+            } else {
+                throw new SQLException("Erro ao cadastrar medicamento.", e);
+            }
         }
     }
 
