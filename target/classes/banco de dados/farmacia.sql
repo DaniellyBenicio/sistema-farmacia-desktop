@@ -44,6 +44,7 @@ create table fabricante(
 );
 
 create  table medicamento(
+	-- falta inserir o campo embalagem e ver como ficará a questao de env, caixa
 	id int primary key auto_increment not null,
     nome varchar(50) not null COLLATE utf8mb4_bin,
     dosagem varchar (50) not null COLLATE utf8mb4_bin,
@@ -81,8 +82,34 @@ create table cliente(
     foreign key (funcionario_id) references funcionario(id) 
 );
 
+create table produto (
+	id int primary key auto_increment not null,
+    nome varchar(50) not null COLLATE utf8mb4_bin,
+    valor decimal(10,2) not null,
+    qntEstoque int not null,
+    dataValidade date not null,
+    dataFabricacao date not null,
+    qntMedida varchar (50) not null COLLATE utf8mb4_bin,
+    embalagem varchar (50) not null COLLATE utf8mb4_bin,
+    funcionario_id int not null,
+    fabricante_id int not null,
+    fornecedor_id int not null,
+    foreign key (funcionario_id) references funcionario (id),
+    foreign key (fabricante_id) references fabricante (id),
+    foreign key (fornecedor_id) references fornecedor (id),    
+    unique (nome, qntMedida, embalagem, fabricante_id, dataFabricacao, dataValidade)
+);
+
+create table prodCategoria(
+	produto_id int not null,
+    categoria_id int not null,    
+    primary key (produto_id, categoria_id),
+    foreign key (produto_id) references produto (id) on delete cascade,
+    foreign key (categoria_id) references categoria (id) on delete cascade
+);
+
 drop database farmacia;
+
+
 insert into cargo values (1, 'Gerente');
-insert into funcionario values (1, 'Daniel', '88998045537', 'd@gmail.com', 1, true);
-
-
+insert into funcionario values (1, 'Danielly', '88998045537', 'd@gmail.com', 1, true);
