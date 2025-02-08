@@ -35,5 +35,3 @@ public class Categoria {
         this.nome = nome;
     }
 }
-
-//analgesico, anestesico, antitermico, antipiretico, antibiotico, antifungico, antivirais, antiinflamatorio, antidepressivo, antipsicotico, ansiolitico, antihipertensivo, antidiabetico, antiacidos, antialergicos, antiemeticos
