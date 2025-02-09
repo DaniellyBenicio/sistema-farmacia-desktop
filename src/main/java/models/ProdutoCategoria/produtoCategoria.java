@@ -14,6 +14,9 @@ public class produtoCategoria {
     }
 
     public void setProduto_id(int produto_id) {
+        if (produto_id <= 0) {
+            throw new IllegalArgumentException("O ID do produto deve ser maior que zero.");
+        }
         this.produto_id = produto_id;
     }
 
@@ -22,9 +25,9 @@ public class produtoCategoria {
     }
 
     public void setCategoria_id(int categoria_id) {
+        if (categoria_id <= 0) {
+            throw new IllegalArgumentException("O ID da categoria deve ser maior que zero.");
+        }
         this.categoria_id = categoria_id;
-    }
-
-
- 
+    } 
 }

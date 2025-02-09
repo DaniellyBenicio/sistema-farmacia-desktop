@@ -3,9 +3,12 @@ package models.Produto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.List;
 
 import models.Funcionario.Funcionario;
 import models.Fornecedor.Fornecedor;
+import models.Categoria.Categoria;
 import models.Fabricante.Fabricante;
 
 public class Produto {
@@ -20,8 +23,12 @@ public class Produto {
     private Funcionario funcionario;
     private Fabricante fabricante;
     private Fornecedor fornecedor;
+    private List<Categoria> categorias;
 
-    public Produto(int id, String nome, BigDecimal valor, int qntEstoque, LocalDate dataValidade, LocalDate dataFabricacao, String qntMedida, String embalagem, Funcionario funcionario, Fabricante fabricante, Fornecedor fornecedor){
+    public Produto(int id, String nome, BigDecimal valor, int qntEstoque, LocalDate dataValidade, LocalDate dataFabricacao, String qntMedida, String embalagem, Funcionario funcionario, Fabricante fabricante, Fornecedor fornecedor, List<Categoria> categorias){
+        if (categorias == null || categorias.isEmpty()) {
+            throw new IllegalArgumentException("O produto deve ter pelo menos uma categoria.");
+        }
         this.id = id;
         this.nome = nome;
         this.valor = valor;
@@ -33,7 +40,7 @@ public class Produto {
         this.funcionario = funcionario;
         this.fabricante = fabricante;
         this.fornecedor = fornecedor;
-
+        this.categorias = new ArrayList<>(categorias);
     }
 
     public int getId() {
@@ -177,4 +184,11 @@ public class Produto {
         this.fornecedor = fornecedor;
     }
 
+    public List<Categoria> getCategorias() {
+        return categorias;
+    }
+
+    public void setCategorias(List<Categoria> categorias) {
+        this.categorias = categorias;
+    }
 }
