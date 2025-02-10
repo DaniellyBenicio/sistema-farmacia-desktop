@@ -2,6 +2,7 @@ package controllers.Produto;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import dao.Produto.ProdutoDAO;
 import models.Produto.Produto;
@@ -30,6 +31,25 @@ public class ProdutoController {
             } else {
                 throw new SQLException("Erro ao atualizar produto.", e);
             }
+        }
+    }
+
+    public static List<Produto> listarTodos(Connection conn) throws SQLException {
+        try {
+            return ProdutoDAO.listarTodos(conn);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao listar produtos.", e);
+        }
+    }
+
+    public static Produto buscarProdutoPorId(Connection conn, int id) throws SQLException {
+        if (id <= 0) {
+            throw new IllegalArgumentException("ID inválido.");
+        }
+        try {
+            return ProdutoDAO.buscarPorId(conn, id);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao buscar produto pelo ID.", e);
         }
     }
 
