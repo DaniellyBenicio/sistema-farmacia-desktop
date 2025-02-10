@@ -7,6 +7,7 @@ import dao.Funcionario.FuncionarioDAO;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Calendar;
@@ -30,7 +31,7 @@ public class PainelSuperior extends JPanel {
         inicializarMenuSuperior();
         inicializarMenuOpcoes();
 
-        SwingUtilities.invokeLater(this::abrirDialogoIdentificacaoFuncionario);
+        // SwingUtilities.invokeLater(this::abrirDialogoIdentificacaoFuncionario);
     }
 
     private void inicializarMenuSuperior() {
@@ -197,7 +198,6 @@ public class PainelSuperior extends JPanel {
         }
     }
 
-
     private void atualizarEstadoDosBotoesDeAcordoComCargo() {
         boolean isGerente = "Gerente".equalsIgnoreCase(cargoFuncionario);
 
@@ -244,7 +244,8 @@ public class PainelSuperior extends JPanel {
         painel.setBackground(new Color(200, 200, 200));
         painel.setPreferredSize(new Dimension(getWidth(), 50));
 
-        String[] itensMenu = { "Vendas", "Medicamentos", "Produtos", "Funcionários", "Fornecedores", "Clientes", "Estoque" };
+        String[] itensMenu = { "Vendas", "Medicamentos", "Produtos", "Funcionários", "Fornecedores", "Clientes",
+                "Estoque" };
         botoesMenu = new JButton[itensMenu.length];
 
         for (int i = 0; i < itensMenu.length; i++) {
@@ -266,50 +267,60 @@ public class PainelSuperior extends JPanel {
         botao.setContentAreaFilled(false);
         botao.setFocusable(false);
 
-        /*String caminhoIcone = "../../icons/";
+        String caminhoIcone = "../../icons/";
 
         switch (itensMenu[indice]) {
-            case "Vendas":
-                caminhoIcone += "";
-                break;
-            case "Fornecedores":
-                caminhoIcone += "";
-                break;
-            case "Medicamentos":
-                caminhoIcone += "";
-                break;
-            case "Produtos":
-                caminhoIcone += "";
-                break;
-            case "Funcionários":
-                caminhoIcone += "";
-                break;
-            case "Clientes":
-                caminhoIcone += "";
-                break;
-            case "Estoque":
-                caminhoIcone += "";
-                break;
+            /*
+             * case "Vendas":
+             * caminhoIcone += "";
+             * break;
+             * case "Fornecedores":
+             * caminhoIcone += "";
+             * break;
+             * case "Medicamentos":
+             * caminhoIcone += "";
+             * break;
+             * case "Produtos":
+             * caminhoIcone += "";
+             * break;
+             * case "Funcionários":
+             * caminhoIcone += "";
+             * break;
+             * 
+             * case "Clientes":
+             * caminhoIcone += "";
+             * break;
+             * 
+             * case "Estoque":
+             * caminhoIcone += "";
+             * break;
+             */
         }
 
         ImageIcon icon = new ImageIcon(getClass().getResource(caminhoIcone));
-        Image img = icon.getImage();
-        Image resizedImg = img.getScaledInstance(32, 32, java.awt.Image.SCALE_FAST);
-        icon = new ImageIcon(resizedImg);
-
+        icon = redimensionarImagem(icon, 32, 32);
         botao.setIcon(icon);
 
         botao.setHorizontalTextPosition(SwingConstants.LEFT);
         botao.setIconTextGap(15);
         botao.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-         */
         botao.addActionListener(e -> {
             selecionarOpcaoMenu(botao);
             mostrarPainel(itensMenu[indice]);
         });
 
         return botao;
-    } 
+    }
+
+    private ImageIcon redimensionarImagem(ImageIcon icon, int largura, int altura) {
+        Image img = icon.getImage();
+        BufferedImage buffered = new BufferedImage(largura, altura, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = buffered.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawImage(img, 0, 0, largura, altura, null);
+        g2d.dispose();
+        return new ImageIcon(buffered);
+    }
 
     private void selecionarOpcaoMenu(JButton opcaoSelecionada) {
         for (JButton botao : botoesMenu) {
