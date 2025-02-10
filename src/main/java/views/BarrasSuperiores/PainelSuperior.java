@@ -31,7 +31,7 @@ public class PainelSuperior extends JPanel {
         inicializarMenuSuperior();
         inicializarMenuOpcoes();
 
-        // SwingUtilities.invokeLater(this::abrirDialogoIdentificacaoFuncionario);
+        //SwingUtilities.invokeLater(this::abrirDialogoIdentificacaoFuncionario);
     }
 
     private void inicializarMenuSuperior() {
@@ -267,10 +267,9 @@ public class PainelSuperior extends JPanel {
         botao.setContentAreaFilled(false);
         botao.setFocusable(false);
 
-        String caminhoIcone = "../../icons/";
+        //String caminhoIcone = "../../icons/";
 
-        switch (itensMenu[indice]) {
-            /*
+        /*switch (itensMenu[indice]) {
              * case "Vendas":
              * caminhoIcone += "";
              * break;
@@ -294,12 +293,12 @@ public class PainelSuperior extends JPanel {
              * case "Estoque":
              * caminhoIcone += "";
              * break;
-             */
         }
 
         ImageIcon icon = new ImageIcon(getClass().getResource(caminhoIcone));
         icon = redimensionarImagem(icon, 32, 32);
         botao.setIcon(icon);
+        */
 
         botao.setHorizontalTextPosition(SwingConstants.LEFT);
         botao.setIconTextGap(15);
@@ -311,6 +310,7 @@ public class PainelSuperior extends JPanel {
 
         return botao;
     }
+    
 
     private ImageIcon redimensionarImagem(ImageIcon icon, int largura, int altura) {
         Image img = icon.getImage();

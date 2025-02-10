@@ -285,7 +285,7 @@ public class ListaDeMedicamentos extends JPanel {
 
         public RenderizadorBotoes() {
             setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-            botaoEditar = criarBotao("EDITAR", new Color(24, 39, 55), Color.WHITE);
+            botaoEditar = criarBotao("DETALHES", new Color(24, 39, 55), Color.WHITE);
             botaoExcluir = criarBotao("EXCLUIR", Color.RED, Color.WHITE);
             add(botaoEditar);
             add(botaoExcluir);
@@ -323,7 +323,7 @@ public class ListaDeMedicamentos extends JPanel {
 
         public EditorBotoes(JTextField campoTexto) {
             super(campoTexto);
-            botaoEditar = criarBotao("EDITAR", new Color(24, 39, 55), Color.WHITE);
+            botaoEditar = criarBotao("DETALHES", new Color(24, 39, 55), Color.WHITE);
             botaoExcluir = criarBotao("EXCLUIR", Color.RED, Color.WHITE);
 
             configurarAcoes();
