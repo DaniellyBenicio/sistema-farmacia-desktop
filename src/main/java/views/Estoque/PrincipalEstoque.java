@@ -51,6 +51,9 @@ public class PrincipalEstoque extends JPanel {
         JButton btnMedicamento = criarBotao("ESTOQUE DE MEDICAMENTO");
         JButton btnProduto = criarBotao("ESTOQUE DE PRODUTO");
 
+        btnMedicamento.addActionListener(e -> abrirEstoqueMedicamento());
+        btnProduto.addActionListener(e -> abrirEstoqueProduto());
+
         painelBotoes.add(btnMedicamento);
         painelBotoes.add(btnProduto);
 
@@ -68,8 +71,25 @@ public class PrincipalEstoque extends JPanel {
 
         botao.setHorizontalTextPosition(SwingConstants.LEFT);
         botao.setVerticalTextPosition(SwingConstants.CENTER);
-      //botao.setMargin(new Insets(0, 0, 0, 30));
 
         return botao;
+    }
+
+    private void abrirEstoqueMedicamento() {
+        this.removeAll();
+
+        EstoqueMedicamento estoqueMedicamento = new EstoqueMedicamento();
+        this.add(estoqueMedicamento, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
+    }
+
+    private void abrirEstoqueProduto() {
+        this.removeAll();
+
+        EstoqueProduto estoqueProduto = new EstoqueProduto();
+        this.add(estoqueProduto, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
     }
 }
