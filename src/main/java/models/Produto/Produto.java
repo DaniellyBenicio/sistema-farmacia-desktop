@@ -25,6 +25,8 @@ public class Produto {
     private Fornecedor fornecedor;
     private List<Categoria> categorias;
 
+    public Produto(){};
+    
     public Produto(int id, String nome, BigDecimal valor, int qntEstoque, LocalDate dataValidade, LocalDate dataFabricacao, String qntMedida, String embalagem, Funcionario funcionario, Fabricante fabricante, Fornecedor fornecedor, List<Categoria> categorias){
         if (categorias == null || categorias.isEmpty()) {
             throw new IllegalArgumentException("O produto deve ter pelo menos uma categoria.");
