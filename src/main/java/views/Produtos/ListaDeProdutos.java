@@ -19,8 +19,6 @@ import javax.swing.table.TableCellRenderer;
 
 import dao.Produto.ProdutoDAO;
 import models.Produto.Produto;
-import views.Medicamentos.ExcluirMedicamento;
-
 
 public class ListaDeProdutos extends JPanel {
 

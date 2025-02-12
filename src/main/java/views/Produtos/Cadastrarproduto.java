@@ -580,7 +580,7 @@ camposPanel.add(valorUnitarioField, gbc);
         Fabricante fabricante = new Fabricante();
         fabricante.setNome(fabricanteNome);
 
-        Produto produto = new Produto(fornecedorNome, valorUnitario, idFuncionario, dataValidade, dataFabricacao,
+        Produto produto = new Produto(nomeProduto, valorUnitario, idFuncionario, dataValidade, dataFabricacao,
                 qntMedida, embalagem, funcionario, fabricante, fornecedor, categoria);
 
         try (Connection conn = ConexaoBD.getConnection()) {

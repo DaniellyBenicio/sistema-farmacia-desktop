@@ -48,7 +48,7 @@ public class ExcluirProduto {
         if (resposta == 0) {
             try (Connection conn = ConexaoBD.getConnection()) {
                 ProdutoController.excluirProduto(conn, produto); 
-                JOptionPane.showMessageDialog(null, "produto excluído com sucesso!", "Sucesso",
+                JOptionPane.showMessageDialog(null, "Produto excluído com sucesso!", "Sucesso",
                         JOptionPane.INFORMATION_MESSAGE);
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(null, "Erro ao excluir produto.", "Erro",

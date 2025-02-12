@@ -188,7 +188,7 @@ public class ProdutoDAO {
                + "JOIN funcionario f ON p.funcionario_id = f.id "
                + "JOIN fabricante fa ON p.fabricante_id = fa.id "
                + "JOIN fornecedor fo ON p.fornecedor_id = fo.id "
-               + "JOIN Categoria c ON p.id = p.produto_id "
+               + "JOIN categoria c ON p.categoria_id = c.id "
                + "WHERE p.id = ?";
 
         Produto produto = null;
