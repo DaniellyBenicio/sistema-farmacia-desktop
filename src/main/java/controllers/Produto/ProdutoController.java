@@ -19,6 +19,21 @@ public class ProdutoController {
         }
     }
 
+    public static void cadastrarProduto(Connection conn, Produto p) throws SQLException{
+        if(p == null || p.getId() <=0){
+            throw new IllegalArgumentException("O produto não pode ser nulo.");
+        }
+        try{
+            ProdutoDAO.cadastrarProduto(conn, p);
+        } catch(SQLException e){
+            if (e.getMessage().contains("Duplicate entry")) {
+                throw new SQLException("Produto já cadastrado na base de dados.");
+            } else {
+                throw new SQLException("Erro ao atualizar produto.", e);
+            }
+        }
+    }
+
     public static void atualizarProduto(Connection conn, Produto p) throws SQLException {
         if (p == null || p.getId() <=0) {
             throw new IllegalArgumentException("O produto não pode ser nulo.");
@@ -26,11 +41,7 @@ public class ProdutoController {
         try {
             ProdutoDAO.atualizarProduto(conn, p);
         } catch (SQLException e) {
-            if (e.getMessage().contains("Duplicate entry")) {
-                throw new SQLException("Produto já cadastrado na base de dados.");
-            } else {
-                throw new SQLException("Erro ao atualizar produto.", e);
-            }
+            throw new SQLException("Erro ao atualizar produto.", e);
         }
     }
 
