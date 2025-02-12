@@ -23,6 +23,7 @@ import views.Fornecedor.ListaDeFornecedores;
 import views.Funcionario.CadastrarFuncionario;
 import views.Funcionario.ListaDeFuncionarios;
 import views.Medicamentos.ListaDeMedicamentos;
+import views.Produtos.ListaDeProdutos;
 import views.Vendas.RealizarVenda;
 
 public class Farmacia extends JFrame {
@@ -56,6 +57,7 @@ public class Farmacia extends JFrame {
         painelCentral.add(new ListaDeFuncionarios(conexão), "ListaDeFuncionarios");
         painelCentral.add(new ListaDeClientes(conexão), "ListaDeClientes");
         painelCentral.add(new ListaDeMedicamentos(conexão), "ListaDeMedicamentos");
+        painelCentral.add(new ListaDeProdutos(conexão), "ListaDeProdutos");
         painelCentral.add(new PrincipalEstoque(), "GerenciamentoDeEstoque");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
@@ -64,7 +66,6 @@ public class Farmacia extends JFrame {
 
         layoutCartao.show(painelCentral, "Vendas");
 
-        // Ajustando a responsividade
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
                 ajusteLayout();

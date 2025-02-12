@@ -1,9 +1,6 @@
 package views.BarrasSuperiores;
 
 import javax.swing.*;
-
-import dao.Funcionario.FuncionarioDAO;
-
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -13,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Calendar;
 
 import main.ConexaoBD;
+import dao.Funcionario.FuncionarioDAO;
 
 public class PainelSuperior extends JPanel {
     private JLabel labelTitulo, labelFuncionario, labelData;
@@ -267,38 +265,39 @@ public class PainelSuperior extends JPanel {
         botao.setContentAreaFilled(false);
         botao.setFocusable(false);
 
-        //String caminhoIcone = "../../icons/";
+        // String caminhoIcone = "../../icons/";
 
-        /*switch (itensMenu[indice]) {
-             * case "Vendas":
-             * caminhoIcone += "";
-             * break;
-             * case "Fornecedores":
-             * caminhoIcone += "";
-             * break;
-             * case "Medicamentos":
-             * caminhoIcone += "";
-             * break;
-             * case "Produtos":
-             * caminhoIcone += "";
-             * break;
-             * case "Funcionários":
-             * caminhoIcone += "";
-             * break;
-             * 
-             * case "Clientes":
-             * caminhoIcone += "";
-             * break;
-             * 
-             * case "Estoque":
-             * caminhoIcone += "";
-             * break;
-        }
-
-        ImageIcon icon = new ImageIcon(getClass().getResource(caminhoIcone));
-        icon = redimensionarImagem(icon, 32, 32);
-        botao.setIcon(icon);
-        */
+        /*
+         * switch (itensMenu[indice]) {
+         * case "Vendas":
+         * caminhoIcone += "";
+         * break;
+         * case "Fornecedores":
+         * caminhoIcone += "";
+         * break;
+         * case "Medicamentos":
+         * caminhoIcone += "";
+         * break;
+         * case "Produtos":
+         * caminhoIcone += "";
+         * break;
+         * case "Funcionários":
+         * caminhoIcone += "";
+         * break;
+         * 
+         * case "Clientes":
+         * caminhoIcone += "";
+         * break;
+         * 
+         * case "Estoque":
+         * caminhoIcone += "";
+         * break;
+         * }
+         * 
+         * ImageIcon icon = new ImageIcon(getClass().getResource(caminhoIcone));
+         * icon = redimensionarImagem(icon, 32, 32);
+         * botao.setIcon(icon);
+         */
 
         botao.setHorizontalTextPosition(SwingConstants.LEFT);
         botao.setIconTextGap(15);
@@ -310,7 +309,6 @@ public class PainelSuperior extends JPanel {
 
         return botao;
     }
-    
 
     private ImageIcon redimensionarImagem(ImageIcon icon, int largura, int altura) {
         Image img = icon.getImage();
@@ -356,6 +354,9 @@ public class PainelSuperior extends JPanel {
                 break;
             case "Medicamentos":
                 layoutAlternativo.show(painelDeVisualizacao, "ListaDeMedicamentos");
+                break;
+            case "Produtos":
+                layoutAlternativo.show(painelDeVisualizacao, "ListaDeProdutos");
                 break;
             case "Fornecedores":
                 layoutAlternativo.show(painelDeVisualizacao, "ListaDeFornecedores");

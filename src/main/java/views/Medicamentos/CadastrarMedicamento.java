@@ -12,8 +12,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -28,11 +26,10 @@ import controllers.Categoria.CategoriaController;
 import controllers.Fabricante.FabricanteController;
 import controllers.Fornecedor.FornecedorController;
 import controllers.Medicamento.MedicamentoController;
-import dao.Categoria.CategoriaDAO;
-import dao.Fabricante.FabricanteDAO;
+
 import dao.Fornecedor.FornecedorDAO;
 import dao.Funcionario.FuncionarioDAO;
-import dao.Medicamento.MedicamentoDAO;
+
 import main.ConexaoBD;
 import models.Categoria.Categoria;
 import models.Fabricante.Fabricante;
@@ -41,6 +38,7 @@ import models.Funcionario.Funcionario;
 import models.Medicamento.Medicamento;
 import models.Medicamento.Medicamento.Tipo;
 import models.Medicamento.Medicamento.TipoReceita;
+
 import views.BarrasSuperiores.PainelSuperior;
 import views.Fornecedor.CadastrarFornecedor;
 
@@ -385,7 +383,6 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(valorUnitarioLabel, gbc);
 
-        // Usando Locale para o Brasil
         NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
         format.setMinimumFractionDigits(2);
         format.setMaximumFractionDigits(2);
@@ -398,7 +395,7 @@ public class CadastrarMedicamento extends JPanel {
             }
         };
         formatter.setAllowsInvalid(false);
-        formatter.setOverwriteMode(false); // Permitir que o usuário digite livremente
+        formatter.setOverwriteMode(false); 
         formatter.setMinimum(0.0);
         formatter.setMaximum(999999.99);
 

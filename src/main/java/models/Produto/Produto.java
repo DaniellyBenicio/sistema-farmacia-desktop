@@ -13,7 +13,7 @@ import models.Fabricante.Fabricante;
 
 public class Produto {
     private int id;
-    private String nome;
+    private String nome; 
     private BigDecimal valor;
     private int qntEstoque;
     private LocalDate dataValidade;

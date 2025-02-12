@@ -21,7 +21,6 @@ import dao.Produto.ProdutoDAO;
 import models.Produto.Produto;
 
 
-
 public class ListaDeProdutos extends JPanel {
 
     private JTable tabela;
