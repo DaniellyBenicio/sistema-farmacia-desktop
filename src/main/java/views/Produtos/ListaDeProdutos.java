@@ -19,6 +19,7 @@ import javax.swing.table.TableCellRenderer;
 
 import dao.Produto.ProdutoDAO;
 import models.Produto.Produto;
+import views.Medicamentos.ExcluirMedicamento;
 
 
 public class ListaDeProdutos extends JPanel {
@@ -377,9 +378,9 @@ public class ListaDeProdutos extends JPanel {
 
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
-                    int produtoId = produtos.get(indiceLinha).getId();
-                    System.out.print(produtoId);
-                    ExcluirProduto.excluirProduto(produtoId);
+
+                    int produto_id = produtos.get(indiceLinha).getId();
+                    ExcluirProduto.excluirProduto(produto_id);
                     atualizarTabela();
                 }
             });
