@@ -395,7 +395,7 @@ public class CadastrarMedicamento extends JPanel {
             }
         };
         formatter.setAllowsInvalid(false);
-        formatter.setOverwriteMode(false); 
+        formatter.setOverwriteMode(false);
         formatter.setMinimum(0.0);
         formatter.setMaximum(999999.99);
 
