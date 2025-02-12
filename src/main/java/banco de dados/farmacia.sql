@@ -94,22 +94,15 @@ create table produto (
     funcionario_id int not null,
     fabricante_id int not null,
     fornecedor_id int not null,
+    categoria_id int not null,
     foreign key (funcionario_id) references funcionario (id),
     foreign key (fabricante_id) references fabricante (id),
     foreign key (fornecedor_id) references fornecedor (id),    
-    unique (nome, qntMedida, embalagem, fabricante_id, dataFabricacao, dataValidade)
-);
-
-create table prodCategoria(
-	produto_id int not null,
-    categoria_id int not null,    
-    primary key (produto_id, categoria_id),
-    foreign key (produto_id) references produto (id) on delete cascade,
-    foreign key (categoria_id) references categoria (id) on delete cascade
+    foreign key (categoria_id) references categoria (id),
+    unique (nome, qntMedida, embalagem, fabricante_id, dataFabricacao, dataValidade, categoria_id)
 );
 
 drop database farmacia;
-
 
 insert into cargo values (1, 'Gerente');
 insert into funcionario values (1, 'Danielly', '88998045537', 'd@gmail.com', 1, true);

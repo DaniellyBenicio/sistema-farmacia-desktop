@@ -5,9 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 import java.sql.Date;
 import java.time.YearMonth;
 
@@ -18,7 +17,7 @@ import models.Fornecedor.Fornecedor;
 import models.Funcionario.Funcionario;
 import dao.Fabricante.FabricanteDAO;
 import dao.Fornecedor.FornecedorDAO;
-import dao.ProdutoCategoria.ProdutoCategoriaDAO;
+import dao.Categoria.CategoriaDAO;
 
 public class ProdutoDAO {
     public static boolean produtoExiste(Connection conn, Produto p) throws SQLException {
@@ -43,6 +42,7 @@ public class ProdutoDAO {
             return;
         }
 
+        int categoriaId = CategoriaDAO.criarCategoria(conn, p.getCategoria());
         int fabricanteId = FabricanteDAO.criarFabricante(conn, p.getFabricante());
 
         Fornecedor fornecedorExistente = FornecedorDAO.fornecedorPorId(conn, p.getFornecedor().getId());
@@ -52,7 +52,7 @@ public class ProdutoDAO {
 
         Fornecedor fornecedor = FornecedorDAO.fornecedorPorId(conn, p.getFornecedor().getId());
 
-        String sql = "insert into produto (nome, valor, qntEstoque, dataValidade, dataFabricacao, qntMedida, embalagem, funcionario_id, fabricante_id, fornecedor_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "insert into produto (nome, valor, qntEstoque, dataValidade, dataFabricacao, qntMedida, embalagem, funcionario_id, fabricante_id, fornecedor_id, categoria_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, p.getNome());
             pstmt.setBigDecimal(2, p.getValor());
@@ -64,17 +64,21 @@ public class ProdutoDAO {
             pstmt.setInt(8, p.getFuncionario().getId());
             pstmt.setInt(9, fabricanteId);
             pstmt.setInt(10, fornecedor.getId());
+            pstmt.setInt(11, categoriaId);
 
-            pstmt.executeUpdate(); 
-    
+
+            pstmt.executeUpdate();
+
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    int produtoId = generatedKeys.getInt(1);
-                    ProdutoCategoriaDAO.associarProdutoACategorias(conn, produtoId, p.getCategorias());
+                    p.setId(generatedKeys.getInt(1));
                 } else {
-                    throw new SQLException("Falha ao obter o ID do produto inserido.");
+                    throw new SQLException("Erro ao obter ID do produto.");
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("Erro ao cadastrar produto: " + e.getMessage());
+            throw e;
         }
     }
 
@@ -83,6 +87,9 @@ public class ProdutoDAO {
             System.out.println("O produto não existe na base de dados.");
             return;
         }
+
+        int categoriaId = CategoriaDAO.criarCategoria(conn, p.getCategoria());
+        int fabricanteId = FabricanteDAO.criarFabricante(conn, p.getFabricante());
     
         Fornecedor fornecedorExistente = FornecedorDAO.fornecedorPorId(conn, p.getFornecedor().getId());
         if (fornecedorExistente == null) {
@@ -91,7 +98,7 @@ public class ProdutoDAO {
     
         Fornecedor fornecedor = FornecedorDAO.fornecedorPorId(conn, p.getFornecedor().getId());
     
-        String sql = "update produto set nome = ?, valor = ?, qntEstoque = ?, dataValidade = ?, dataFabricacao = ?, qntMedida = ?, embalagem = ?, funcionario_id = ?, fabricante_id = ?, fornecedor_id = ? where id = ?";
+        String sql = "update produto set nome = ?, valor = ?, qntEstoque = ?, dataValidade = ?, dataFabricacao = ?, qntMedida = ?, embalagem = ?, funcionario_id = ?, fabricante_id = ?, fornecedor_id = ?, categoria_id = ? where id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, p.getNome());
             pstmt.setBigDecimal(2, p.getValor());
@@ -103,12 +110,10 @@ public class ProdutoDAO {
             pstmt.setInt(8, p.getFuncionario().getId());
             pstmt.setInt(9, p.getFabricante().getId());
             pstmt.setInt(10, fornecedor.getId());
+            pstmt.setInt(11, categoriaId);            
             pstmt.setInt(11, p.getId());
     
             pstmt.executeUpdate();
-                
-            ProdutoCategoriaDAO.desassociarProdutoACategorias(conn, p.getId());
-            ProdutoCategoriaDAO.associarProdutoACategorias(conn, p.getId(), p.getCategorias());
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar produto: " + e.getMessage());
             throw e;
@@ -116,7 +121,7 @@ public class ProdutoDAO {
     }
 
     public static List<Produto> listarTodos(Connection conn) throws SQLException {
-        Map<Integer, Produto> produtoMap = new HashMap<>();
+        List<Produto> produtos = new ArrayList<>();        
         String sql = "SELECT p.id, p.nome, p.valor, p.qntEstoque, p.dataValidade, "
                         + "p.dataFabricacao, p.qntMedida, p.embalagem, "
                         + "f.id AS funcionario_id, f.nome AS funcionario_nome, "
@@ -131,55 +136,46 @@ public class ProdutoDAO {
                         + "JOIN categoria c ON pc.categoria_id = c.id";
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+            ResultSet rs = pstmt.executeQuery()) {
             
-            while (rs.next()) {
-                int produtoId = rs.getInt("id");
+            while (rs.next()) { 
+                Produto prod = new Produto();
+                prod = new Produto();
+                prod.setId(rs.getInt("id"));
+                prod.setNome(rs.getString("nome"));
+                prod.setValor(rs.getBigDecimal("valor"));
+                prod.setQntEstoque(rs.getInt("qntEstoque"));
+                prod.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
+                prod.setDataFabricacao(YearMonth.from(rs.getDate("dataFabricacao").toLocalDate()));
+                prod.setQntMedida(rs.getString("qntMedida"));
+                prod.setEmbalagem(rs.getString("embalagem"));
     
-                Produto produto = produtoMap.get(produtoId);
-                if (produto == null) {
-                    produto = new Produto();
-                    produto.setId(produtoId);
-                    produto.setNome(rs.getString("nome"));
-                    produto.setValor(rs.getBigDecimal("valor"));
-                    produto.setQntEstoque(rs.getInt("qntEstoque"));
-                    produto.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
-                    produto.setDataFabricacao(YearMonth.from(rs.getDate("dataFabricacao").toLocalDate()));
-                    produto.setQntMedida(rs.getString("qntMedida"));
-                    produto.setEmbalagem(rs.getString("embalagem"));
+                Funcionario funcionario = new Funcionario();
+                funcionario.setId(rs.getInt("funcionario_id"));
+                funcionario.setNome(rs.getString("funcionario_nome"));
+                prod.setFuncionario(funcionario);
+                
+                Fabricante fabricante = new Fabricante();
+                fabricante.setId(rs.getInt("fabricante_id"));
+                prod.setFabricante(fabricante);
     
-                    Funcionario funcionario = new Funcionario();
-                    funcionario.setId(rs.getInt("funcionario_id"));
-                    funcionario.setNome(rs.getString("funcionario_nome"));
-                    produto.setFuncionario(funcionario);
+                Fornecedor fornecedor = new Fornecedor();
+                fornecedor.setId(rs.getInt("fornecedor_id"));
+                fornecedor.setNome(rs.getString("fornecedor_nome"));
+                prod.setFornecedor(fornecedor);
     
-                    Fabricante fabricante = new Fabricante();
-                    fabricante.setId(rs.getInt("fabricante_id"));
-                    fabricante.setNome(rs.getString("fabricante_nome"));
-                    produto.setFabricante(fabricante);
-    
-                    Fornecedor fornecedor = new Fornecedor();
-                    fornecedor.setId(rs.getInt("fornecedor_id"));
-                    fornecedor.setNome(rs.getString("fornecedor_nome"));
-                    produto.setFornecedor(fornecedor);
-    
-                    produto.setCategorias(new ArrayList<>());
-                    produtoMap.put(produtoId, produto);
+                Categoria cat = new Categoria();
+                cat.setId(rs.getInt("categoria_id"));
+                cat.setNome(rs.getString("categoria_nome"));
+                prod.setCategoria(cat);
+
+                produtos.add(prod);
                 }
-    
-                int categoriaId = rs.getInt("categoria_id");
-                if (categoriaId > 0) {
-                    Categoria categoria = new Categoria();
-                    categoria.setId(categoriaId);
-                    categoria.setNome(rs.getString("categoria_nome"));
-                    produto.getCategorias().add(categoria);
-                }
-            }
         } catch (SQLException e) {
             System.err.println("Erro ao listar produtos: " + e.getMessage());
             throw e;
         }               
-        return new ArrayList<>(produtoMap.values());
+        return produtos;
     }
 
     public static Produto buscarPorId(Connection conn, int id) throws SQLException {
@@ -214,12 +210,6 @@ public class ProdutoDAO {
                     produto.setQntMedida(rs.getString("qntMedida"));
                     produto.setEmbalagem(rs.getString("embalagem"));
     
-                    Categoria categoria = new Categoria();
-                    categoria.setId(rs.getInt("categoria_id"));
-                    categoria.setNome(rs.getString("categoria_nome"));
-                    produto.setCategorias(new ArrayList<>());
-                    produto.getCategorias().add(categoria);
-    
                     Funcionario funcionario = new Funcionario();
                     funcionario.setId(rs.getInt("funcionario_id"));
                     funcionario.setNome(rs.getString("funcionario_nome"));
@@ -234,6 +224,11 @@ public class ProdutoDAO {
                     fornecedor.setId(rs.getInt("fornecedor_id"));
                     fornecedor.setNome(rs.getString("fornecedor_nome"));
                     produto.setFornecedor(fornecedor);
+
+                    Categoria categoria = new Categoria();
+                    categoria.setId(rs.getInt("categoria_id"));
+                    categoria.setNome(rs.getString("categoria_nome"));
+                    produto.setCategoria(categoria);
                 }
             }
         } catch (SQLException e) {
