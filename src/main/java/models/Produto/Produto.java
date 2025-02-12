@@ -3,9 +3,6 @@ package models.Produto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.List;
-
 import models.Funcionario.Funcionario;
 import models.Fornecedor.Fornecedor;
 import models.Categoria.Categoria;
@@ -23,14 +20,11 @@ public class Produto {
     private Funcionario funcionario;
     private Fabricante fabricante;
     private Fornecedor fornecedor;
-    private List<Categoria> categorias;
+    private Categoria categoria;
 
     public Produto(){};
     
-    public Produto(int id, String nome, BigDecimal valor, int qntEstoque, LocalDate dataValidade, LocalDate dataFabricacao, String qntMedida, String embalagem, Funcionario funcionario, Fabricante fabricante, Fornecedor fornecedor, List<Categoria> categorias){
-        if (categorias == null || categorias.isEmpty()) {
-            throw new IllegalArgumentException("O produto deve ter pelo menos uma categoria.");
-        }
+    public Produto(int id, String nome, BigDecimal valor, int qntEstoque, LocalDate dataValidade, LocalDate dataFabricacao, String qntMedida, String embalagem, Funcionario funcionario, Fabricante fabricante, Fornecedor fornecedor, Categoria categoria){
         this.id = id;
         this.nome = nome;
         this.valor = valor;
@@ -42,7 +36,7 @@ public class Produto {
         this.funcionario = funcionario;
         this.fabricante = fabricante;
         this.fornecedor = fornecedor;
-        this.categorias = new ArrayList<>(categorias);
+        this.categoria = categoria;
     }
 
     public int getId() {
@@ -151,7 +145,6 @@ public class Produto {
         }
         this.embalagem = embalagem;
     }
-    //exs: lata, frasco, pacote, caixa, bisnaga, tubo, pote, garrafa, vidro, rolo, spray, refil, pacote
 
     public Funcionario getFuncionario() {
         return funcionario;
@@ -186,11 +179,14 @@ public class Produto {
         this.fornecedor = fornecedor;
     }
 
-    public List<Categoria> getCategorias() {
-        return categorias;
+    public Categoria getCategoria() {
+        return categoria;
     }
 
-    public void setCategorias(List<Categoria> categorias) {
-        this.categorias = categorias;
+    public void setCategoria(Categoria categoria) {
+        if (categoria == null) {
+            throw new IllegalArgumentException("A categoria não pode ser nula.");
+        }
+        this.categoria = categoria;
     }
 }
