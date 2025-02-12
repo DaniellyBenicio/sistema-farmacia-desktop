@@ -378,6 +378,7 @@ public class ListaDeProdutos extends JPanel {
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
                     int produtoId = produtos.get(indiceLinha).getId();
+                    System.out.print(produtoId);
                     ExcluirProduto.excluirProduto(produtoId);
                     atualizarTabela();
                 }
