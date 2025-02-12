@@ -236,6 +236,24 @@ public class ProdutoDAO {
     
         return produto;
     }
+
+    public static ArrayList<String> produtoCategoria(Connection conn) throws SQLException {
+        String sql = "SELECT DISTINCT c.nome AS categoria " +
+                     "FROM produto p " +
+                     "INNER JOIN categoria c ON p.categoria_id = c.id " +
+                     "ORDER BY c.nome ASC";
+        ArrayList<String> prodCategoria = new ArrayList<>();
+    
+        try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                prodCategoria.add(rs.getString("categoria"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar categoria dos produtos: " + e.getMessage());
+            throw e;
+        }
+        return prodCategoria;
+    }
     
     public static void deletarProduto(Connection conn, Produto p) throws SQLException {
         String sql = "delete from produto where id = ?";
