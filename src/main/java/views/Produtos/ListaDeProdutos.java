@@ -71,19 +71,19 @@ public class ListaDeProdutos extends JPanel {
     }
 
     private void atualizarProdutosFiltrados(List<Produto> produtos) {
-        produtosFiltrados.clear();
-
-        NumberFormat numberFormat = NumberFormat.getInstance();
-
+        produtosFiltrados.clear(); 
+    
+        NumberFormat numberFormat = NumberFormat.getInstance(); 
         for (Produto produto : produtos) {
-            Object[] dadosProduto = new Object[5];
-            dadosProduto[0] = produto.getNome();
-            dadosProduto[1] = ((Produto) produto.getCategorias()).getNome();
-            dadosProduto[2] = formatarData(produto.getDataValidade());
-            dadosProduto[3] = numberFormat.format(produto.getValor());
-            dadosProduto[4] = "";
-
-            produtosFiltrados.add(dadosProduto);
+            Object[] dadosProduto = new Object[5]; 
+            dadosProduto[0] = produto.getNome(); 
+            dadosProduto[1] = produto.getCategoria().getNome();
+            dadosProduto[0] = produto.getNome(); 
+            dadosProduto[2] = formatarData(produto.getDataValidade()); 
+            dadosProduto[3] = numberFormat.format(produto.getValor()); 
+            dadosProduto[4] = ""; 
+    
+            produtosFiltrados.add(dadosProduto); 
         }
     }
 
@@ -242,6 +242,7 @@ public class ListaDeProdutos extends JPanel {
 
     private void filtrarProdutos(String filtro) {
         NumberFormat numberFormat = NumberFormat.getInstance();
+        
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
             atualizarProdutosFiltrados(produtos);
         } else {
@@ -249,7 +250,7 @@ public class ListaDeProdutos extends JPanel {
                     .filter(produto -> produto.getNome().contains(filtro))
                     .map(produto -> new Object[] {
                             produto.getNome(),
-                            ((Produto) produto.getCategorias()).getNome(),
+                            produto.getCategoria().getNome(),
                             formatarData(produto.getDataValidade()),
                             numberFormat.format(produto.getValor()),
                     })

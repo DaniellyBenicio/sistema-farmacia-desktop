@@ -1,6 +1,8 @@
 package views.Produtos;
 
 import javax.swing.*;
+import javax.swing.text.MaskFormatter;
+import javax.swing.text.NumberFormatter;
 
 import org.w3c.dom.events.MouseEvent;
 
@@ -46,8 +48,6 @@ public class CadastrarProduto extends JPanel {
     private JTextField estoqueField;
     private JFormattedTextField valorUnitarioField;
     private JComboBox<String> categoriaComboBox;
-    private List<JCheckBox> checkboxList = new ArrayList<>(); // Lista para armazenar checkboxes de categorias
-    private JTextField categoriaField;
 
     public CadastrarProduto() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -146,14 +146,6 @@ public class CadastrarProduto extends JPanel {
         gbc.gridx = 2;
         gbc.gridy = 1;
         camposPanel.add(categoriaComboBox, gbc);
-
-        categoriaField = new JTextField();
-        categoriaField.setPreferredSize(new Dimension(200, 40));
-        estilizarCamposFormulario(categoriaField, fieldFont);
-        categoriaField.setVisible(false);
-        gbc.gridx = 2;
-        gbc.gridy = 1;
-        camposPanel.add(categoriaField, gbc);
 
         JLabel fabricanteLabel = new JLabel("Fabricante");
         fabricanteLabel.setFont(labelFont);
@@ -273,46 +265,79 @@ public class CadastrarProduto extends JPanel {
         });
 
         // Data de Fabricação
-        JLabel dataFabricacaoLabel = new JLabel("Fabricação (Mês/Ano)");
-        dataFabricacaoLabel.setFont(labelFont);
-        gbc.gridx = 1;
-        gbc.gridy = 4;
-        camposPanel.add(dataFabricacaoLabel, gbc);
+       // Data de Fabricação
+JLabel dataFabricacaoLabel = new JLabel("Fabricação (Mês/Ano)");
+dataFabricacaoLabel.setFont(labelFont);
+gbc.gridx = 1;
+gbc.gridy = 4;
+camposPanel.add(dataFabricacaoLabel, gbc);
 
-        dataFabricacaoField = new JFormattedTextField();
-        dataFabricacaoField.setPreferredSize(new Dimension(170, 40));
-        estilizarCamposFormulario(dataFabricacaoField, fieldFont);
-        gbc.gridx = 1;
-        gbc.gridy = 5;
-        camposPanel.add(dataFabricacaoField, gbc);
+try {
+    MaskFormatter dataFormatter = new MaskFormatter("##/####");
+    dataFormatter.setPlaceholderCharacter('_'); // Define o caractere de preenchimento opcional
+    dataFabricacaoField = new JFormattedTextField(dataFormatter);
+    dataFabricacaoField.setPreferredSize(new Dimension(170, 40));
+    estilizarCamposFormulario(dataFabricacaoField, fieldFont);
+} catch (ParseException e) {
+    e.printStackTrace();
+}
 
-        // Data de Validade
-        JLabel dataValidadeLabel = new JLabel("Validade (Mês/Ano)");
-        dataValidadeLabel.setFont(labelFont);
-        gbc.gridx = 2;
-        gbc.gridy = 4;
-        camposPanel.add(dataValidadeLabel, gbc);
+gbc.gridx = 1;
+gbc.gridy = 5;
+camposPanel.add(dataFabricacaoField, gbc);
 
-        dataValidadeField = new JFormattedTextField();
-        dataValidadeField.setPreferredSize(new Dimension(170, 40));
-        estilizarCamposFormulario(dataValidadeField, fieldFont);
-        gbc.gridx = 2;
-        gbc.gridy = 5;
-        camposPanel.add(dataValidadeField, gbc);
+// Data de Validade
+JLabel dataValidadeLabel = new JLabel("Validade (Mês/Ano)");
+dataValidadeLabel.setFont(labelFont);
+gbc.gridx = 2;
+gbc.gridy = 4;
+camposPanel.add(dataValidadeLabel, gbc);
 
-        // Valor Unitário
-        JLabel valorUnitarioLabel = new JLabel("Valor Unitário (R$)");
-        valorUnitarioLabel.setFont(labelFont);
-        gbc.gridx = 0;
-        gbc.gridy = 6;
-        camposPanel.add(valorUnitarioLabel, gbc);
+try {
+    MaskFormatter dataFormatter = new MaskFormatter("##/####");
+    dataFormatter.setPlaceholderCharacter('_'); 
+    dataValidadeField = new JFormattedTextField(dataFormatter);
+    dataValidadeField.setPreferredSize(new Dimension(170, 40));
+    estilizarCamposFormulario(dataValidadeField, fieldFont);
+} catch (ParseException e) {
+    e.printStackTrace();
+}
 
-        valorUnitarioField = new JFormattedTextField();
-        valorUnitarioField.setPreferredSize(new Dimension(120, 40));
-        estilizarCamposFormulario(valorUnitarioField, fieldFont);
-        gbc.gridx = 0;
-        gbc.gridy = 7;
-        camposPanel.add(valorUnitarioField, gbc);
+gbc.gridx = 2;
+gbc.gridy = 5;
+camposPanel.add(dataValidadeField, gbc);
+
+// Valor Unitário
+JLabel valorUnitarioLabel = new JLabel("Valor Unitário (R$)");
+valorUnitarioLabel.setFont(labelFont);
+gbc.gridx = 0;
+gbc.gridy = 6;
+camposPanel.add(valorUnitarioLabel, gbc);
+
+NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
+format.setMinimumFractionDigits(2);
+format.setMaximumFractionDigits(2);
+NumberFormatter formatter = new NumberFormatter(format) {
+    @Override
+    public Object stringToValue(String text) throws ParseException {
+        if (text == null || text.isEmpty()) {
+            return null;
+        }
+        return super.stringToValue(text);
+    }
+};
+formatter.setAllowsInvalid(false);
+formatter.setOverwriteMode(false);
+formatter.setMinimum(0.0);
+formatter.setMaximum(999999.99);
+
+valorUnitarioField = new JFormattedTextField(formatter);
+valorUnitarioField.setPreferredSize(new Dimension(120, 40));
+estilizarCamposFormulario(valorUnitarioField, fieldFont);
+gbc.gridx = 0;
+gbc.gridy = 7;
+camposPanel.add(valorUnitarioField, gbc);
+
 
         return camposPanel;
     }
@@ -374,7 +399,7 @@ public class CadastrarProduto extends JPanel {
         int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
 
         String nomeProduto = nomeProdutoField.getText().trim().toLowerCase();
-        List<Categoria> categoriasSelecionadas = new ArrayList<>();
+        String categoriaProduto = (String) categoriaComboBox.getSelectedItem();
         String embalagem = (String) embalagemComboBox.getSelectedItem();
         String qntMedida = qntMedidaField.getText().trim();
         String fabricanteNome = fabricanteField.getText().trim();
@@ -382,14 +407,6 @@ public class CadastrarProduto extends JPanel {
         String fabricacaoData = dataFabricacaoField.getText().trim();
         String validadeData = dataValidadeField.getText().trim();
         String valorUnitarioTexto = valorUnitarioField.getText().trim();
-
-        for (JCheckBox checkBox : checkboxList) {
-            if (checkBox.isSelected()) {
-                Categoria categoria = new Categoria();
-                categoria.setNome(checkBox.getText());
-                categoriasSelecionadas.add(categoria);
-            }
-        }
 
         StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
         boolean hasError = false;
@@ -415,7 +432,7 @@ public class CadastrarProduto extends JPanel {
             hasError = true;
         }
 
-        if (categoriasSelecionadas.isEmpty()) {
+        if (categoriaProduto.isEmpty()) {
             errorMessage.append("Pelo menos uma categoria deve ser selecionada.\n");
             hasError = true;
         }
@@ -557,8 +574,14 @@ public class CadastrarProduto extends JPanel {
             return;
         }
 
-        Produto produto = new Produto(fornecedorNome, valorUnitario, estoque, dataValidade, dataFabricacao, qntMedida,
-                embalagem, funcionario, fa, fornecedor, categoriasSelecionadas);
+        Categoria categoria = new Categoria();
+        categoria.setNome(categoriaProduto);
+
+        Fabricante fabricante = new Fabricante();
+        fabricante.setNome(fabricanteNome);
+
+        Produto produto = new Produto(fornecedorNome, valorUnitario, idFuncionario, dataValidade, dataFabricacao,
+                qntMedida, embalagem, funcionario, fabricante, fornecedor, categoria);
 
         try (Connection conn = ConexaoBD.getConnection()) {
             ProdutoDAO.cadastrarProduto(conn, produto);

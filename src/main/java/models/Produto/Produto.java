@@ -24,8 +24,7 @@ public class Produto {
 
     public Produto(){};
     
-    public Produto(int id, String nome, BigDecimal valor, int qntEstoque, LocalDate dataValidade, LocalDate dataFabricacao, String qntMedida, String embalagem, Funcionario funcionario, Fabricante fabricante, Fornecedor fornecedor, Categoria categoria){
-        this.id = id;
+    public Produto(String nome, BigDecimal valor, int qntEstoque, LocalDate dataValidade, LocalDate dataFabricacao, String qntMedida, String embalagem, Funcionario funcionario, Fabricante fabricante, Fornecedor fornecedor, Categoria categoria){
         this.nome = nome;
         this.valor = valor;
         this.qntEstoque = qntEstoque;

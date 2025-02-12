@@ -132,8 +132,7 @@ public class ProdutoDAO {
                         + "JOIN funcionario f ON p.funcionario_id = f.id "
                         + "JOIN fabricante fa ON p.fabricante_id = fa.id "
                         + "JOIN fornecedor fo ON p.fornecedor_id = fo.id "
-                        + "JOIN ProdCategoria pc ON p.id = pc.produto_id "
-                        + "JOIN categoria c ON pc.categoria_id = c.id";
+                        + "JOIN categoria c ON p.categoria_id = c.id";
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery()) {
@@ -189,8 +188,7 @@ public class ProdutoDAO {
                + "JOIN funcionario f ON p.funcionario_id = f.id "
                + "JOIN fabricante fa ON p.fabricante_id = fa.id "
                + "JOIN fornecedor fo ON p.fornecedor_id = fo.id "
-               + "JOIN ProdCategoria pc ON p.id = pc.produto_id "
-               + "JOIN categoria c ON pc.categoria_id = c.id "
+               + "JOIN Categoria c ON p.id = p.produto_id "
                + "WHERE p.id = ?";
 
         Produto produto = null;
