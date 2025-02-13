@@ -1,11 +1,14 @@
 package views.Estoque;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.sql.Connection;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -16,7 +19,14 @@ import javax.swing.SwingConstants;
 
 public class PrincipalEstoque extends JPanel {
 
-    public PrincipalEstoque() {
+    private Connection conn;
+    private CardLayout layoutCartao;
+    private JPanel painelCentral;
+
+    public PrincipalEstoque(Connection conn, CardLayout layoutCartao, JPanel painelCentral) {
+        this.conn = conn;
+        this.layoutCartao = layoutCartao;
+        this.painelCentral = painelCentral;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
@@ -48,8 +58,8 @@ public class PrincipalEstoque extends JPanel {
         painelBotoes.setBorder(BorderFactory.createEmptyBorder(90, 10, 0, 50));
         painelBotoes.setBackground(Color.WHITE);
 
-        JButton btnMedicamento = criarBotao("ESTOQUE DE MEDICAMENTO");
-        JButton btnProduto = criarBotao("ESTOQUE DE PRODUTO");
+        JButton btnMedicamento = criarBotao("ESTOQUE DE MEDICAMENTOS");
+        JButton btnProduto = criarBotao("ESTOQUE DE PRODUTOS");
 
         btnMedicamento.addActionListener(e -> abrirEstoqueMedicamento());
         btnProduto.addActionListener(e -> abrirEstoqueProduto());
@@ -76,12 +86,7 @@ public class PrincipalEstoque extends JPanel {
     }
 
     private void abrirEstoqueMedicamento() {
-        this.removeAll();
-
-        EstoqueMedicamento estoqueMedicamento = new EstoqueMedicamento();
-        this.add(estoqueMedicamento, BorderLayout.CENTER);
-        this.revalidate();
-        this.repaint();
+        layoutCartao.show(painelCentral, "EstoqueMedicamento"); // Apenas mostra o painel
     }
 
     private void abrirEstoqueProduto() {

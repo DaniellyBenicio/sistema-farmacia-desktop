@@ -17,6 +17,7 @@ import java.sql.SQLException;
 
 import views.BarrasSuperiores.PainelSuperior;
 import views.Clientes.ListaDeClientes;
+import views.Estoque.EstoqueMedicamento;
 import views.Estoque.PrincipalEstoque;
 import views.Fornecedor.CadastrarFornecedor;
 import views.Fornecedor.ListaDeFornecedores;
@@ -30,6 +31,8 @@ public class Farmacia extends JFrame {
 
     private CardLayout layoutCartao;
     private JPanel painelCentral;
+    private PrincipalEstoque principalEstoque;
+    private EstoqueMedicamento estoqueMedicamento;
 
     public Farmacia() {
         setTitle("Farmácia");
@@ -49,6 +52,8 @@ public class Farmacia extends JFrame {
             JOptionPane.showMessageDialog(this, "Erro de conexão com o banco de dados", "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
+        principalEstoque = new PrincipalEstoque(conexão, layoutCartao, painelCentral);
+        estoqueMedicamento = new EstoqueMedicamento(conexão, principalEstoque, layoutCartao, painelCentral);
 
         painelCentral.add(new RealizarVenda(), "Vendas");
         painelCentral.add(new CadastrarFornecedor(), "CadastrarFornecedor");
@@ -58,7 +63,8 @@ public class Farmacia extends JFrame {
         painelCentral.add(new ListaDeClientes(conexão), "ListaDeClientes");
         painelCentral.add(new ListaDeMedicamentos(conexão), "ListaDeMedicamentos");
         painelCentral.add(new ListaDeProdutos(conexão), "ListaDeProdutos");
-        painelCentral.add(new PrincipalEstoque(), "GerenciamentoDeEstoque");
+        painelCentral.add(principalEstoque, "GerenciamentoDeEstoque");
+        painelCentral.add(estoqueMedicamento, "EstoqueMedicamento");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
         add(painelSuperior, BorderLayout.NORTH);
@@ -81,6 +87,14 @@ public class Farmacia extends JFrame {
             }
         }
         painelCentral.repaint();
+    }
+
+    public CardLayout getLayoutCartao() {
+        return layoutCartao;
+    }
+   
+    public JPanel getPainelCentral() {
+        return painelCentral;
     }
 
     public static void main(String[] args) {
