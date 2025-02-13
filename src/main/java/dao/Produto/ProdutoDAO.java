@@ -257,23 +257,25 @@ public class ProdutoDAO {
 
     public static List<String> listarEstoqueProdutos(Connection conn) throws SQLException {
         List<String> produtosEstoque = new ArrayList<>();
-        String sql = "SELECT p.nome, p.valor, p.qntEstoque, p.qntMedida, " +
-                     "c.nome AS categoria_nome, fo.nome AS fornecedor_nome " +
-                     "FROM produto p " +
-                     "JOIN categoria c ON p.categoria_id = c.id " +
-                     "JOIN fornecedor fo ON p.fornecedor_id = fo.id";
+        String sql = "SELECT p.nome, p.valor, p.qntEstoque, p.qntMedida, p.dataValidade, " +
+                    "c.nome AS categoria_nome, fo.nome AS fornecedor_nome " +
+                    "FROM produto p " +
+                    "JOIN categoria c ON p.categoria_id = c.id " +
+                    "JOIN fornecedor fo ON p.fornecedor_id = fo.id " +
+                    "ORDER BY p.dataValidade ASC, p.qntEstoque ASC";
         
         try (PreparedStatement pstmt = conn.prepareStatement(sql); 
              ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-                String infprodutos = "Nome: " + rs.getString("nome") +
-                                     ", Valor: " + rs.getBigDecimal("valor") +
-                                     ", Estoque: " + rs.getInt("qntEstoque") +
-                                     " " + rs.getString("qntMedida") +
-                                     ", Categoria: " + rs.getString("categoria_nome") +
-                                     ", Fornecedor: " + rs.getString("fornecedor_nome");
-                produtosEstoque.add(infprodutos);
-            }
+                while (rs.next()) {
+                    String infprodutos = "Nome: " + rs.getString("nome") +
+                                         ", Valor: " + rs.getBigDecimal("valor") +
+                                         ", Estoque: " + rs.getInt("qntEstoque") +
+                                         " " + rs.getString("qntMedida") +
+                                         ", Validade: " + rs.getDate("dataValidade") +
+                                         ", Categoria: " + rs.getString("categoria_nome") +
+                                         ", Fornecedor: " + rs.getString("fornecedor_nome");
+                    produtosEstoque.add(infprodutos);
+                }
         } catch (SQLException e) {
             System.err.println("Erro ao listar estoque dos produtos: " + e.getMessage());
             throw e;
