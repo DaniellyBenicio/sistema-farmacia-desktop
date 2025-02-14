@@ -108,7 +108,7 @@ public class ProdutoDAO {
             pstmt.setString(6, p.getQntMedida());
             pstmt.setString(7, p.getEmbalagem());
             pstmt.setInt(8, p.getFuncionario().getId());
-            pstmt.setInt(9, p.getFabricante().getId());
+            pstmt.setInt(9, fabricanteId);
             pstmt.setInt(10, fornecedor.getId());
             pstmt.setInt(11, categoriaId);            
             pstmt.setInt(11, p.getId());
@@ -237,12 +237,12 @@ public class ProdutoDAO {
         return produto;
     }
 
-    public static ArrayList<String> produtoCategoria(Connection conn) throws SQLException {
+    public static List<String> produtoCategoria(Connection conn) throws SQLException {
         String sql = "SELECT DISTINCT c.nome AS categoria " +
                      "FROM produto p " +
                      "INNER JOIN categoria c ON p.categoria_id = c.id " +
                      "ORDER BY c.nome ASC";
-        ArrayList<String> prodCategoria = new ArrayList<>();
+        List<String> prodCategoria = new ArrayList<>();
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
@@ -253,6 +253,34 @@ public class ProdutoDAO {
             throw e;
         }
         return prodCategoria;
+    }
+
+    public static List<String> listarEstoqueProdutos(Connection conn) throws SQLException {
+        List<String> produtosEstoque = new ArrayList<>();
+        String sql = "SELECT p.nome, p.valor, p.qntEstoque, p.qntMedida, p.dataValidade, " +
+                    "c.nome AS categoria_nome, fo.nome AS fornecedor_nome " +
+                    "FROM produto p " +
+                    "JOIN categoria c ON p.categoria_id = c.id " +
+                    "JOIN fornecedor fo ON p.fornecedor_id = fo.id " +
+                    "ORDER BY p.dataValidade ASC, p.qntEstoque ASC";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql); 
+             ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    String infprodutos = "Nome: " + rs.getString("nome") +
+                                         ", Valor: " + rs.getBigDecimal("valor") +
+                                         ", Estoque: " + rs.getInt("qntEstoque") +
+                                         " " + rs.getString("qntMedida") +
+                                         ", Validade: " + rs.getDate("dataValidade") +
+                                         ", Categoria: " + rs.getString("categoria_nome") +
+                                         ", Fornecedor: " + rs.getString("fornecedor_nome");
+                    produtosEstoque.add(infprodutos);
+                }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar estoque dos produtos: " + e.getMessage());
+            throw e;
+        }
+        return produtosEstoque;
     }
     
     public static void deletarProduto(Connection conn, Produto p) throws SQLException {

@@ -64,6 +64,22 @@ public class ProdutoController {
         }
     }
 
+    public static List<String> listarCategoriasProduto(Connection conn) throws SQLException {
+        try {
+            return ProdutoDAO.produtoCategoria(conn);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao listar as categorias dos produtos.", e);
+        }
+    } 
+    
+    public static List<String> listarEstoqueProduto(Connection conn) throws SQLException {
+        try {
+            return ProdutoDAO.listarEstoqueProdutos(conn);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao listar o estoque dos produtos.", e);
+        }
+    } 
+
     public static void excluirProduto(Connection conn, Produto p) throws SQLException{
         if (p == null || p.getId() <=0) {
             throw new IllegalArgumentException("ID inválido.");

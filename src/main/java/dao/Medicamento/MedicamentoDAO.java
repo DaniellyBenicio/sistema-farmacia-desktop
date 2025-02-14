@@ -313,5 +313,32 @@ public class MedicamentoDAO {
         }
         return receitas;
     }
-    
+
+    public static List<String> listarEstoqueMedicamentos(Connection conn) throws SQLException {
+        List<String> medicamentosEstoque = new ArrayList<>();
+        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.qnt, m.dataValidade, " +
+                    "c.nome AS categoria_nome, fo.nome AS fornecedor_nome " +
+                    "FROM medicamento m " +
+                    "JOIN categoria c ON m.categoria_id = c.id " +
+                    "JOIN fornecedor fo ON m.fornecedor_id = fo.id " +
+                    "ORDER BY m.dataValidade ASC, m.qnt ASC";        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql); 
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                String infomedicamentos = "Nome: " + rs.getString("nome") +
+                                         ", Dosagem: " + rs.getString("dosagem") +
+                                         ", Forma: " + rs.getString("formaFarmaceutica") +
+                                         ", Valor Unitário: R$" + rs.getBigDecimal("valorUnit") +
+                                         ", Estoque: " + rs.getInt("qnt") +
+                                         ", Validade: " + rs.getDate("dataValidade") +
+                                         ", Categoria: " + rs.getString("categoria_nome") +
+                                         ", Fornecedor: " + rs.getString("fornecedor_nome");
+                medicamentosEstoque.add(infomedicamentos);
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar estoque dos medicamentos: " + e.getMessage());
+            throw e;
+        }
+        return medicamentosEstoque;
+    }  
 }

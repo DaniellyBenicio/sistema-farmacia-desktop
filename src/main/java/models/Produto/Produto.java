@@ -122,18 +122,18 @@ public class Produto {
             throw new IllegalArgumentException("A quantidade de medida não pode ser nula ou vazia.");
         }
     
-        if (!qntMedida.matches("^\\d+(\\.\\d+)?(mL|L|g|kg|un)$")) {
+        if (!qntMedida.toLowerCase().matches("^\\d+(\\.\\d+)?(ml|l|g|kg|un)$")) {
             throw new IllegalArgumentException("Formato inválido para a quantidade de medida. Use valores como '500mL', '2kg', '1L', '1un'.");
         }
-    
+        
         double valor = Double.parseDouble(qntMedida.replaceAll("[^0-9.]", ""));
         if (valor <= 0) {
             throw new IllegalArgumentException("A quantidade de medida deve ser maior que zero.");
         }
     
-        this.qntMedida = qntMedida;
+        this.qntMedida = qntMedida.toLowerCase();
     }    
-
+ 
     public String getEmbalagem() {
         return embalagem;
     }
