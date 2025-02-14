@@ -355,5 +355,62 @@ public class MedicamentoDAO {
         
         return medicamentosEstoque;
     }
+
+    public static List<Medicamento> listarBaixoEstoque(Connection conn) throws SQLException {
+        List<Medicamento> baixoEstoque = new ArrayList<>();
+        String sql = "SELECT m.nome, m.valorUnit, c.nome AS categoria_nome, m.dataValidade, " +
+                     "m.formaFarmaceutica, m.dosagem, f.nome AS fornecedor_nome, m.qnt " +
+                     "FROM medicamento m " +
+                     "JOIN categoria c ON m.categoria_id = c.id " +
+                     "JOIN fornecedor f ON m.fornecedor_id = f.id " +
+                     "WHERE " +
+                     "(" +
+                     "    (" +
+                     "        c.nome IN ('Antihipertensivo', 'Analgésico', 'Antitérmico', 'Antibiótico', 'Anti-inflamatório', " +
+                     "                   'Antidepressivo', 'Antipsicótico', 'Ansiolítico', 'Antidiabético', 'Antialérgico') " +
+                     "        AND m.qnt < 30 " +
+                     "        AND (" +
+                     "            (m.tipo = 'Genérico' OR m.tipo = 'Similar') AND m.valorUnit <= 40 " +
+                     "            OR m.tipo = 'Ético' AND m.valorUnit <= 50 " +
+                     "        )" +
+                     "    ) " +
+                     "    OR (" +
+                     "        c.nome NOT IN ('Antihipertensivo', 'Analgésico', 'Antitérmico', 'Antibiótico', 'Anti-inflamatório', " +
+                     "                     'Antidepressivo', 'Antipsicótico', 'Ansiolítico', 'Antidiabético', 'Antialérgico') " +
+                     "        AND m.qnt <= 15 " +
+                     "    )" +
+                     ")" +
+                     "ORDER BY m.qnt ASC, m.dataValidade ASC";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql); 
+             ResultSet rs = pstmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Medicamento medicamento = new Medicamento();
+                medicamento.setNome(rs.getString("nome"));
+                medicamento.setValorUnit(rs.getBigDecimal("valorUnit"));
+                medicamento.setFormaFarmaceutica(rs.getString("formaFarmaceutica"));
+                medicamento.setDosagem(rs.getString("dosagem"));
+                medicamento.setQnt(rs.getInt("qnt"));
+                medicamento.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
+                
+                Categoria categoria = new Categoria();
+                categoria.setNome(rs.getString("categoria_nome"));
+                medicamento.setCategoria(categoria);
+                
+                Fornecedor fornecedor = new Fornecedor();
+                fornecedor.setNome(rs.getString("fornecedor_nome"));
+                medicamento.setFornecedor(fornecedor);
+                
+                baixoEstoque.add(medicamento);
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar baixo estoque: " + e.getMessage());
+            throw e;
+        }
+        
+        return baixoEstoque;
+    }
+    
     
 }

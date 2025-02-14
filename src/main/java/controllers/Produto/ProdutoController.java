@@ -80,6 +80,14 @@ public class ProdutoController {
         }
     } 
 
+    public static List<Produto> listarBaixoEstoqueProduto(Connection conn) throws SQLException {
+        try {
+            return ProdutoDAO.listarBaixoEstoqueProdutos(conn);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao listar baixo estoque dos produtos.", e);
+        }
+    } 
+
     public static void excluirProduto(Connection conn, Produto p) throws SQLException{
         if (p == null || p.getId() <=0) {
             throw new IllegalArgumentException("ID inválido.");

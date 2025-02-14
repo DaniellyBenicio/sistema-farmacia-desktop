@@ -106,4 +106,13 @@ public class MedicamentoController {
         }
     } 
 
+    public static List<Medicamento> listarBaixoEstoqueMedicamento(Connection conn) throws SQLException {
+        try {
+            return MedicamentoDAO.listarBaixoEstoque(conn);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao listar baixo estoque dos medicamentos.", e);
+        }
+    } 
+
+
 }
