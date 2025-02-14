@@ -139,9 +139,12 @@ public class CadastrarProduto extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(categoriaLabel, gbc);
 
-        String[] tiposDeCategoria = { "Selecione", "Higiene Pessaol", "Categoria" };
+        String[] tiposDeCategoria = { 
+            "Selecione", "Acessórios e Utilidades Pessoais", "Alimentícios", "Cosméticos e Perfumaria", "Dermocosméticos", 
+            "Fraldas e Acessórios", "Higiene e Cuidado Pessoal", "Materiais Hospitalares", "Ortopedia", 
+            "Saúde Sexual e Reprodutiva", "Suplementos e Vitaminas" };
         categoriaComboBox = new JComboBox<>(tiposDeCategoria);
-        categoriaComboBox.setPreferredSize(new Dimension(180, 40));
+        categoriaComboBox.setPreferredSize(new Dimension(235, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 1;
