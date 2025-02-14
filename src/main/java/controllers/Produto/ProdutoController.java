@@ -72,7 +72,7 @@ public class ProdutoController {
         }
     } 
     
-    public static List<String> listarEstoqueProduto(Connection conn) throws SQLException {
+    public static List<Produto> listarEstoqueProduto(Connection conn) throws SQLException {
         try {
             return ProdutoDAO.listarEstoqueProdutos(conn);
         } catch (SQLException e) {
