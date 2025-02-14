@@ -255,8 +255,8 @@ public class ProdutoDAO {
         return prodCategoria;
     }
 
-    public static List<String> listarEstoqueProdutos(Connection conn) throws SQLException {
-        List<String> produtosEstoque = new ArrayList<>();
+    public static List<Produto> listarEstoqueProdutos(Connection conn) throws SQLException {
+        List<Produto> produtosEstoque = new ArrayList<>();
         String sql = "SELECT p.nome, p.valor, p.qntEstoque, p.qntMedida, p.dataValidade, " +
                     "c.nome AS categoria_nome, fo.nome AS fornecedor_nome " +
                     "FROM produto p " +
@@ -265,22 +265,34 @@ public class ProdutoDAO {
                     "ORDER BY p.dataValidade ASC, p.qntEstoque ASC";
         
         try (PreparedStatement pstmt = conn.prepareStatement(sql); 
-             ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    String infprodutos = "Nome: " + rs.getString("nome") +
-                                         ", Valor: " + rs.getBigDecimal("valor") +
-                                         ", Estoque: " + rs.getInt("qntEstoque") +
-                                         " " + rs.getString("qntMedida") +
-                                         ", Validade: " + rs.getDate("dataValidade") +
-                                         ", Categoria: " + rs.getString("categoria_nome") +
-                                         ", Fornecedor: " + rs.getString("fornecedor_nome");
-                    produtosEstoque.add(infprodutos);
-                }
+        ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Produto prod = new Produto();
+                prod.setId(rs.getInt("id"));
+                prod.setNome(rs.getString("nome"));
+                prod.setValor(rs.getBigDecimal("valor"));
+                prod.setQntEstoque(rs.getInt("qntEstoque"));
+                prod.setQntMedida(rs.getString("qntMedida"));
+                prod.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
+                       
+                Categoria categoria = new Categoria();
+                categoria.setId(rs.getInt("categoria_id"));
+                categoria.setNome(rs.getString("categoria_nome"));
+                prod.setCategoria(categoria);
+                       
+                Fornecedor fornecedor = new Fornecedor();
+                fornecedor.setId(rs.getInt("fornecedor_id"));
+                fornecedor.setNome(rs.getString("fornecedor_nome"));
+                prod.setFornecedor(fornecedor);
+                
+                produtosEstoque.add(prod);
+            }
         } catch (SQLException e) {
             System.err.println("Erro ao listar estoque dos produtos: " + e.getMessage());
             throw e;
-        }
-        return produtosEstoque;
+       }
+           
+       return produtosEstoque;
     }
     
     public static void deletarProduto(Connection conn, Produto p) throws SQLException {

@@ -314,31 +314,46 @@ public class MedicamentoDAO {
         return receitas;
     }
 
-    public static List<String> listarEstoqueMedicamentos(Connection conn) throws SQLException {
-        List<String> medicamentosEstoque = new ArrayList<>();
-        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.qnt, m.dataValidade, " +
-                    "c.nome AS categoria_nome, fo.nome AS fornecedor_nome " +
-                    "FROM medicamento m " +
-                    "JOIN categoria c ON m.categoria_id = c.id " +
-                    "JOIN fornecedor fo ON m.fornecedor_id = fo.id " +
-                    "ORDER BY m.dataValidade ASC, m.qnt ASC";        
+    public static List<Medicamento> listarEstoqueMedicamentos(Connection conn) throws SQLException {
+        List<Medicamento> medicamentosEstoque = new ArrayList<>();
+        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.qnt, m.dataValidade, "
+                   + "c.id AS categoria_id, c.nome AS categoria_nome, "
+                   + "fo.id AS fornecedor_id, fo.nome AS fornecedor_nome "
+                   + "FROM medicamento m "
+                   + "JOIN categoria c ON m.categoria_id = c.id "
+                   + "JOIN fornecedor fo ON m.fornecedor_id = fo.id "
+                   + "ORDER BY m.dataValidade ASC, m.qnt ASC";
+        
         try (PreparedStatement pstmt = conn.prepareStatement(sql); 
              ResultSet rs = pstmt.executeQuery()) {
+            
             while (rs.next()) {
-                String infomedicamentos = "Nome: " + rs.getString("nome") +
-                                         ", Dosagem: " + rs.getString("dosagem") +
-                                         ", Forma: " + rs.getString("formaFarmaceutica") +
-                                         ", Valor Unitário: R$" + rs.getBigDecimal("valorUnit") +
-                                         ", Estoque: " + rs.getInt("qnt") +
-                                         ", Validade: " + rs.getDate("dataValidade") +
-                                         ", Categoria: " + rs.getString("categoria_nome") +
-                                         ", Fornecedor: " + rs.getString("fornecedor_nome");
-                medicamentosEstoque.add(infomedicamentos);
+                Medicamento medicamento = new Medicamento();
+                medicamento.setNome(rs.getString("nome"));
+                medicamento.setDosagem(rs.getString("dosagem"));
+                medicamento.setFormaFarmaceutica(rs.getString("formaFarmaceutica"));
+                medicamento.setValorUnit(rs.getBigDecimal("valorUnit"));
+                medicamento.setQnt(rs.getInt("qnt"));
+                medicamento.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
+                
+                Categoria categoria = new Categoria();
+                categoria.setId(rs.getInt("categoria_id"));
+                categoria.setNome(rs.getString("categoria_nome"));
+                medicamento.setCategoria(categoria);
+                
+                Fornecedor fornecedor = new Fornecedor();
+                fornecedor.setId(rs.getInt("fornecedor_id"));
+                fornecedor.setNome(rs.getString("fornecedor_nome"));
+                medicamento.setFornecedor(fornecedor);
+                
+                medicamentosEstoque.add(medicamento);
             }
         } catch (SQLException e) {
             System.err.println("Erro ao listar estoque dos medicamentos: " + e.getMessage());
             throw e;
         }
+        
         return medicamentosEstoque;
-    }  
+    }
+    
 }
