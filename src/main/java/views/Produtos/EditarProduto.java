@@ -668,4 +668,5 @@ public class EditarProduto extends JPanel {
             fabricanteComboBox.addItem(fabricante);
         }
     }
+    
 }
