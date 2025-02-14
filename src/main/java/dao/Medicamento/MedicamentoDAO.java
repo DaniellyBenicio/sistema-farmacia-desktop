@@ -317,8 +317,8 @@ public class MedicamentoDAO {
     public static List<Medicamento> listarEstoqueMedicamentos(Connection conn) throws SQLException {
         List<Medicamento> medicamentosEstoque = new ArrayList<>();
         String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.qnt, m.dataValidade, "
-                   + "c.id AS categoria_id, c.nome AS categoria_nome, "
-                   + "fo.id AS fornecedor_id, fo.nome AS fornecedor_nome "
+                   + "c.nome AS categoria_nome, "
+                   + "fo.nome AS fornecedor_nome "
                    + "FROM medicamento m "
                    + "JOIN categoria c ON m.categoria_id = c.id "
                    + "JOIN fornecedor fo ON m.fornecedor_id = fo.id "
@@ -337,12 +337,10 @@ public class MedicamentoDAO {
                 medicamento.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
                 
                 Categoria categoria = new Categoria();
-                categoria.setId(rs.getInt("categoria_id"));
                 categoria.setNome(rs.getString("categoria_nome"));
                 medicamento.setCategoria(categoria);
                 
                 Fornecedor fornecedor = new Fornecedor();
-                fornecedor.setId(rs.getInt("fornecedor_id"));
                 fornecedor.setNome(rs.getString("fornecedor_nome"));
                 medicamento.setFornecedor(fornecedor);
                 
@@ -358,8 +356,8 @@ public class MedicamentoDAO {
 
     public static List<Medicamento> listarBaixoEstoque(Connection conn) throws SQLException {
         List<Medicamento> baixoEstoque = new ArrayList<>();
-        String sql = "SELECT m.nome, m.valorUnit, c.nome AS categoria_nome, m.dataValidade, " +
-                     "m.formaFarmaceutica, m.dosagem, f.nome AS fornecedor_nome, m.qnt " +
+        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, c.nome AS categoria_nome, m.dataValidade, " +
+                     "f.nome AS fornecedor_nome, m.qnt " +
                      "FROM medicamento m " +
                      "JOIN categoria c ON m.categoria_id = c.id " +
                      "JOIN fornecedor f ON m.fornecedor_id = f.id " +
