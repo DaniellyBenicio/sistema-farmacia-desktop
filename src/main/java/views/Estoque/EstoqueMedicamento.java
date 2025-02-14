@@ -7,7 +7,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
-import dao.Medicamento.MedicamentoDAO;
+import controllers.Medicamento.MedicamentoController;
 import models.Medicamento.Medicamento;
 
 import java.awt.*;
@@ -45,7 +45,7 @@ public class EstoqueMedicamento extends JPanel {
         linhasSelecionadas = new ArrayList<>();
 
         try {
-            medicamentos = MedicamentoDAO.listarTodos(this.conn);
+            medicamentos = MedicamentoController.listarEstoqueMedicamento(this.conn);
             inicializarLinhasSelecionadas();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -184,7 +184,7 @@ public class EstoqueMedicamento extends JPanel {
         botao.addActionListener(e -> {
             List<Medicamento> medicamentosSelecionados = obterMedicamentosSelecionados();
             if (!medicamentosSelecionados.isEmpty()) {
-                new RealizarPedido(null, medicamentosSelecionados).setVisible(true);
+                new RealizarPedidoMedicamento(null, medicamentosSelecionados).setVisible(true);
             } else {
                 JOptionPane.showMessageDialog(this, "Nenhum medicamento selecionado.", "Aviso",
                         JOptionPane.WARNING_MESSAGE);
@@ -205,7 +205,7 @@ public class EstoqueMedicamento extends JPanel {
 
     public void atualizarTabela() {
         try {
-            medicamentos = MedicamentoDAO.listarTodos(this.conn);
+            medicamentos = MedicamentoController.listarEstoqueMedicamento(this.conn);
             inicializarLinhasSelecionadas();
             carregarDados();
             atualizarEstadoBotaoPedido();
@@ -224,7 +224,8 @@ public class EstoqueMedicamento extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Selecionar", "Nome", "Categoria", "Medida", "Validade", "Preço Unitário", "Quantidade" };
+        String[] colunas = { "Selecionar", "Nome", "Categoria", "F. Farmacêutica", "Dosagem", "Fornecedor", "Validade",
+                "Preço Unitário", "Quantidade" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
@@ -268,13 +269,15 @@ public class EstoqueMedicamento extends JPanel {
             tabela.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        tabela.getColumnModel().getColumn(0).setPreferredWidth(30);
+        tabela.getColumnModel().getColumn(0).setPreferredWidth(10);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(170);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(100);
-        tabela.getColumnModel().getColumn(3).setPreferredWidth(80);
-        tabela.getColumnModel().getColumn(4).setPreferredWidth(80);
-        tabela.getColumnModel().getColumn(5).setPreferredWidth(80);
-        tabela.getColumnModel().getColumn(6).setPreferredWidth(80);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(110);
+        tabela.getColumnModel().getColumn(3).setPreferredWidth(60);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(10);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(120);
+        tabela.getColumnModel().getColumn(6).setPreferredWidth(10);
+        tabela.getColumnModel().getColumn(7).setPreferredWidth(20);
+        tabela.getColumnModel().getColumn(8).setPreferredWidth(10);
 
         tabela.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -301,14 +304,14 @@ public class EstoqueMedicamento extends JPanel {
 
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
             try {
-                medicamentosFiltrados = MedicamentoDAO.listarTodos(this.conn);
+                medicamentosFiltrados = MedicamentoController.listarEstoqueMedicamento(this.conn);
             } catch (SQLException e) {
                 e.printStackTrace();
                 return;
             }
         } else {
             try {
-                medicamentosFiltrados = MedicamentoDAO.listarTodos(this.conn).stream()
+                medicamentosFiltrados = MedicamentoController.listarEstoqueMedicamento(this.conn).stream()
                         .filter(medicamento -> medicamento.getNome().toLowerCase().contains(filtro.toLowerCase()))
                         .collect(Collectors.toList());
             } catch (SQLException e) {
@@ -343,14 +346,16 @@ public class EstoqueMedicamento extends JPanel {
             NumberFormat numberFormat = NumberFormat.getInstance();
             for (int i = 0; i < medicamentos.size(); i++) {
                 Medicamento medicamento = medicamentos.get(i);
-                Object[] rowData = new Object[7];
+                Object[] rowData = new Object[9];
                 rowData[0] = linhasSelecionadas.get(i);
                 rowData[1] = medicamento.getNome();
                 rowData[2] = medicamento.getCategoria().getNome();
-                rowData[3] = medicamento.getDosagem();
-                rowData[4] = formatarData(medicamento.getDataValidade());
-                rowData[5] = numberFormat.format(medicamento.getValorUnit());
-                rowData[6] = medicamento.getQnt();
+                rowData[3] = medicamento.getFormaFarmaceutica();
+                rowData[4] = medicamento.getDosagem();
+                rowData[5] = medicamento.getFornecedor().getNome();
+                rowData[6] = formatarData(medicamento.getDataValidade());
+                rowData[7] = numberFormat.format(medicamento.getValorUnit());
+                rowData[8] = medicamento.getQnt();
 
                 modeloTabela.addRow(rowData);
             }
