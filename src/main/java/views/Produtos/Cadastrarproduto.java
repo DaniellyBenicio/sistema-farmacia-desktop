@@ -454,7 +454,7 @@ camposPanel.add(valorUnitarioField, gbc);
         if (qntMedida.isEmpty()) {
             errorMessage.append("Medida deve ser informada.\n");
             hasError = true;
-        } else if (!qntMedida.toLowerCase().matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
+        } else if (!qntMedida.toLowerCase().matches("\\d+(\\.\\d+)?\\s*(ml|l|g|kg|un)")) {
             errorMessage.append("Informe a medida com as seguintes unidades válidas:\n" +
                     "(mL, kg, L, un).\n" +
                     "Exemplo: 500mL, 10kg\n");
