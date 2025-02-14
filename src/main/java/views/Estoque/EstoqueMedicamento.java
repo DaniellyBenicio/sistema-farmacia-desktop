@@ -11,19 +11,11 @@ import dao.Medicamento.MedicamentoDAO;
 import models.Medicamento.Medicamento;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.time.format.DateTimeFormatter;
@@ -192,7 +184,7 @@ public class EstoqueMedicamento extends JPanel {
         botao.addActionListener(e -> {
             List<Medicamento> medicamentosSelecionados = obterMedicamentosSelecionados();
             if (!medicamentosSelecionados.isEmpty()) {
-                new JanelaImpressaoPedido(null, medicamentosSelecionados).setVisible(true);
+                new RealizarPedido(null, medicamentosSelecionados).setVisible(true);
             } else {
                 JOptionPane.showMessageDialog(this, "Nenhum medicamento selecionado.", "Aviso",
                         JOptionPane.WARNING_MESSAGE);
@@ -378,180 +370,5 @@ public class EstoqueMedicamento extends JPanel {
     private void atualizarEstadoBotaoPedido() {
         boolean algumSelecionado = linhasSelecionadas.contains(true);
         realizarPedidoButton.setEnabled(algumSelecionado);
-    }
-}
-
-class JanelaImpressaoPedido extends JDialog {
-    private List<Medicamento> medicamentos;
-    private String dataHoraCriacao;
-    private List<JTextField> quantidadeFields;
-
-    public JanelaImpressaoPedido(JFrame parent, List<Medicamento> medicamentos) {
-        super(parent, "Lista de Pedidos", true);
-        this.medicamentos = medicamentos;
-        this.dataHoraCriacao = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date());
-        this.quantidadeFields = new ArrayList<>();
-
-
-        int width = 800;
-        int height = 600;
-        setSize(width, height);
-        setPreferredSize(new Dimension(width, height));
-        setMinimumSize(new Dimension(width, height));
-        setMaximumSize(new Dimension(width, height));
-
-        setLocationRelativeTo(parent);
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        setResizable(false);
-
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        JPanel topPanel = new JPanel(new BorderLayout());
-        JLabel titleLabel = new JLabel("Lista de Pedidos de Medicamentos", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        titleLabel.setForeground(new Color(24, 39, 55));
-        topPanel.add(titleLabel, BorderLayout.NORTH);
-
-        JLabel dataLabel = new JLabel("Lista criada em: " + dataHoraCriacao);
-        dataLabel.setFont(new Font("Arial", Font.ITALIC, 10));
-        dataLabel.setForeground(Color.DARK_GRAY);
-        topPanel.add(dataLabel, BorderLayout.WEST);
-
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-
-        JPanel pedidoPanel = criarPedidoPanel();
-        JScrollPane scrollPane = new JScrollPane(pedidoPanel);
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-
-        JButton realizarPedidoButton = new JButton("Finalizar Pedido");
-        realizarPedidoButton.setFont(new Font("Arial", Font.BOLD, 14));
-        realizarPedidoButton.setBackground(new Color(24, 39, 55));
-        realizarPedidoButton.setForeground(Color.WHITE);
-        realizarPedidoButton.addActionListener(e -> imprimirLista());
-
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        bottomPanel.add(realizarPedidoButton);
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        add(mainPanel);
-        pack();
-    }
-
-    private JPanel criarPedidoPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 2, 2, 2); 
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.weighty = 0.0; 
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        panel.add(criarHeaderPanel(), gbc);
-
-        for (int i = 0; i < medicamentos.size(); i++) {
-            Medicamento medicamento = medicamentos.get(i);
-            gbc.gridy = i + 1;
-            panel.add(criarMedicamentoPanel(medicamento), gbc);
-        }
-
-        gbc.gridy = medicamentos.size() + 1;
-        gbc.weighty = 1.0; 
-        panel.add(new JPanel(), gbc); 
-
-        return panel;
-    }
-
-    private JPanel criarHeaderPanel() {
-        JPanel headerPanel = new JPanel(new GridLayout(1, 5));
-        headerPanel.setBackground(Color.LIGHT_GRAY);
-        headerPanel.setPreferredSize(new Dimension(750, 25));
-        headerPanel.setMaximumSize(new Dimension(750, 25));
-
-        headerPanel.add(criarLabel("Nome", Font.BOLD, 14));
-        headerPanel.add(criarLabel("Categoria", Font.BOLD, 14));
-        headerPanel.add(criarLabel("Medida", Font.BOLD, 14));
-        headerPanel.add(criarLabel("Preço", Font.BOLD, 14));
-        headerPanel.add(criarLabel("Qtd. Solicitada", Font.BOLD, 14));
-
-        return headerPanel;
-    }
-
-    private JPanel criarMedicamentoPanel(Medicamento medicamento) {
-        JPanel medicamentoPanel = new JPanel(new GridLayout(1, 5));
-        medicamentoPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
-        medicamentoPanel.setPreferredSize(new Dimension(750, 25));
-        medicamentoPanel.setMaximumSize(new Dimension(750, 25));
-
-        medicamentoPanel.add(criarLabel(medicamento.getNome(), Font.PLAIN, 12));
-        medicamentoPanel.add(criarLabel(medicamento.getCategoria().getNome(), Font.PLAIN, 12));
-        medicamentoPanel.add(criarLabel(medicamento.getDosagem(), Font.PLAIN, 12));
-        medicamentoPanel.add(criarLabel(String.format("R$ %.2f", medicamento.getValorUnit()), Font.PLAIN, 12));
-
-        JTextField quantidadeField = new JTextField(3);
-        quantidadeField.setPreferredSize(new Dimension(20, 20));
-        quantidadeField.setMaximumSize(new Dimension(20, 20));
-        quantidadeFields.add(quantidadeField);
-        medicamentoPanel.add(quantidadeField);
-
-        return medicamentoPanel;
-    }
-
-    private JLabel criarLabel(String texto, int estiloFonte, int tamanhoFonte) {
-        JLabel label = new JLabel(texto, SwingConstants.CENTER);
-        label.setFont(new Font("Arial", estiloFonte, tamanhoFonte));
-        label.setVerticalAlignment(SwingConstants.CENTER);
-        return label;
-    }
-
-    private void imprimirLista() {
-        List<String> informacoesParaImprimir = new ArrayList<>();
-        for (int i = 0; i < medicamentos.size(); i++) {
-            String text = quantidadeFields.get(i).getText();
-            try {
-                int quantidade = Integer.parseInt(text);
-                Medicamento medicamento = medicamentos.get(i);
-                informacoesParaImprimir.add(String.format("Medicamento: %s, Categoria: %s, Dosagem: %s, Preço: R$ %.2f, Quantidade: %d",
-                        medicamento.getNome(), medicamento.getCategoria().getNome(), medicamento.getDosagem(), medicamento.getValorUnit(), quantidade));
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Digite uma quantidade válida para todos os medicamentos.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        }
-
-        PrinterJob job = PrinterJob.getPrinterJob();
-        job.setPrintable((graphics, pageFormat, pageIndex) -> {
-            if (pageIndex > 0) {
-                return Printable.NO_SUCH_PAGE;
-            }
-
-            Graphics2D g2d = (Graphics2D) graphics;
-            g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
-
-            int y = 20;
-            for (String info : informacoesParaImprimir) {
-                g2d.drawString(info, 10, y);
-                y += 15;
-            }
-
-            return Printable.PAGE_EXISTS;
-        });
-
-        boolean doPrint = job.printDialog();
-        if (doPrint) {
-            try {
-                job.print();
-            } catch (PrinterException e) {
-                JOptionPane.showMessageDialog(null, "Erro ao imprimir: " + e.getMessage(), "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
     }
 }
