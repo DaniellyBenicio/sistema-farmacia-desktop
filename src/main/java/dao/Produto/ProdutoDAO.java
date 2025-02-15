@@ -111,7 +111,7 @@ public class ProdutoDAO {
             pstmt.setInt(9, fabricanteId);
             pstmt.setInt(10, fornecedor.getId());
             pstmt.setInt(11, categoriaId);            
-            pstmt.setInt(11, p.getId());
+            pstmt.setInt(12, p.getId());
     
             pstmt.executeUpdate();
         } catch (SQLException e) {

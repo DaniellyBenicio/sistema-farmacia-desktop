@@ -226,10 +226,10 @@ public class ListaDeProdutos extends JPanel {
         // Ajustando a largura das colunas
         tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(80);
-        tabela.getColumnModel().getColumn(3).setPreferredWidth(80);
-        tabela.getColumnModel().getColumn(4).setPreferredWidth(150);
-        tabela.getColumnModel().getColumn(5).setPreferredWidth(100);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(90);
+        tabela.getColumnModel().getColumn(3).setPreferredWidth(90);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(90);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(90);
         tabela.getColumnModel().getColumn(6).setPreferredWidth(50);  
         tabela.getColumnModel().getColumn(7).setPreferredWidth(150); 
 

@@ -212,7 +212,7 @@ public class EditarProduto extends JPanel {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (qntMedidaField.getText().isEmpty()) {
                     qntMedidaField.setText("Medidas: mL, kg, L, un");
-                    qntMedidaField.setForeground(Color.GRAY);
+                    qntMedidaField.setForeground(Color.BLACK);
                 }
             }
         });
@@ -378,7 +378,7 @@ public class EditarProduto extends JPanel {
                 qntMedidaField.setText(produto.getQntMedida()); 
                 String embalagemNome = produto.getEmbalagem(); 
                 embalagemComboBox.setSelectedItem(embalagemNome);
-                String categoriaNome = produto.getCategoria().getNome();
+                String categoriaNome = produto.getCategoria().getNome().trim(); 
                 categoriaComboBox.setSelectedItem(categoriaNome);
                 String fornecedorNome = produto.getFornecedor().getNome();
                 fornecedorComboBox.setSelectedItem(fornecedorNome);
@@ -448,10 +448,10 @@ public class EditarProduto extends JPanel {
             String categoriaNome = (String) categoriaComboBox.getSelectedItem();
             String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
             String fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
-            String dataFabricacao = dataFabricacaoField.getText();
-            String dataValidade = dataValidadeField.getText();
+            String dataFabricacaoTexto = dataFabricacaoField.getText().trim();
+            String dataValidadeTexto = dataValidadeField.getText().trim();
             int estoque = Integer.parseInt(estoqueField.getText());
-            BigDecimal valorUnitario = (BigDecimal) valorUnitarioField.getValue();
+            String valorTexto = valorUnitarioField.getText().replace("R$", "").trim().replace(",", ".");
 
             StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
             boolean hasError = false;
@@ -477,6 +477,7 @@ public class EditarProduto extends JPanel {
                 hasError = true;
             }
 
+            //ajustar aqui
             if (categoriaNome.isEmpty()) {
                 errorMessage.append("Pelo menos uma categoria deve ser selecionada.\n");
                 hasError = true;
@@ -541,6 +542,87 @@ public class EditarProduto extends JPanel {
             Fabricante fabricante = new Fabricante();
             fabricante.setNome(fabricanteNome);
 
+            LocalDate dataFabricacao = null, dataValidade = null;
+            if (dataFabricacaoTexto.equals("/") || dataValidadeTexto.equals("/")) {
+                errorMessage.append("As datas de fabricação e validade devem ser preenchidas corretamente.\n");
+                hasError = true;
+            } else {
+                try {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
+                    YearMonth ymFabricacao = YearMonth.parse(dataFabricacaoTexto, formatter);
+                    YearMonth ymValidade = YearMonth.parse(dataValidadeTexto, formatter);
+                    dataFabricacao = ymFabricacao.atDay(28);
+                    dataValidade = ymValidade.atDay(28);
+                } catch (DateTimeParseException ex) {
+                    errorMessage.append("Formato de data inválido. Use Mês/Ano, ex: 08/2023\n");
+                    hasError = true;
+                }
+            }
+
+            if (dataFabricacao != null) {
+                LocalDate dataMinima = LocalDate.now().minusYears(5);
+                if (dataFabricacao.isBefore(dataMinima)) {
+                    errorMessage.append("Data de fabricação inválida! Deve ser posterior a " +
+                            dataMinima.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ".\n");
+                    hasError = true;
+                } else if (dataFabricacao.isAfter(LocalDate.now())) {
+                    errorMessage.append("Data de fabricação inválida! Não pode ser posterior à data atual.\n");
+                    hasError = true;
+                }
+            }
+
+            if (dataValidade != null) {
+                if (dataValidade.isBefore(dataFabricacao)) {
+                    errorMessage.append("Data de validade inválida! Não pode ser anterior à data de fabricação.\n");
+                    hasError = true;
+                } else if (dataValidade.isBefore(LocalDate.now())) {
+                    errorMessage.append("Data de validade inválida! Não pode ser anterior à data atual.\n");
+                    hasError = true;
+                }
+
+                LocalDate dataValidadeMaxima = dataFabricacao != null ? dataFabricacao.plusYears(5) : null;
+                if (dataValidadeMaxima != null && dataValidade.isAfter(dataValidadeMaxima)) {
+                    errorMessage.append(
+                            "Data de validade inválida! Não pode ser superior a 5 anos a partir da data de fabricação.\n");
+                    hasError = true;
+                }
+            }
+
+            if (valorTexto.isEmpty()) {
+                errorMessage.append("O valor unitário deve ser informado.\n");
+                hasError = true;
+            }
+
+            if (hasError) {
+                JOptionPane.showMessageDialog(this, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            BigDecimal valorUnitario;
+
+            if (valorTexto.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "O valor unitário deve ser informado.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (!valorTexto.matches("\\d+(\\.\\d{1,2})?")) {
+                JOptionPane.showMessageDialog(this, "Valor unitário deve ser um número válido.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            valorUnitario = new BigDecimal(valorTexto);
+
+            if (valorUnitario.compareTo(BigDecimal.ZERO) <= 0) {
+                JOptionPane.showMessageDialog(this, "O valor unitário deve ser maior que zero.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            YearMonth dataFabricacaoYearMonth = YearMonth.from(dataFabricacao);
+            YearMonth dataValidadeYearMonth = YearMonth.from(dataValidade);
+
         try (Connection conn = ConexaoBD.getConnection()) {
             Produto produtoExistente = ProdutoDAO.buscarPorId(conn, produtoId);
 
@@ -557,8 +639,8 @@ public class EditarProduto extends JPanel {
             produtoExistente.setFabricante(fabricante);
             produtoExistente.setFuncionario(funcionario);
             produtoExistente.setQntMedida(qntMedida);
-            produtoExistente.setDataFabricacao(null);
-            produtoExistente.setDataValidade(null);
+            produtoExistente.setDataFabricacao(dataFabricacaoYearMonth);
+            produtoExistente.setDataValidade(dataValidadeYearMonth);
             produtoExistente.setValor(valorUnitario);
             produtoExistente.setQntEstoque(estoque);
 
