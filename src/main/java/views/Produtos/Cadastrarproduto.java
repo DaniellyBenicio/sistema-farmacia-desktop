@@ -33,7 +33,7 @@ import models.Fornecedor.Fornecedor;
 import models.Funcionario.Funcionario;
 import models.Produto.Produto;
 import views.BarrasSuperiores.PainelSuperior;
-import views.Fornecedor.CadastrarFornecedor;
+import views.Fornecedor.CadastrarFornecedor; 
 
 public class CadastrarProduto extends JPanel {
     private JTextField nomeProdutoField;

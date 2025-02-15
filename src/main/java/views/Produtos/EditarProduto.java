@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import controllers.Fabricante.FabricanteController;
 import controllers.Fornecedor.FornecedorController;
+import controllers.Produto.ProdutoController;
 import dao.Fornecedor.FornecedorDAO;
 import dao.Funcionario.FuncionarioDAO;
 import dao.Produto.ProdutoDAO;
@@ -31,6 +32,8 @@ import models.Categoria.Categoria;
 import models.Fabricante.Fabricante;
 import models.Fornecedor.Fornecedor;
 import models.Funcionario.Funcionario;
+import models.Medicamento.Medicamento.Tipo;
+import models.Medicamento.Medicamento.TipoReceita;
 import models.Produto.Produto;
 import views.BarrasSuperiores.PainelSuperior;
 import views.Fornecedor.CadastrarFornecedor;
@@ -48,11 +51,10 @@ public class EditarProduto extends JPanel {
     private JTextField estoqueField;
     private JFormattedTextField valorUnitarioField;
     private JComboBox<String> categoriaComboBox;
+    private int produtoId;
 
-    private Produto produto;
-
-    public EditarProduto(Produto produto) {
-        this.produto = produto;
+    public EditarProduto(int produtoId) {
+        this.produtoId = produtoId;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(new Color(0, 0, 0, 0));
 
@@ -67,7 +69,7 @@ public class EditarProduto extends JPanel {
         add(botoesPanel);
         add(Box.createRigidArea(new Dimension(0, 150)));
 
-        preencherCamposComDadosDoProduto();
+        carregarDadosProduto();
     }
 
     private JLabel criarTitulo() {
@@ -87,7 +89,6 @@ public class EditarProduto extends JPanel {
         Font labelFont = new Font("Arial", Font.BOLD, 15);
         Font fieldFont = new Font("Arial", Font.PLAIN, 14);
 
-        // Nome
         JLabel nomeLabel = new JLabel("Nome");
         nomeLabel.setFont(labelFont);
         gbc.gridx = 0;
@@ -101,7 +102,6 @@ public class EditarProduto extends JPanel {
         gbc.gridy = 1;
         camposPanel.add(nomeProdutoField, gbc);
 
-        // Embalagem
         JLabel embalagemLabel = new JLabel("Embalagem");
         embalagemLabel.setFont(labelFont);
         gbc.gridx = 1;
@@ -137,7 +137,6 @@ public class EditarProduto extends JPanel {
             }
         });
 
-        // Categoria
         JLabel categoriaLabel = new JLabel("Categoria");
         categoriaLabel.setFont(labelFont);
         gbc.gridx = 2;
@@ -272,7 +271,7 @@ public class EditarProduto extends JPanel {
             }
         });
 
-        // Data de Fabricação
+
         JLabel dataFabricacaoLabel = new JLabel("Fabricação (Mês/Ano)");
         dataFabricacaoLabel.setFont(labelFont);
         gbc.gridx = 1;
@@ -281,7 +280,7 @@ public class EditarProduto extends JPanel {
 
         try {
             MaskFormatter dataFormatter = new MaskFormatter("##/####");
-            dataFormatter.setPlaceholderCharacter('_'); // Define o caractere de preenchimento opcional
+            dataFormatter.setPlaceholderCharacter('_'); 
             dataFabricacaoField = new JFormattedTextField(dataFormatter);
             dataFabricacaoField.setPreferredSize(new Dimension(170, 40));
             estilizarCamposFormulario(dataFabricacaoField, fieldFont);
@@ -293,7 +292,6 @@ public class EditarProduto extends JPanel {
         gbc.gridy = 5;
         camposPanel.add(dataFabricacaoField, gbc);
 
-        // Data de Validade
         JLabel dataValidadeLabel = new JLabel("Validade (Mês/Ano)");
         dataValidadeLabel.setFont(labelFont);
         gbc.gridx = 2;
@@ -314,7 +312,6 @@ public class EditarProduto extends JPanel {
         gbc.gridy = 5;
         camposPanel.add(dataValidadeField, gbc);
 
-        // Valor Unitário
         JLabel valorUnitarioLabel = new JLabel("Valor Unitário (R$)");
         valorUnitarioLabel.setFont(labelFont);
         gbc.gridx = 0;
@@ -372,6 +369,40 @@ public class EditarProduto extends JPanel {
         }
     }
 
+    private void carregarDadosProduto(){
+        try (Connection conn = ConexaoBD.getConnection()) {
+            Produto produto = ProdutoController.buscarProdutoPorId(conn, produtoId);
+            if (produto != null) {
+
+                nomeProdutoField.setText(produto.getNome());
+                qntMedidaField.setText(produto.getQntMedida()); 
+                String embalagemNome = produto.getEmbalagem(); 
+                embalagemComboBox.setSelectedItem(embalagemNome);
+                String categoriaNome = produto.getCategoria().getNome();
+                categoriaComboBox.setSelectedItem(categoriaNome);
+                String fornecedorNome = produto.getFornecedor().getNome();
+                fornecedorComboBox.setSelectedItem(fornecedorNome);
+                String fabricanteNome = produto.getFabricante().getNome();
+                fabricanteComboBox.setSelectedItem(fabricanteNome);
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/yyyy");
+                String dataFabricacao = produto.getDataFabricacao().format(dtf);
+                dataFabricacaoField.setText(dataFabricacao);
+                String dataValidade = produto.getDataValidade().format(dtf);
+                dataValidadeField.setText(dataValidade);
+                estoqueField.setText(String.valueOf(produto.getQntEstoque()));
+                BigDecimal valorUnitario = produto.getValor();
+                valorUnitarioField.setValue(valorUnitario);
+                
+            } else {
+                System.out.println("produto não encontrado!");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar dados do Medicamento.", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
     private JPanel criarBotoesPanel() {
         JPanel botoesPanel = new JPanel();
         botoesPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 40, 20));
@@ -392,235 +423,161 @@ public class EditarProduto extends JPanel {
         salvarButton.setPreferredSize(new Dimension(140, 35));
         botoesPanel.add(salvarButton);
 
+        salvarButton.addActionListener(e -> {
+            try {
+                salvarProduto(produtoId);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao atualizar produto: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
         cancelarButton.addActionListener(e -> {
             SwingUtilities.getWindowAncestor(this).dispose();
         });
 
-        salvarButton.addActionListener(e -> salvarProduto());
-
         return botoesPanel;
     }
 
-    private void salvarProduto() {
-        int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
+    private void salvarProduto(int ProdutoId){
+        try{
+            int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
+            String nomeProduto = nomeProdutoField.getText();
+            String qntMedida = qntMedidaField.getText();
+            String embalagem = (String) embalagemComboBox.getSelectedItem();
+            String categoriaNome = (String) categoriaComboBox.getSelectedItem();
+            String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
+            String fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
+            String dataFabricacao = dataFabricacaoField.getText();
+            String dataValidade = dataValidadeField.getText();
+            int estoque = Integer.parseInt(estoqueField.getText());
+            BigDecimal valorUnitario = (BigDecimal) valorUnitarioField.getValue();
 
-        String nomeProduto = nomeProdutoField.getText().trim().toLowerCase();
-        String categoriaProduto = (String) categoriaComboBox.getSelectedItem();
-        String embalagem = (String) embalagemComboBox.getSelectedItem();
-        String qntMedida = qntMedidaField.getText().trim();
-        String fabricanteNome = fabricanteField.getText().trim();
-        String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
-        String fabricacaoData = dataFabricacaoField.getText().trim();
-        String validadeData = dataValidadeField.getText().trim();
-        String valorUnitarioTexto = valorUnitarioField.getText().trim();
+            StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
+            boolean hasError = false;
 
-        StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
-        boolean hasError = false;
+            if (nomeProduto.isEmpty()) {
+                errorMessage.append("Nome deve ser preenchido.\n");
+                hasError = true;
+            } else {
+                if (!nomeProduto.matches("^[\\p{L}\\d\\s]*$")) {
+                    errorMessage.append("Nome inválido (apenas letras, números e espaços são permitidos).\n");
+                    hasError = true;
+                }
+            }
 
-        if (nomeProduto.isEmpty()) {
-            errorMessage.append("Nome deve ser preenchido.\n");
-            hasError = true;
-        } else {
-            if (!nomeProduto.matches("^[\\p{L}\\d\\s]*$")) {
-                errorMessage.append("Nome inválido (apenas letras, números e espaços são permitidos).\n");
+            if ("Outros".equals(embalagem)) {
+                embalagem = embalagemField.getText().trim();
+                if (embalagem.isEmpty()) {
+                    errorMessage.append("Embalagem deve ser preenchida.\n");
+                    hasError = true;
+                }
+            } else if ("Selecione".equals(embalagem)) {
+                errorMessage.append("Embalagem deve ser selecionada.\n");
                 hasError = true;
             }
-        }
 
-        if ("Outros".equals(embalagem)) {
-            embalagem = embalagemField.getText().trim();
-            if (embalagem.isEmpty()) {
-                errorMessage.append("Embalagem deve ser preenchida.\n");
+            if (categoriaNome.isEmpty()) {
+                errorMessage.append("Pelo menos uma categoria deve ser selecionada.\n");
                 hasError = true;
             }
-        } else if ("Selecione".equals(embalagem)) {
-            errorMessage.append("Embalagem deve ser selecionada.\n");
-            hasError = true;
-        }
 
-        if (categoriaProduto.isEmpty()) {
-            errorMessage.append("Pelo menos uma categoria deve ser selecionada.\n");
-            hasError = true;
-        }
+            if (fabricanteField.isVisible()) {
+                fabricanteNome = fabricanteField.getText().trim();
+                if (fabricanteNome.isEmpty()) {
+                    errorMessage.append("Fabricante deve ser informado.\n");
+                    hasError = true;
+                }
+            } else {
+                fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
+                if ("Selecione".equals(fabricanteNome) || fabricanteNome.isEmpty()) {
+                    errorMessage.append("Fabricante deve ser selecionado.\n");
+                    hasError = true;
+                }
+            }
 
-        if (fabricanteField.isVisible()) {
-            fabricanteNome = fabricanteField.getText().trim();
-            if (fabricanteNome.isEmpty()) {
-                errorMessage.append("Fabricante deve ser informado.\n");
+            if (qntMedida.isEmpty()) {
+                errorMessage.append("Medida deve ser informada.\n");
+                hasError = true;
+            } else if (!qntMedida.toLowerCase().matches("\\d+(\\.\\d+)?(ml|l|g|kg|un)")) {
+                errorMessage.append("Informe a medida com as seguintes unidades válidas:\n" +
+                        "(mL, kg, L, un).\n" +
+                        "Exemplo: 500mL, 10kg\n");
+                hasError = true;
+            } else {
+                double qntMedidaValor = Double.parseDouble(qntMedida.replaceAll("[^\\d.]", ""));
+                if (qntMedidaValor <= 0) {
+                    errorMessage.append("A medida deve ser um valor positivo.\n");
+                    hasError = true;
+                }
+            }
+
+            if ("Selecione".equals(fornecedorNome)) {
+                errorMessage.append("Fornecedor deve ser selecionado.\n");
                 hasError = true;
             }
-        } else {
-            fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
-            if ("Selecione".equals(fabricanteNome) || fabricanteNome.isEmpty()) {
-                errorMessage.append("Fabricante deve ser selecionado.\n");
-                hasError = true;
-            }
-        }
 
-        if (qntMedida.isEmpty()) {
-            errorMessage.append("Medida deve ser informada.\n");
-            hasError = true;
-        } else if (!qntMedida.toLowerCase().matches("\\d+(\\.\\d+)?(ml|l|g|kg|un)")) {
-            errorMessage.append("Informe a medida com as seguintes unidades válidas:\n" +
-                    "(mL, kg, L, un).\n" +
-                    "Exemplo: 500mL, 10kg\n");
-            hasError = true;
-        } else {
-            double qntMedidaValor = Double.parseDouble(qntMedida.replaceAll("[^\\d.]", ""));
-            if (qntMedidaValor <= 0) {
-                errorMessage.append("A medida deve ser um valor positivo.\n");
-                hasError = true;
-            }
-        }
+            Funcionario funcionario;
+            Fornecedor fornecedor;
 
-        Integer estoque = Integer.parseInt(estoqueField.getText().trim());
-        if (estoque < 0) {
-            errorMessage.append("A quantidade informada para estoque não pode ser negativa.\n");
-            hasError = true;
-        }
+            try (Connection conn = ConexaoBD.getConnection()) {
+                fornecedor = FornecedorDAO.buscarFornecedorPorNome(conn, fornecedorNome);
+                funcionario = FuncionarioDAO.buscarFuncionarioId(conn, idFuncionario);
 
-        if ("Selecione".equals(fornecedorNome)) {
-            errorMessage.append("Fornecedor deve ser selecionado.\n");
-            hasError = true;
-        }
-
-        Funcionario funcionario;
-        Fornecedor fornecedor;
-
-        try (Connection conn = ConexaoBD.getConnection()) {
-            fornecedor = FornecedorDAO.buscarFornecedorPorNome(conn, fornecedorNome);
-            funcionario = FuncionarioDAO.buscarFuncionarioId(conn, idFuncionario);
-
-            if (funcionario == null) {
-                JOptionPane.showMessageDialog(this, "Funcionário não encontrado com ID: " + idFuncionario,
-                        "Erro", JOptionPane.ERROR_MESSAGE);
+                if (funcionario == null) {
+                    JOptionPane.showMessageDialog(this, "Funcionário não encontrado com ID: " + idFuncionario,
+                            "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro na busca: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Erro na busca: " + ex.getMessage(), "Erro",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
 
-        LocalDate dataFabricacao = null, dataValidade = null;
-        if (fabricacaoData.equals("/") || validadeData.equals("/")) {
-            errorMessage.append("As datas de fabricação e validade devem ser preenchidas corretamente.\n");
-            hasError = true;
-        } else {
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
-                YearMonth ymFabricacao = YearMonth.parse(fabricacaoData, formatter);
-                YearMonth ymValidade = YearMonth.parse(validadeData, formatter);
-                dataFabricacao = ymFabricacao.atDay(28);
-                dataValidade = ymValidade.atDay(28);
-            } catch (DateTimeParseException ex) {
-                errorMessage.append("Formato de data inválido. Use Mês/Ano, ex: 08/2023\n");
-                hasError = true;
-            }
-        }
+            Categoria categoria = new Categoria();
+            categoria.setNome(categoriaNome);
 
-        if (dataFabricacao != null) {
-            LocalDate dataMinima = LocalDate.now().minusYears(5);
-            if (dataFabricacao.isBefore(dataMinima)) {
-                errorMessage.append("Data de fabricação inválida! Deve ser posterior a " +
-                        dataMinima.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ".\n");
-                hasError = true;
-            } else if (dataFabricacao.isAfter(LocalDate.now())) {
-                errorMessage.append("Data de fabricação inválida! Não pode ser posterior à data atual.\n");
-                hasError = true;
-            }
-        }
-
-        if (dataValidade != null) {
-            if (dataValidade.isBefore(dataFabricacao)) {
-                errorMessage.append("Data de validade inválida! Não pode ser anterior à data de fabricação.\n");
-                hasError = true;
-            } else if (dataValidade.isBefore(LocalDate.now())) {
-                errorMessage.append("Data de validade inválida! Não pode ser anterior à data atual.\n");
-                hasError = true;
-            }
-
-            LocalDate dataValidadeMaxima = dataFabricacao != null ? dataFabricacao.plusYears(5) : null;
-            if (dataValidadeMaxima != null && dataValidade.isAfter(dataValidadeMaxima)) {
-                errorMessage.append(
-                        "Data de validade inválida! Não pode ser superior a 5 anos a partir da data de fabricação.\n");
-                hasError = true;
-            }
-        }
-
-        if (valorUnitarioTexto.isEmpty()) {
-            errorMessage.append("O valor unitário deve ser informado.\n");
-            hasError = true;
-        }
-
-        if (hasError) {
-            JOptionPane.showMessageDialog(this, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        BigDecimal valorUnitario;
-
-        if (valorUnitarioTexto.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "O valor unitário deve ser informado.", "Erro",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        if (!valorUnitarioTexto.matches("\\d+(\\.\\d{1,2})?")) {
-            JOptionPane.showMessageDialog(this, "Valor unitário deve ser um número válido.", "Erro",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        valorUnitario = new BigDecimal(valorUnitarioTexto);
-
-        if (valorUnitario.compareTo(BigDecimal.ZERO) <= 0) {
-            JOptionPane.showMessageDialog(this, "O valor unitário deve ser maior que zero.", "Erro",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        Categoria categoria = new Categoria();
-        categoria.setNome(categoriaProduto);
-
-        Fabricante fabricante = new Fabricante();
-        fabricante.setNome(fabricanteNome);
-
-        produto.setNome(nomeProduto);
-        produto.setValor(valorUnitario);
-        produto.setDataFabricacao(dataFabricacao);
-        produto.setDataValidade(dataValidade);
-        produto.setQntMedida(qntMedida);
-        produto.setEmbalagem(embalagem);
-        produto.setFabricante(fabricante);
-        produto.setFornecedor(fornecedor);
-        produto.setCategoria(categoria);
+            Fabricante fabricante = new Fabricante();
+            fabricante.setNome(fabricanteNome);
 
         try (Connection conn = ConexaoBD.getConnection()) {
-            ProdutoDAO.atualizarProduto(conn, produto);
+            Produto produtoExistente = ProdutoDAO.buscarPorId(conn, produtoId);
+
+            if (produtoExistente == null) {
+                JOptionPane.showMessageDialog(null, "Produto não encontrado.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            produtoExistente.setNome(nomeProduto);
+            produtoExistente.setCategoria(categoria);
+            produtoExistente.setEmbalagem(embalagem);
+            produtoExistente.setFornecedor(fornecedor);
+            produtoExistente.setFabricante(fabricante);
+            produtoExistente.setFuncionario(funcionario);
+            produtoExistente.setQntMedida(qntMedida);
+            produtoExistente.setDataFabricacao(null);
+            produtoExistente.setDataValidade(null);
+            produtoExistente.setValor(valorUnitario);
+            produtoExistente.setQntEstoque(estoque);
+
+            ProdutoController.atualizarProduto(conn, produtoExistente);
             JOptionPane.showMessageDialog(null, "Produto atualizado com sucesso!", "Sucesso",
-                    JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.INFORMATION_MESSAGE);
+                nomeProdutoField.requestFocus();
 
-            SwingUtilities.getWindowAncestor(this).dispose();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao cadastrar produto: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+            }
 
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao atualizar produto: " + ex.getMessage(), "Erro",
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erro ao cadastrar produto: " + ex.getMessage(), "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
-    }
 
-    private void preencherCamposComDadosDoProduto() {
-        nomeProdutoField.setText(produto.getNome());
-        categoriaComboBox.setSelectedItem(produto.getCategoria().getNome());
-        embalagemComboBox.setSelectedItem(produto.getEmbalagem());
-        qntMedidaField.setText(produto.getQntMedida());
-        fabricanteComboBox.setSelectedItem(produto.getFabricante().getNome());
-        fornecedorComboBox.setSelectedItem(produto.getFornecedor().getNome());
-        dataFabricacaoField.setText(produto.getDataFabricacao().format(DateTimeFormatter.ofPattern("MM/yyyy")));
-        dataValidadeField.setText(produto.getDataValidade().format(DateTimeFormatter.ofPattern("MM/yyyy")));
-        valorUnitarioField.setText(produto.getValor().toString());
-        estoqueField.setText(String.valueOf(produto.getQntEstoque()));
-    }
+    };
 
     private void estilizarCamposFormulario(JComponent campo, Font font) {
         campo.setBackground(Color.WHITE);
@@ -633,40 +590,9 @@ public class EditarProduto extends JPanel {
 
     private void estilizarComboBox(JComboBox<String> comboBox, Font font) {
         comboBox.setBackground(Color.WHITE);
-        comboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
-                    boolean cellHasFocus) {
-                Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (isSelected) {
-                    component.setBackground(new Color(24, 39, 55));
-                    component.setForeground(Color.WHITE);
-                } else {
-                    component.setBackground(Color.WHITE);
-                    component.setForeground(Color.BLACK);
-                }
-                return component;
-            }
-        });
         comboBox.setFont(font);
         comboBox.setFocusable(false);
         comboBox.setSelectedIndex(0);
     }
-
-    private void atualizarFornecedores() {
-        String[] fornecedoresAtualizados = obterFornecedores();
-        fornecedorComboBox.removeAllItems();
-        for (String fornecedor : fornecedoresAtualizados) {
-            fornecedorComboBox.addItem(fornecedor);
-        }
-    }
-
-    private void atualizarFabricantes() {
-        String[] fabricantesAtualizadas = obterFabricantes();
-        fabricanteComboBox.removeAllItems();
-        for (String fabricante : fabricantesAtualizadas) {
-            fabricanteComboBox.addItem(fabricante);
-        }
-    }
-    
 }
+
