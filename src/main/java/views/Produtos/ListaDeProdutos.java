@@ -74,13 +74,15 @@ public class ListaDeProdutos extends JPanel {
     
         NumberFormat numberFormat = NumberFormat.getInstance(); 
         for (Produto produto : produtos) {
-            Object[] dadosProduto = new Object[5]; 
+            Object[] dadosProduto = new Object[8]; 
             dadosProduto[0] = produto.getNome(); 
             dadosProduto[1] = produto.getCategoria().getNome();
-            dadosProduto[0] = produto.getNome(); 
             dadosProduto[2] = formatarData(produto.getDataValidade()); 
             dadosProduto[3] = numberFormat.format(produto.getValor()); 
-            dadosProduto[4] = ""; 
+            dadosProduto[4] = produto.getQntEstoque();
+            dadosProduto[5] = produto.getEmbalagem();
+            dadosProduto[6] = produto.getQntMedida();
+            dadosProduto[7] = ""; 
     
             produtosFiltrados.add(dadosProduto); 
         }
@@ -191,12 +193,12 @@ public class ListaDeProdutos extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Nome", "Categoria", "Validade", "Valor Unitário", "Ações" };
+        String[] colunas = { "Nome", "Categoria", "Validade", "Valor Unitário", "Estoque", "Embalagem", "Medida", "Ações" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 4;
+                return column == 7;
             }
         };
 
@@ -218,8 +220,8 @@ public class ListaDeProdutos extends JPanel {
             tabela.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        tabela.getColumnModel().getColumn(4).setCellRenderer(new RenderizadorBotoes());
-        tabela.getColumnModel().getColumn(4).setCellEditor(new EditorBotoes(new JTextField()));
+        tabela.getColumnModel().getColumn(7).setCellRenderer(new RenderizadorBotoes());
+        tabela.getColumnModel().getColumn(7).setCellEditor(new EditorBotoes(new JTextField()));
 
         // Ajustando a largura das colunas
         tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
@@ -227,6 +229,9 @@ public class ListaDeProdutos extends JPanel {
         tabela.getColumnModel().getColumn(2).setPreferredWidth(80);
         tabela.getColumnModel().getColumn(3).setPreferredWidth(80);
         tabela.getColumnModel().getColumn(4).setPreferredWidth(150);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(100);
+        tabela.getColumnModel().getColumn(6).setPreferredWidth(50);  
+        tabela.getColumnModel().getColumn(7).setPreferredWidth(150); 
 
         // Desabilita seleções nas células
         tabela.setCellSelectionEnabled(false);
