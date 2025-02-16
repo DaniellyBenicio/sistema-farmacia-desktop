@@ -17,14 +17,14 @@ public class Produto {
     private LocalDate dataFabricacao;
     private String qntMedida;
     private String embalagem;
+    private int qntEmbalagem;
     private Funcionario funcionario;
     private Fabricante fabricante;
     private Fornecedor fornecedor;
     private Categoria categoria;
 
     public Produto(){};
-    
-    public Produto(String nome, BigDecimal valor, int qntEstoque, LocalDate dataValidade, LocalDate dataFabricacao, String qntMedida, String embalagem, Funcionario funcionario, Fabricante fabricante, Fornecedor fornecedor, Categoria categoria){
+    public Produto(String nome, BigDecimal valor, int qntEstoque, LocalDate dataValidade, LocalDate dataFabricacao, String qntMedida, String embalagem, int qntEmbalagem, Funcionario funcionario, Fabricante fabricante, Fornecedor fornecedor, Categoria categoria){
         this.nome = nome;
         this.valor = valor;
         this.qntEstoque = qntEstoque;
@@ -32,6 +32,7 @@ public class Produto {
         this.dataFabricacao = dataFabricacao;
         this.qntMedida = qntMedida;
         this.embalagem = embalagem;
+        this.qntEmbalagem = qntEmbalagem;
         this.funcionario = funcionario;
         this.fabricante = fabricante;
         this.fornecedor = fornecedor;
@@ -143,6 +144,18 @@ public class Produto {
             throw new IllegalArgumentException("A forma farmacêutica não pode ser vazia.");
         }
         this.embalagem = embalagem;
+    }
+
+    public int getQntEmbalagem() {
+        return qntEmbalagem;
+    }
+
+    public void setQntEmbalagem(int qntEmbalagem) {
+        if (qntEmbalagem >= 0) {
+            this.qntEmbalagem = qntEmbalagem;
+        } else {
+            throw new IllegalArgumentException("Quantidade não pode ser negativa");
+        }
     }
 
     public Funcionario getFuncionario() {

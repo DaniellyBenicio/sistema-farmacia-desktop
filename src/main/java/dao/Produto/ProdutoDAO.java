@@ -52,7 +52,7 @@ public class ProdutoDAO {
 
         Fornecedor fornecedor = FornecedorDAO.fornecedorPorId(conn, p.getFornecedor().getId());
 
-        String sql = "insert into produto (nome, valor, qntEstoque, dataValidade, dataFabricacao, qntMedida, embalagem, funcionario_id, fabricante_id, fornecedor_id, categoria_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "insert into produto (nome, valor, qntEstoque, dataValidade, dataFabricacao, qntMedida, embalagem, qntEmbalagem, funcionario_id, fabricante_id, fornecedor_id, categoria_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, p.getNome());
             pstmt.setBigDecimal(2, p.getValor());
@@ -61,10 +61,11 @@ public class ProdutoDAO {
             pstmt.setDate(5, Date.valueOf(p.getDataFabricacao()));
             pstmt.setString(6, p.getQntMedida());
             pstmt.setString(7, p.getEmbalagem());
-            pstmt.setInt(8, p.getFuncionario().getId());
-            pstmt.setInt(9, fabricanteId);
-            pstmt.setInt(10, fornecedor.getId());
-            pstmt.setInt(11, categoriaId);
+            pstmt.setInt(8, p.getQntEmbalagem());
+            pstmt.setInt(9, p.getFuncionario().getId());
+            pstmt.setInt(10, fabricanteId);
+            pstmt.setInt(11, fornecedor.getId());
+            pstmt.setInt(12, categoriaId);
 
 
             pstmt.executeUpdate();
@@ -98,7 +99,7 @@ public class ProdutoDAO {
     
         Fornecedor fornecedor = FornecedorDAO.fornecedorPorId(conn, p.getFornecedor().getId());
     
-        String sql = "update produto set nome = ?, valor = ?, qntEstoque = ?, dataValidade = ?, dataFabricacao = ?, qntMedida = ?, embalagem = ?, funcionario_id = ?, fabricante_id = ?, fornecedor_id = ?, categoria_id = ? where id = ?";
+        String sql = "update produto set nome = ?, valor = ?, qntEstoque = ?, dataValidade = ?, dataFabricacao = ?, qntMedida = ?, embalagem = ?, qntEmbalagem = ?, funcionario_id = ?, fabricante_id = ?, fornecedor_id = ?, categoria_id = ? where id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, p.getNome());
             pstmt.setBigDecimal(2, p.getValor());
@@ -107,11 +108,12 @@ public class ProdutoDAO {
             pstmt.setDate(5, Date.valueOf(p.getDataFabricacao()));
             pstmt.setString(6, p.getQntMedida());
             pstmt.setString(7, p.getEmbalagem());
-            pstmt.setInt(8, p.getFuncionario().getId());
-            pstmt.setInt(9, fabricanteId);
-            pstmt.setInt(10, fornecedor.getId());
-            pstmt.setInt(11, categoriaId);            
-            pstmt.setInt(12, p.getId());
+            pstmt.setInt(8, p.getQntEmbalagem());
+            pstmt.setInt(9, p.getFuncionario().getId());
+            pstmt.setInt(10, fabricanteId);
+            pstmt.setInt(11, fornecedor.getId());
+            pstmt.setInt(12, categoriaId);            
+            pstmt.setInt(13, p.getId());
     
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -123,7 +125,7 @@ public class ProdutoDAO {
     public static List<Produto> listarTodos(Connection conn) throws SQLException {
         List<Produto> produtos = new ArrayList<>();        
         String sql = "SELECT p.id, p.nome, p.valor, p.qntEstoque, p.dataValidade, "
-                        + "p.dataFabricacao, p.qntMedida, p.embalagem, "
+                        + "p.dataFabricacao, p.qntMedida, p.embalagem, p.qntEmbalagem, "
                         + "f.id AS funcionario_id, f.nome AS funcionario_nome, "
                         + "fa.id AS fabricante_id, fa.nome AS fabricante_nome, "
                         + "fo.id AS fornecedor_id, fo.nome AS fornecedor_nome, "
@@ -148,6 +150,7 @@ public class ProdutoDAO {
                 prod.setDataFabricacao(YearMonth.from(rs.getDate("dataFabricacao").toLocalDate()));
                 prod.setQntMedida(rs.getString("qntMedida"));
                 prod.setEmbalagem(rs.getString("embalagem"));
+                prod.setQntEmbalagem(rs.getInt("qntEmbalagem"));
     
                 Funcionario funcionario = new Funcionario();
                 funcionario.setId(rs.getInt("funcionario_id"));
@@ -179,7 +182,7 @@ public class ProdutoDAO {
 
     public static Produto buscarPorId(Connection conn, int id) throws SQLException {
         String sql = "SELECT p.id, p.nome, p.valor, p.qntEstoque, p.dataValidade, "
-               + "p.dataFabricacao, p.qntMedida, p.embalagem, "
+               + "p.dataFabricacao, p.qntMedida, p.embalagem, p.qntEmbalagem,"
                + "f.id AS funcionario_id, f.nome AS funcionario_nome, "
                + "fa.id AS fabricante_id, fa.nome AS fabricante_nome, "
                + "fo.id AS fornecedor_id, fo.nome AS fornecedor_nome, "
@@ -207,6 +210,7 @@ public class ProdutoDAO {
                     produto.setDataFabricacao(YearMonth.from(rs.getDate("dataFabricacao").toLocalDate()));
                     produto.setQntMedida(rs.getString("qntMedida"));
                     produto.setEmbalagem(rs.getString("embalagem"));
+                    produto.setQntEmbalagem(rs.getInt("qntEmbalagem"));
     
                     Funcionario funcionario = new Funcionario();
                     funcionario.setId(rs.getInt("funcionario_id"));

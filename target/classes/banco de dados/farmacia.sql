@@ -91,6 +91,7 @@ create table produto (
     dataFabricacao date not null,
     qntMedida varchar (50) not null COLLATE utf8mb4_bin,
     embalagem varchar (50) not null COLLATE utf8mb4_bin,
+    qntEmbalagem int not null,
     funcionario_id int not null,
     fabricante_id int not null,
     fornecedor_id int not null,
@@ -102,7 +103,10 @@ create table produto (
     unique (nome, qntMedida, embalagem, fabricante_id, dataFabricacao, dataValidade, categoria_id)
 );
 
+
 drop database farmacia;
+
+
 
 insert into cargo values (1, 'Gerente');
 insert into funcionario values (1, 'Danielly', '88998045537', 'd@gmail.com', 1, true);
