@@ -51,6 +51,7 @@ public class EditarProduto extends JPanel {
     private JTextField estoqueField;
     private JFormattedTextField valorUnitarioField;
     private JComboBox<String> categoriaComboBox;
+    private JTextField quantidadeEmbalagemField;
     private int produtoId;
 
     public EditarProduto(int produtoId) {
@@ -143,10 +144,11 @@ public class EditarProduto extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(categoriaLabel, gbc);
 
-        String[] tiposDeCategoria = { 
-            "Selecione", "Acessórios e Utilidades Pessoais", "Alimentícios", "Cosméticos e Perfumaria", "Dermocosméticos", 
-            "Fraldas e Acessórios", "Higiene e Cuidado Pessoal", "Materiais Hospitalares", "Ortopedia", 
-            "Saúde Sexual e Reprodutiva", "Suplementos e Vitaminas" };
+        String[] tiposDeCategoria = {
+                "Selecione", "Acessórios e Utilidades Pessoais", "Alimentícios", "Cosméticos e Perfumaria",
+                "Dermocosméticos",
+                "Fraldas e Acessórios", "Higiene e Cuidado Pessoal", "Materiais Hospitalares", "Ortopedia",
+                "Saúde Sexual e Reprodutiva", "Suplementos e Vitaminas" };
         categoriaComboBox = new JComboBox<>(tiposDeCategoria);
         categoriaComboBox.setPreferredSize(new Dimension(235, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
@@ -220,19 +222,28 @@ public class EditarProduto extends JPanel {
         gbc.gridy = 3;
         camposPanel.add(qntMedidaField, gbc);
 
-        // Estoque
-        JLabel estoqueLabel = new JLabel("Estoque");
-        estoqueLabel.setFont(labelFont);
-        gbc.gridx = 2;
-        gbc.gridy = 2;
-        camposPanel.add(estoqueLabel, gbc);
-
-        estoqueField = new JTextField();
-        estoqueField.setPreferredSize(new Dimension(170, 40));
-        estilizarCamposFormulario(estoqueField, fieldFont);
-        gbc.gridx = 2;
-        gbc.gridy = 3;
-        camposPanel.add(estoqueField, gbc);
+         // Estoque
+         JLabel estoqueLabel = new JLabel("Estoque");
+         estoqueLabel.setFont(labelFont);
+         gbc.gridx = 2;
+         gbc.gridy = 2;
+         camposPanel.add(estoqueLabel, gbc);
+ 
+         NumberFormatter estoqueFormatter = new NumberFormatter();
+         estoqueFormatter.setValueClass(Integer.class);
+         estoqueFormatter.setAllowsInvalid(false);
+         estoqueFormatter.setCommitsOnValidEdit(true);
+         estoqueFormatter.setMinimum(1);
+         estoqueFormatter.setMaximum(Integer.MAX_VALUE);
+ 
+         estoqueFormatter.setFormat(NumberFormat.getInstance());
+ 
+         estoqueField = new JFormattedTextField(estoqueFormatter);
+         estoqueField.setPreferredSize(new Dimension(170, 40));
+         estilizarCamposFormulario(estoqueField, fieldFont);
+         gbc.gridx = 2;
+         gbc.gridy = 3;
+         camposPanel.add(estoqueField, gbc);
 
         // Fornecedor
         JLabel fornecedorLabel = new JLabel("Fornecedor");
@@ -271,7 +282,6 @@ public class EditarProduto extends JPanel {
             }
         });
 
-
         JLabel dataFabricacaoLabel = new JLabel("Fabricação (Mês/Ano)");
         dataFabricacaoLabel.setFont(labelFont);
         gbc.gridx = 1;
@@ -280,7 +290,7 @@ public class EditarProduto extends JPanel {
 
         try {
             MaskFormatter dataFormatter = new MaskFormatter("##/####");
-            dataFormatter.setPlaceholderCharacter('_'); 
+            dataFormatter.setPlaceholderCharacter('_');
             dataFabricacaoField = new JFormattedTextField(dataFormatter);
             dataFabricacaoField.setPreferredSize(new Dimension(170, 40));
             estilizarCamposFormulario(dataFabricacaoField, fieldFont);
@@ -300,7 +310,7 @@ public class EditarProduto extends JPanel {
 
         try {
             MaskFormatter dataFormatter = new MaskFormatter("##/####");
-            dataFormatter.setPlaceholderCharacter('_'); 
+            dataFormatter.setPlaceholderCharacter('_');
             dataValidadeField = new JFormattedTextField(dataFormatter);
             dataValidadeField.setPreferredSize(new Dimension(170, 40));
             estilizarCamposFormulario(dataValidadeField, fieldFont);
@@ -312,6 +322,7 @@ public class EditarProduto extends JPanel {
         gbc.gridy = 5;
         camposPanel.add(dataValidadeField, gbc);
 
+        // Valor Unitário
         JLabel valorUnitarioLabel = new JLabel("Valor Unitário (R$)");
         valorUnitarioLabel.setFont(labelFont);
         gbc.gridx = 0;
@@ -327,7 +338,11 @@ public class EditarProduto extends JPanel {
                 if (text == null || text.isEmpty()) {
                     return null;
                 }
-                return super.stringToValue(text);
+                try {
+                    return super.stringToValue(text);
+                } catch (ParseException e) {
+                    return null; // Handle invalid input
+                }
             }
         };
         formatter.setAllowsInvalid(false);
@@ -341,6 +356,19 @@ public class EditarProduto extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 7;
         camposPanel.add(valorUnitarioField, gbc);
+
+        JLabel quantidadeEmbalagemLabel = new JLabel("Qnt. Embalagem");
+        quantidadeEmbalagemLabel.setFont(labelFont);
+        gbc.gridx = 1;
+        gbc.gridy = 6;
+        camposPanel.add(quantidadeEmbalagemLabel, gbc);
+
+        quantidadeEmbalagemField = new JTextField();
+        quantidadeEmbalagemField.setPreferredSize(new Dimension(120, 40));
+        estilizarCamposFormulario(quantidadeEmbalagemField, fieldFont);
+        gbc.gridx = 1;
+        gbc.gridy = 7;
+        camposPanel.add(quantidadeEmbalagemField, gbc);
 
         return camposPanel;
     }
@@ -369,16 +397,16 @@ public class EditarProduto extends JPanel {
         }
     }
 
-    private void carregarDadosProduto(){
+    private void carregarDadosProduto() {
         try (Connection conn = ConexaoBD.getConnection()) {
             Produto produto = ProdutoController.buscarProdutoPorId(conn, produtoId);
             if (produto != null) {
 
                 nomeProdutoField.setText(produto.getNome());
-                qntMedidaField.setText(produto.getQntMedida()); 
-                String embalagemNome = produto.getEmbalagem(); 
+                qntMedidaField.setText(produto.getQntMedida());
+                String embalagemNome = produto.getEmbalagem();
                 embalagemComboBox.setSelectedItem(embalagemNome);
-                String categoriaNome = produto.getCategoria().getNome().trim(); 
+                String categoriaNome = produto.getCategoria().getNome().trim();
                 categoriaComboBox.setSelectedItem(categoriaNome);
                 String fornecedorNome = produto.getFornecedor().getNome();
                 fornecedorComboBox.setSelectedItem(fornecedorNome);
@@ -392,7 +420,8 @@ public class EditarProduto extends JPanel {
                 estoqueField.setText(String.valueOf(produto.getQntEstoque()));
                 BigDecimal valorUnitario = produto.getValor();
                 valorUnitarioField.setValue(valorUnitario);
-                
+                quantidadeEmbalagemField.setText(String.valueOf(produto.getQntEmbalagem()));
+
             } else {
                 System.out.println("produto não encontrado!");
             }
@@ -439,8 +468,8 @@ public class EditarProduto extends JPanel {
         return botoesPanel;
     }
 
-    private void salvarProduto(int ProdutoId){
-        try{
+    private void salvarProduto(int ProdutoId) {
+        try {
             int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
             String nomeProduto = nomeProdutoField.getText();
             String qntMedida = qntMedidaField.getText();
@@ -450,8 +479,9 @@ public class EditarProduto extends JPanel {
             String fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
             String dataFabricacaoTexto = dataFabricacaoField.getText().trim();
             String dataValidadeTexto = dataValidadeField.getText().trim();
-            int estoque = Integer.parseInt(estoqueField.getText());
+            String estoqueTexto = estoqueField.getText().trim();
             String valorTexto = valorUnitarioField.getText().replace("R$", "").trim().replace(",", ".");
+            String qntEmbalagemTexto = quantidadeEmbalagemField.getText().trim();
 
             StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
             boolean hasError = false;
@@ -477,7 +507,7 @@ public class EditarProduto extends JPanel {
                 hasError = true;
             }
 
-            //ajustar aqui
+            // ajustar aqui
             if (categoriaNome.isEmpty()) {
                 errorMessage.append("Pelo menos uma categoria deve ser selecionada.\n");
                 hasError = true;
@@ -511,6 +541,16 @@ public class EditarProduto extends JPanel {
                     errorMessage.append("A medida deve ser um valor positivo.\n");
                     hasError = true;
                 }
+            }
+
+            Integer estoque = (Integer) ((JFormattedTextField) estoqueField).getValue(); // Get the Integer value
+    
+            if (estoque == null) {
+                errorMessage.append("O estoque não pode ser vazio.\n");
+                hasError = true;
+            } else if (estoque < 0) {
+                errorMessage.append("A quantidade informada para estoque não pode ser negativa\n");
+                hasError = true;
             }
 
             if ("Selecione".equals(fornecedorNome)) {
@@ -593,6 +633,20 @@ public class EditarProduto extends JPanel {
                 hasError = true;
             }
 
+            if (qntEmbalagemTexto.isEmpty()) {
+                errorMessage.append("Quantidade por embalagem deve ser informada.\n");
+                hasError = true;
+            } else if (!qntEmbalagemTexto.matches("\\d+")) {
+                errorMessage.append("Quantidade por embalagem deve ser um número inteiro válido.\n");
+                hasError = true;
+            } else {
+                int quantidadeEmbalagem = Integer.parseInt(qntEmbalagemTexto);
+                if (quantidadeEmbalagem <= 0) {
+                    errorMessage.append("Quantidade por embalagem deve ser um número maior que zero.\n");
+                    hasError = true;
+                }
+            }
+
             if (hasError) {
                 JOptionPane.showMessageDialog(this, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -623,29 +677,30 @@ public class EditarProduto extends JPanel {
             YearMonth dataFabricacaoYearMonth = YearMonth.from(dataFabricacao);
             YearMonth dataValidadeYearMonth = YearMonth.from(dataValidade);
 
-        try (Connection conn = ConexaoBD.getConnection()) {
-            Produto produtoExistente = ProdutoDAO.buscarPorId(conn, produtoId);
+            try (Connection conn = ConexaoBD.getConnection()) {
+                Produto produtoExistente = ProdutoDAO.buscarPorId(conn, produtoId);
 
-            if (produtoExistente == null) {
-                JOptionPane.showMessageDialog(null, "Produto não encontrado.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+                if (produtoExistente == null) {
+                    JOptionPane.showMessageDialog(null, "Produto não encontrado.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
-            produtoExistente.setNome(nomeProduto);
-            produtoExistente.setCategoria(categoria);
-            produtoExistente.setEmbalagem(embalagem);
-            produtoExistente.setFornecedor(fornecedor);
-            produtoExistente.setFabricante(fabricante);
-            produtoExistente.setFuncionario(funcionario);
-            produtoExistente.setQntMedida(qntMedida);
-            produtoExistente.setDataFabricacao(dataFabricacaoYearMonth);
-            produtoExistente.setDataValidade(dataValidadeYearMonth);
-            produtoExistente.setValor(valorUnitario);
-            produtoExistente.setQntEstoque(estoque);
+                produtoExistente.setNome(nomeProduto);
+                produtoExistente.setCategoria(categoria);
+                produtoExistente.setEmbalagem(embalagem);
+                produtoExistente.setFornecedor(fornecedor);
+                produtoExistente.setFabricante(fabricante);
+                produtoExistente.setFuncionario(funcionario);
+                produtoExistente.setQntMedida(qntMedida);
+                produtoExistente.setDataFabricacao(dataFabricacaoYearMonth);
+                produtoExistente.setDataValidade(dataValidadeYearMonth);
+                produtoExistente.setValor(valorUnitario);
+                produtoExistente.setQntEstoque(estoque);
+                produtoExistente.setQntEmbalagem(Integer.parseInt(qntEmbalagemTexto));
 
-            ProdutoController.atualizarProduto(conn, produtoExistente);
-            JOptionPane.showMessageDialog(null, "Produto atualizado com sucesso!", "Sucesso",
+                ProdutoController.atualizarProduto(conn, produtoExistente);
+                JOptionPane.showMessageDialog(null, "Produto atualizado com sucesso!", "Sucesso",
                         JOptionPane.INFORMATION_MESSAGE);
                 nomeProdutoField.requestFocus();
 
@@ -677,4 +732,3 @@ public class EditarProduto extends JPanel {
         comboBox.setSelectedIndex(0);
     }
 }
-

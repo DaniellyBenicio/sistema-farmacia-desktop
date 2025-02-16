@@ -69,22 +69,26 @@ public class ListaDeProdutos extends JPanel {
         return "";
     }
 
+    private String formatarEstoque(int estoque) {
+        return String.format("%,d", estoque); // Formata com separadores de milhar
+    }
+
     private void atualizarProdutosFiltrados(List<Produto> produtos) {
-        produtosFiltrados.clear(); 
-    
-        NumberFormat numberFormat = NumberFormat.getInstance(); 
+        produtosFiltrados.clear();
+
         for (Produto produto : produtos) {
-            Object[] dadosProduto = new Object[8]; 
-            dadosProduto[0] = produto.getNome(); 
+            Object[] dadosProduto = new Object[9];
+            dadosProduto[0] = produto.getNome();
             dadosProduto[1] = produto.getCategoria().getNome();
-            dadosProduto[2] = formatarData(produto.getDataValidade()); 
-            dadosProduto[3] = numberFormat.format(produto.getValor()); 
-            dadosProduto[4] = produto.getQntEstoque();
+            dadosProduto[2] = formatarData(produto.getDataValidade());
+            dadosProduto[3] = produto.getValor();
+            dadosProduto[4] = formatarEstoque(produto.getQntEstoque());
             dadosProduto[5] = produto.getEmbalagem();
-            dadosProduto[6] = produto.getQntMedida();
-            dadosProduto[7] = ""; 
-    
-            produtosFiltrados.add(dadosProduto); 
+            dadosProduto[6] = produto.getQntEmbalagem();
+            dadosProduto[7] = produto.getQntMedida();
+            dadosProduto[8] = "";
+
+            produtosFiltrados.add(dadosProduto);
         }
     }
 
@@ -193,12 +197,13 @@ public class ListaDeProdutos extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Nome", "Categoria", "Validade", "Valor Unitário", "Estoque", "Embalagem", "Medida", "Ações" };
+        String[] colunas = { "Nome", "Categoria", "Validade", "Valor Unitário", "Estoque", "Embalagem",
+                "Qnt. Embalagem", "Medida", "Ações" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 7;
+                return column == 8;
             }
         };
 
@@ -220,8 +225,8 @@ public class ListaDeProdutos extends JPanel {
             tabela.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        tabela.getColumnModel().getColumn(7).setCellRenderer(new RenderizadorBotoes());
-        tabela.getColumnModel().getColumn(7).setCellEditor(new EditorBotoes(new JTextField()));
+        tabela.getColumnModel().getColumn(8).setCellRenderer(new RenderizadorBotoes());
+        tabela.getColumnModel().getColumn(8).setCellEditor(new EditorBotoes(new JTextField()));
 
         // Ajustando a largura das colunas
         tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
@@ -230,8 +235,9 @@ public class ListaDeProdutos extends JPanel {
         tabela.getColumnModel().getColumn(3).setPreferredWidth(90);
         tabela.getColumnModel().getColumn(4).setPreferredWidth(90);
         tabela.getColumnModel().getColumn(5).setPreferredWidth(90);
-        tabela.getColumnModel().getColumn(6).setPreferredWidth(50);  
-        tabela.getColumnModel().getColumn(7).setPreferredWidth(150); 
+        tabela.getColumnModel().getColumn(6).setPreferredWidth(70);
+        tabela.getColumnModel().getColumn(7).setPreferredWidth(50);
+        tabela.getColumnModel().getColumn(8).setPreferredWidth(150);
 
         // Desabilita seleções nas células
         tabela.setCellSelectionEnabled(false);
@@ -245,8 +251,7 @@ public class ListaDeProdutos extends JPanel {
     }
 
     private void filtrarProdutos(String filtro) {
-        NumberFormat numberFormat = NumberFormat.getInstance();
-        
+
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
             atualizarProdutosFiltrados(produtos);
         } else {
@@ -256,7 +261,11 @@ public class ListaDeProdutos extends JPanel {
                             produto.getNome(),
                             produto.getCategoria().getNome(),
                             formatarData(produto.getDataValidade()),
-                            numberFormat.format(produto.getValor()),
+                            produto.getValor(),
+                            formatarEstoque(produto.getQntEstoque()),
+                            produto.getEmbalagem(),
+                            produto.getQntEmbalagem(),
+                            produto.getQntMedida()
                     })
                     .collect(Collectors.toList());
         }
