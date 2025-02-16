@@ -14,7 +14,6 @@ import models.Medicamento.Medicamento;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +31,9 @@ public class EstoqueMedicamento extends JPanel {
     private JPanel painelCentral;
     private List<Boolean> linhasSelecionadas;
     private JButton realizarPedidoButton;
+    private boolean baixoEstoqueSelecionado = false;
+    private Timer timer;
+    private JTextField campoBusca;
 
     public EstoqueMedicamento(Connection conn, PrincipalEstoque principalEstoque, CardLayout layoutCartao,
             JPanel painelCentral) {
@@ -39,6 +41,7 @@ public class EstoqueMedicamento extends JPanel {
         this.principalEstoque = principalEstoque;
         this.layoutCartao = layoutCartao;
         this.painelCentral = painelCentral;
+        campoBusca = new JTextField();
 
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
@@ -66,6 +69,21 @@ public class EstoqueMedicamento extends JPanel {
         carregarDados();
 
         atualizarEstadoBotaoPedido();
+        iniciarTimer();
+    }
+
+    private void iniciarTimer() {
+        timer = new Timer(3000, e -> {
+            if (!baixoEstoqueSelecionado && !isCampoBuscaPreenchido()) {
+                atualizarTabela();
+            }
+        });
+        timer.start();
+    }
+
+    private boolean isCampoBuscaPreenchido() {
+        return campoBusca.getText() != null && !campoBusca.getText().trim().isEmpty()
+                && !campoBusca.getText().equals("Buscar");
     }
 
     private void inicializarLinhasSelecionadas() {
@@ -77,6 +95,36 @@ public class EstoqueMedicamento extends JPanel {
 
     private JPanel criarTituloEBusca() {
         JPanel painelSuperior = new JPanel(new BorderLayout());
+
+        JPanel painelVoltar = new JPanel();
+        JButton voltar = new JButton("Voltar");
+        voltar.setFont(new Font("Arial", Font.PLAIN, 17));
+        voltar.setBorderPainted(false);
+        voltar.setContentAreaFilled(false);
+        voltar.setFocusPainted(true);
+        voltar.setPreferredSize(new Dimension(90, 30));
+        voltar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        voltar.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                voltar.setForeground((new Color(50, 100, 150)));
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                voltar.setForeground(Color.BLACK);
+            }
+        });
+
+        voltar.addActionListener(e -> {
+            SwingUtilities.invokeLater(() -> {
+                layoutCartao.show(painelCentral, "GerenciamentoDeEstoque");
+            });
+        });
+
+        painelVoltar.add(voltar);
+        painelSuperior.add(painelVoltar, BorderLayout.WEST);
 
         JPanel painelTitulo = new JPanel();
         painelTitulo.setLayout(new BoxLayout(painelTitulo, BoxLayout.Y_AXIS));
@@ -145,41 +193,46 @@ public class EstoqueMedicamento extends JPanel {
         baixoEstoque.setBackground(new Color(24, 39, 55));
         baixoEstoque.setForeground(Color.WHITE);
         baixoEstoque.setFocusPainted(false);
-        baixoEstoque.setPreferredSize(new Dimension(150, 30));
+        baixoEstoque.setPreferredSize(new Dimension(160, 30));
 
         baixoEstoque.addActionListener(e -> {
-            try {
-                medicamentos = MedicamentoDAO.listarBaixoEstoque(this.conn);
-                inicializarLinhasSelecionadas();
-                carregarDados();
-                atualizarEstadoBotaoPedido();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Erro ao carregar baixo estoque.", "Erro", JOptionPane.ERROR_MESSAGE);
+            baixoEstoqueSelecionado = !baixoEstoqueSelecionado;
+
+            if (baixoEstoqueSelecionado) {
+                baixoEstoque.setBackground(new Color(50, 100, 150));
+
+                try {
+                    medicamentos = MedicamentoDAO.listarBaixoEstoque(this.conn);
+                    inicializarLinhasSelecionadas();
+                    carregarDados();
+                    atualizarEstadoBotaoPedido();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Erro ao carregar baixo estoque.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                baixoEstoque.setBackground(new Color(24, 39, 55));
+                try {
+                    medicamentos = MedicamentoController.listarEstoqueMedicamento(this.conn);
+                    inicializarLinhasSelecionadas();
+                    carregarDados();
+                    atualizarEstadoBotaoPedido();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Erro ao carregar medicamentos.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
-        });
-
-        JButton voltar = new JButton("Voltar");
-        voltar.setFont(new Font("Arial", Font.BOLD, 16));
-        voltar.setBackground(new Color(24, 39, 55));
-        voltar.setForeground(Color.WHITE);
-        voltar.setFocusPainted(false);
-        voltar.setPreferredSize(new Dimension(150, 30));
-
-        voltar.addActionListener(e -> {
-            SwingUtilities.invokeLater(() -> {
-                layoutCartao.show(painelCentral, "GerenciamentoDeEstoque");
-            });
         });
 
         painelBuscaBotao.add(campoBusca);
         painelBuscaBotao.add(Box.createHorizontalGlue());
         painelBuscaBotao.add(baixoEstoque);
         painelBuscaBotao.add(Box.createHorizontalStrut(10));
-        painelBuscaBotao.add(voltar);
 
-        painelSuperior.add(painelTitulo, BorderLayout.NORTH);
-        painelSuperior.add(painelBuscarTitulo, BorderLayout.CENTER);
+        painelSuperior.add(painelTitulo, BorderLayout.CENTER);
+        painelSuperior.add(painelBuscarTitulo, BorderLayout.SOUTH);
         painelSuperior.add(painelBuscaBotao, BorderLayout.SOUTH);
 
         return painelSuperior;
@@ -216,12 +269,19 @@ public class EstoqueMedicamento extends JPanel {
         return buttonPanel;
     }
 
-    public void atualizarTabela() {
+    private void atualizarTabela() {
+        if (baixoEstoqueSelecionado || isCampoBuscaPreenchido()) {
+            return;
+        }
+
         try {
-            medicamentos = MedicamentoController.listarEstoqueMedicamento(this.conn);
-            inicializarLinhasSelecionadas();
-            carregarDados();
-            atualizarEstadoBotaoPedido();
+            List<Medicamento> novosMedicamentos = MedicamentoController.listarEstoqueMedicamento(this.conn);
+            if (!novosMedicamentos.equals(medicamentos)) {
+                medicamentos = novosMedicamentos;
+                inicializarLinhasSelecionadas();
+                carregarDados();
+                atualizarEstadoBotaoPedido();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erro ao carregar medicamentos.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -248,11 +308,9 @@ public class EstoqueMedicamento extends JPanel {
 
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 0;
+                return column == 0 && baixoEstoqueSelecionado && !medicamentos.isEmpty();
             }
         };
-
-        carregarDados();
 
         tabela = new JTable(modeloTabela) {
             @Override
@@ -263,6 +321,13 @@ public class EstoqueMedicamento extends JPanel {
                 } else {
                     c.setBackground(Color.WHITE);
                 }
+
+                if (baixoEstoqueSelecionado && column == 8) {
+                    c.setForeground(Color.RED);
+                } else {
+                    c.setForeground(Color.BLACK);
+                }
+
                 return c;
             }
         };
@@ -297,7 +362,7 @@ public class EstoqueMedicamento extends JPanel {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int row = tabela.rowAtPoint(evt.getPoint());
                 int column = tabela.columnAtPoint(evt.getPoint());
-                if (column == 0) {
+                if (column == 0 && baixoEstoqueSelecionado && !medicamentos.isEmpty()) {
                     linhasSelecionadas.set(row, !linhasSelecionadas.get(row));
                     modeloTabela.fireTableRowsUpdated(row, row);
                     atualizarEstadoBotaoPedido();
@@ -309,6 +374,39 @@ public class EstoqueMedicamento extends JPanel {
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 0, 30));
 
         return scrollPane;
+    }
+
+    private void carregarDados() {
+        modeloTabela.setRowCount(0);
+
+        if (medicamentos == null || medicamentos.isEmpty()) {
+            modeloTabela.addRow(new Object[] { false, "Nenhum medicamento encontrado.", "", "", "", "", "", "", "" });
+        } else {
+            for (int i = 0; i < medicamentos.size(); i++) {
+                Medicamento medicamento = medicamentos.get(i);
+                Object[] rowData = new Object[9];
+                rowData[0] = linhasSelecionadas.get(i);
+                rowData[1] = medicamento.getNome();
+                rowData[2] = medicamento.getCategoria().getNome();
+                rowData[3] = medicamento.getFormaFarmaceutica();
+                rowData[4] = medicamento.getDosagem();
+                rowData[5] = medicamento.getFornecedor().getNome();
+                rowData[6] = formatarData(medicamento.getDataValidade());
+                rowData[7] = medicamento.getValorUnit();
+                rowData[8] = formatarEstoque(medicamento.getQnt());
+
+                modeloTabela.addRow(rowData);
+            }
+        }
+    }
+
+    private String formatarEstoque(int estoque) {
+        return String.format("%,d", estoque);
+    }
+
+    private void atualizarEstadoBotaoPedido() {
+        boolean algumSelecionado = linhasSelecionadas.contains(true);
+        realizarPedidoButton.setEnabled(algumSelecionado && baixoEstoqueSelecionado);
     }
 
     private void filtrarMedicamentos(String filtro) {
@@ -350,31 +448,6 @@ public class EstoqueMedicamento extends JPanel {
         atualizarEstadoBotaoPedido();
     }
 
-    private void carregarDados() {
-        modeloTabela.setRowCount(0);
-
-        if (medicamentos == null || medicamentos.isEmpty()) {
-            modeloTabela.addRow(new Object[] { false, "Medicamento não encontrado.", "", "", "", "", "" });
-        } else {
-            NumberFormat numberFormat = NumberFormat.getInstance();
-            for (int i = 0; i < medicamentos.size(); i++) {
-                Medicamento medicamento = medicamentos.get(i);
-                Object[] rowData = new Object[9];
-                rowData[0] = linhasSelecionadas.get(i);
-                rowData[1] = medicamento.getNome();
-                rowData[2] = medicamento.getCategoria().getNome();
-                rowData[3] = medicamento.getFormaFarmaceutica();
-                rowData[4] = medicamento.getDosagem();
-                rowData[5] = medicamento.getFornecedor().getNome();
-                rowData[6] = formatarData(medicamento.getDataValidade());
-                rowData[7] = numberFormat.format(medicamento.getValorUnit());
-                rowData[8] = medicamento.getQnt();
-
-                modeloTabela.addRow(rowData);
-            }
-        }
-    }
-
     private List<Medicamento> obterMedicamentosSelecionados() {
         List<Medicamento> selecionados = new ArrayList<>();
         for (int i = 0; i < medicamentos.size(); i++) {
@@ -385,8 +458,4 @@ public class EstoqueMedicamento extends JPanel {
         return selecionados;
     }
 
-    private void atualizarEstadoBotaoPedido() {
-        boolean algumSelecionado = linhasSelecionadas.contains(true);
-        realizarPedidoButton.setEnabled(algumSelecionado);
-    }
 }

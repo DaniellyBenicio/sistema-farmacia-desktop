@@ -3,7 +3,6 @@ package views.Produtos;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -70,7 +69,7 @@ public class ListaDeProdutos extends JPanel {
     }
 
     private String formatarEstoque(int estoque) {
-        return String.format("%,d", estoque); // Formata com separadores de milhar
+        return String.format("%,d", estoque);
     }
 
     private void atualizarProdutosFiltrados(List<Produto> produtos) {
@@ -228,7 +227,6 @@ public class ListaDeProdutos extends JPanel {
         tabela.getColumnModel().getColumn(8).setCellRenderer(new RenderizadorBotoes());
         tabela.getColumnModel().getColumn(8).setCellEditor(new EditorBotoes(new JTextField()));
 
-        // Ajustando a largura das colunas
         tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
         tabela.getColumnModel().getColumn(2).setPreferredWidth(90);
@@ -239,7 +237,6 @@ public class ListaDeProdutos extends JPanel {
         tabela.getColumnModel().getColumn(7).setPreferredWidth(50);
         tabela.getColumnModel().getColumn(8).setPreferredWidth(150);
 
-        // Desabilita seleções nas células
         tabela.setCellSelectionEnabled(false);
         tabela.setRowSelectionAllowed(false);
         tabela.setColumnSelectionAllowed(false);

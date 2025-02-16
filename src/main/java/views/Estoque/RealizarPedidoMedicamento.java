@@ -160,7 +160,7 @@ class RealizarPedidoMedicamento extends JDialog {
                     medicamento.getDosagem(),
                     medicamento.getFornecedor().getNome(),
                     String.format("R$ %.2f", medicamento.getValorUnit()),
-                    "" // Começa com a quantidade vazia
+                    ""
             };
             modeloTabela.addRow(dadosLinha);
         }
