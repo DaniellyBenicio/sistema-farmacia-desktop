@@ -195,12 +195,12 @@ public class CadastrarProduto extends JPanel {
         qntMedidaField = new JTextField();
         qntMedidaField.setPreferredSize(new Dimension(180, 40));
         estilizarCamposFormulario(qntMedidaField, fieldFont);
-        qntMedidaField.setText("Medidas: mL, kg, L, un");
+        qntMedidaField.setText("Medidas: mL, g, L, un");
         qntMedidaField.setForeground(Color.GRAY);
         qntMedidaField.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
-                if (qntMedidaField.getText().equals("Medidas: mL, kg, L, un")) {
+                if (qntMedidaField.getText().equals("Medidas: mL, g, L, un")) {
                     qntMedidaField.setText("");
                     qntMedidaField.setForeground(Color.BLACK);
                 }
@@ -209,7 +209,7 @@ public class CadastrarProduto extends JPanel {
             @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (qntMedidaField.getText().isEmpty()) {
-                    qntMedidaField.setText("Medidas: mL, kg, L, un");
+                    qntMedidaField.setText("Medidas: mL, g, L, un");
                     qntMedidaField.setForeground(Color.GRAY);
                 }
             }

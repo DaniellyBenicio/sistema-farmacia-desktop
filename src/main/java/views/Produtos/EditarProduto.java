@@ -204,7 +204,7 @@ public class EditarProduto extends JPanel {
         qntMedidaField.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
-                if (qntMedidaField.getText().equals("Medidas: mL, kg, L, un")) {
+                if (qntMedidaField.getText().equals("Medidas: mL, g, L, un")) {
                     qntMedidaField.setText("");
                     qntMedidaField.setForeground(Color.BLACK);
                 }
@@ -213,7 +213,7 @@ public class EditarProduto extends JPanel {
             @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (qntMedidaField.getText().isEmpty()) {
-                    qntMedidaField.setText("Medidas: mL, kg, L, un");
+                    qntMedidaField.setText("Medidas: mL, g, L, un");
                     qntMedidaField.setForeground(Color.BLACK);
                 }
             }
