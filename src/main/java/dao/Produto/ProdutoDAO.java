@@ -362,4 +362,62 @@ public class ProdutoDAO {
             throw e;
         }
     }
+
+    public static List<Produto> buscarPorCategoria(Connection conn, String categoriaNome) throws SQLException {
+        List<Produto> produtos = new ArrayList<>();        
+        String sql = "select p.nome, p.valor, p.qntEstoque, p.dataValidade, " +
+                     "p.dataFabricacao, p.qntMedida, p.embalagem, p.qntEmbalagem, " +
+                     "f.nome AS funcionario_nome, " +
+                     "fa.nome AS fabricante_nome, " +
+                     "fo.nome AS fornecedor_nome, " +
+                     "c.nome AS categoria_nome " +
+                     "from produto p " +
+                     "join funcionario f on p.funcionario_id = f.id " +
+                     "join fabricante fa on p.fabricante_id = fa.id " +
+                     "join fornecedor fo on p.fornecedor_id = fo.id " +
+                     "join categoria c on p.categoria_id = c.id " +
+                     "where c.nome like ? " + 
+                     "order by p.nome asc";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, "%" + categoriaNome + "%");
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Produto prod = new Produto();
+                    prod.setNome(rs.getString("nome"));
+                    prod.setValor(rs.getBigDecimal("valor"));
+                    prod.setQntEstoque(rs.getInt("qntEstoque"));
+                    prod.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
+                    prod.setDataFabricacao(YearMonth.from(rs.getDate("dataFabricacao").toLocalDate()));
+                    prod.setQntMedida(rs.getString("qntMedida"));
+                    prod.setEmbalagem(rs.getString("embalagem"));
+                    prod.setQntEmbalagem(rs.getInt("qntEmbalagem"));
+                    
+                    Funcionario funcionario = new Funcionario();
+                    funcionario.setNome(rs.getString("funcionario_nome"));
+                    prod.setFuncionario(funcionario);
+                    
+                    Fabricante fabricante = new Fabricante();
+                    fabricante.setNome(rs.getString("fabricante_nome"));
+                    prod.setFabricante(fabricante);
+                    
+                    Fornecedor fornecedor = new Fornecedor();
+                    fornecedor.setNome(rs.getString("fornecedor_nome"));
+                    prod.setFornecedor(fornecedor);
+                    
+                    Categoria cat = new Categoria();
+                    cat.setNome(rs.getString("categoria_nome"));
+                    prod.setCategoria(cat);
+    
+                    produtos.add(prod);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar produtos por categoria: " + e.getMessage());
+            throw e;
+        }
+        
+        return produtos;
+    }  
 }
