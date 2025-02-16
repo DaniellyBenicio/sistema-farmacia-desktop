@@ -88,14 +88,14 @@ public class ProdutoController {
         }
     } 
 
-    public static List<Produto> buscarProdutosPorCategoria(Connection conn, String categoriaNome) throws SQLException {
-        if (categoriaNome == null || categoriaNome.trim().isEmpty()) {
+    public static List<Produto> buscarPorCategoriaNome(Connection conn, String termo) throws SQLException {
+        if (termo == null || termo.trim().isEmpty()) {
             throw new IllegalArgumentException("O nome da categoria não pode ser nulo ou vazio.");
         }
         try {
-            return ProdutoDAO.buscarPorCategoria(conn, categoriaNome);
+            return ProdutoDAO.buscarPorCategoriaOuNome(conn, termo);
         } catch (SQLException e) {
-            throw new SQLException("Erro ao listar produtos por categoria.", e);
+            throw new SQLException("Erro ao listar produtos por categoria ou nome.", e);
         }
     }
 
