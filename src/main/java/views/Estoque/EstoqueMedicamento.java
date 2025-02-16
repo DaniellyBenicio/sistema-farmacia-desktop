@@ -8,6 +8,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import controllers.Medicamento.MedicamentoController;
+import dao.Medicamento.MedicamentoDAO;
 import models.Medicamento.Medicamento;
 
 import java.awt.*;
@@ -145,6 +146,18 @@ public class EstoqueMedicamento extends JPanel {
         baixoEstoque.setForeground(Color.WHITE);
         baixoEstoque.setFocusPainted(false);
         baixoEstoque.setPreferredSize(new Dimension(150, 30));
+
+        baixoEstoque.addActionListener(e -> {
+            try {
+                medicamentos = MedicamentoDAO.listarBaixoEstoque(this.conn);
+                inicializarLinhasSelecionadas();
+                carregarDados();
+                atualizarEstadoBotaoPedido();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erro ao carregar baixo estoque.", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         JButton voltar = new JButton("Voltar");
         voltar.setFont(new Font("Arial", Font.BOLD, 16));
