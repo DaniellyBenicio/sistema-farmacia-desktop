@@ -169,7 +169,7 @@ public class ProdutoDAO {
                 prod.setFornecedor(fornecedor);
     
                 Categoria cat = new Categoria();
-                categoria.setId(rs.getInt("categoria_id"));
+                cat.setId(rs.getInt("categoria_id"));
                 cat.setNome(rs.getString("categoria_nome"));
                 prod.setCategoria(cat);
 
