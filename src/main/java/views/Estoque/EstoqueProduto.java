@@ -317,8 +317,8 @@ public class EstoqueProduto extends JPanel {
 
         botao.addActionListener(e -> {
             List<Produto> produtosSelecionados = obterProdutosSelecionados();
-            if (!produtosSelecionados.isEmpty()) { // Alterado
-                // new RealizarPedidoProduto(null, produtosSelecionados).setVisible(true);
+            if (!produtosSelecionados.isEmpty()) {
+                new RealizarPedidoProduto(null, produtosSelecionados).setVisible(true);
             } else {
                 JOptionPane.showMessageDialog(this, "Nenhum produto selecionado.", "Aviso",
                         JOptionPane.WARNING_MESSAGE);
@@ -365,7 +365,8 @@ public class EstoqueProduto extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Selecionar", "Nome", "Categoria", "Embalagem", "Qnt. Embalagem" , "Medida", "Fornecedor", "Validade",
+        String[] colunas = { "Selecionar", "Nome", "Categoria", "Embalagem", "Qnt. Embalagem", "Medida", "Fornecedor",
+                "Validade",
                 "Preço Unitário", "Quantidade" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {

@@ -1,15 +1,16 @@
 package views.Estoque;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import models.Produto.Produto;
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+
+import java.awt.*;
 import java.awt.print.PageFormat;
-import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.text.DecimalFormat;
@@ -20,39 +21,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
-import models.Medicamento.Medicamento;
 
-class RealizarPedidoMedicamento extends JDialog {
+class RealizarPedidoProduto extends JDialog {
 
-    private List<Medicamento> medicamentos;
+    private List<Produto> produtos;
     private String dataHoraCriacao;
-    private NumberFormat formatadorNumero;
-    private DecimalFormat formatadorDecimal;
     private JTable tabela;
     private DefaultTableModel modeloTabela;
+    private NumberFormat formatadorNumero;
+    private DecimalFormat formatadorDecimal;
     private final int[] larguraColunas = { 150, 80, 120, 80, 120, 80, 60 };
 
-    public RealizarPedidoMedicamento(JFrame parent, List<Medicamento> medicamentos) {
-        super(parent, "Realizar Pedido de Medicamentos", true);
-        this.medicamentos = medicamentos;
+    public RealizarPedidoProduto(JFrame parent, List<Produto> produtos) {
+        super(parent, "Realizar Pedido de Produtos", true);
+        this.produtos = produtos;
         this.dataHoraCriacao = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date());
         this.formatadorNumero = NumberFormat.getNumberInstance(Locale.getDefault());
         this.formatadorDecimal = new DecimalFormat("#,###");
@@ -68,9 +50,6 @@ class RealizarPedidoMedicamento extends JDialog {
         int altura = 700;
         setSize(largura, altura);
         setPreferredSize(new Dimension(largura, altura));
-        setMinimumSize(new Dimension(largura, altura));
-        setMaximumSize(new Dimension(largura, altura));
-
         setLocationRelativeTo(getParent());
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -78,7 +57,7 @@ class RealizarPedidoMedicamento extends JDialog {
 
     private void adicionarComponentes() {
         JPanel painelPrincipal = new JPanel(new BorderLayout());
-        painelPrincipal.setBorder(new EmptyBorder(10, 10, 10, 10));
+        painelPrincipal.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel painelSuperior = criarPainelSuperior();
         painelPrincipal.add(painelSuperior, BorderLayout.NORTH);
@@ -88,9 +67,9 @@ class RealizarPedidoMedicamento extends JDialog {
         JScrollPane scrollPane = new JScrollPane(tabela);
         painelPrincipal.add(scrollPane, BorderLayout.CENTER);
 
-        JButton botaoRealizarPedido = criarBotaoPedido();
+        JButton botaoConfirmarPedido = criarBotaoConfirmarPedido();
         JPanel painelInferior = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        painelInferior.add(botaoRealizarPedido);
+        painelInferior.add(botaoConfirmarPedido);
         painelPrincipal.add(painelInferior, BorderLayout.SOUTH);
 
         add(painelPrincipal);
@@ -104,8 +83,8 @@ class RealizarPedidoMedicamento extends JDialog {
         labelFarmacia.setForeground(new Color(24, 39, 55));
         painelSuperior.add(labelFarmacia, BorderLayout.NORTH);
 
-        JLabel labelTitulo = new JLabel("Lista de Pedidos de Medicamentos", SwingConstants.CENTER);
-        labelTitulo.setFont(new Font("Arial", Font.BOLD, 16));
+        JLabel labelTitulo = new JLabel("Lista de Pedidos de Produtos", SwingConstants.CENTER);
+        labelTitulo.setFont(new Font("Arial", Font.BOLD, 18));
         labelTitulo.setForeground(new Color(24, 39, 55));
         painelSuperior.add(labelTitulo, BorderLayout.CENTER);
 
@@ -121,16 +100,18 @@ class RealizarPedidoMedicamento extends JDialog {
         String[] nomeColunas = {
                 "Nome",
                 "Categoria",
-                "F. Farm.",
-                "Dosagem",
+                "Embalagem",
+                "Qnt. Embalagem",
+                "Medida",
                 "Fornecedor",
                 "Preço Unitário",
-                "Qtd. Solicitada"
+                "Quantidade"
         };
+
         modeloTabela = new DefaultTableModel(nomeColunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 6;
+                return column == 7;
             }
         };
 
@@ -142,23 +123,21 @@ class RealizarPedidoMedicamento extends JDialog {
         }
 
         tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
-
         adicionarDadosTabela();
-
         configurarEditorColunaQuantidade();
-
         alinharColunaQuantidade();
     }
 
     private void adicionarDadosTabela() {
-        for (Medicamento medicamento : medicamentos) {
+        for (Produto produto : produtos) {
             Object[] dadosLinha = {
-                    medicamento.getNome(),
-                    medicamento.getCategoria().getNome(),
-                    medicamento.getFormaFarmaceutica(),
-                    medicamento.getDosagem(),
-                    medicamento.getFornecedor().getNome(),
-                    String.format("R$ %.2f", medicamento.getValorUnit()),
+                    produto.getNome(),
+                    produto.getCategoria().getNome(),
+                    produto.getEmbalagem(),
+                    produto.getQntEmbalagem(),
+                    produto.getQntMedida(),
+                    produto.getFornecedor().getNome(),
+                    String.format("R$ %.2f", produto.getValor()),
                     ""
             };
             modeloTabela.addRow(dadosLinha);
@@ -167,29 +146,28 @@ class RealizarPedidoMedicamento extends JDialog {
 
     private void configurarEditorColunaQuantidade() {
         JTextField campoQuantidade = new JTextField();
-        campoQuantidade.setText("");
         ((AbstractDocument) campoQuantidade.getDocument())
                 .setDocumentFilter(new FiltroFormatoNumerico(formatadorDecimal, this));
         DefaultCellEditor editorQuantidade = new DefaultCellEditor(campoQuantidade);
-        tabela.getColumnModel().getColumn(6).setCellEditor(editorQuantidade);
+        tabela.getColumnModel().getColumn(7).setCellEditor(editorQuantidade);
     }
 
     private void alinharColunaQuantidade() {
         DefaultTableCellRenderer alinhamentoDireita = new DefaultTableCellRenderer();
         alinhamentoDireita.setHorizontalAlignment(SwingConstants.CENTER);
-        tabela.getColumnModel().getColumn(6).setCellRenderer(alinhamentoDireita);
+        tabela.getColumnModel().getColumn(7).setCellRenderer(alinhamentoDireita);
     }
 
-    private JButton criarBotaoPedido() {
-        JButton botaoRealizarPedido = new JButton("Confirmar Pedido");
-        botaoRealizarPedido.setFont(new Font("Arial", Font.BOLD, 14));
-        botaoRealizarPedido.setBackground(new Color(24, 39, 55));
-        botaoRealizarPedido.setForeground(Color.WHITE);
-        botaoRealizarPedido.setFocusPainted(false);
+    private JButton criarBotaoConfirmarPedido() {
+        JButton botaoConfirmarPedido = new JButton("Confirmar Pedido");
+        botaoConfirmarPedido.setFont(new Font("Arial", Font.BOLD, 14));
+        botaoConfirmarPedido.setBackground(new Color(24, 39, 55));
+        botaoConfirmarPedido.setForeground(Color.WHITE);
+        botaoConfirmarPedido.setFocusPainted(false);
 
-        botaoRealizarPedido.addActionListener(e -> imprimirLista());
+        botaoConfirmarPedido.addActionListener(e -> imprimirLista());
 
-        return botaoRealizarPedido;
+        return botaoConfirmarPedido;
     }
 
     private void imprimirLista() {
@@ -198,7 +176,7 @@ class RealizarPedidoMedicamento extends JDialog {
         boolean campoVazioEncontrado = false;
 
         for (int i = 0; i < tabela.getRowCount(); i++) {
-            Object valorQuantidade = tabela.getValueAt(i, 6);
+            Object valorQuantidade = tabela.getValueAt(i, 7);
             int quantidade = 0;
 
             if (valorQuantidade instanceof Number) {
@@ -212,8 +190,7 @@ class RealizarPedidoMedicamento extends JDialog {
                     try {
                         quantidade = formatadorNumero.parse(quantidadeString).intValue();
                     } catch (ParseException e) {
-                        exibirMensagemErro(
-                                "Digite uma quantidade válida para todos os medicamentos.", "Erro");
+                        exibirMensagemErro("Digite uma quantidade válida para todos os produtos.", "Erro");
                         valido = false;
                         break;
                     }
@@ -223,8 +200,7 @@ class RealizarPedidoMedicamento extends JDialog {
             }
 
             if (!campoVazioEncontrado && quantidade == 0) {
-                exibirMensagemErro(
-                        "A quantidade deve ser maior que zero para todos os medicamentos.", "Erro");
+                exibirMensagemErro("A quantidade deve ser maior que zero para todos os produtos.", "Erro");
                 valido = false;
                 break;
             }
@@ -235,13 +211,12 @@ class RealizarPedidoMedicamento extends JDialog {
                 break;
             }
 
-            Medicamento medicamento = medicamentos.get(i);
-            itensPedido.add(new ItemPedido(medicamento, quantidade));
+            Produto produto = produtos.get(i);
+            itensPedido.add(new ItemPedido(produto, quantidade));
         }
 
         if (campoVazioEncontrado) {
-            exibirMensagemErro(
-                    "Por favor, informe a quantidade solicitada para todos os medicamentos.", "Erro");
+            exibirMensagemErro("Por favor, informe a quantidade solicitada para todos os produtos.", "Erro");
             valido = false;
         }
 
@@ -253,7 +228,7 @@ class RealizarPedidoMedicamento extends JDialog {
             job.setPrintable(
                     new ImpressaoPedido(
                             "Farmácia",
-                            "Lista de Pedidos de Medicamentos",
+                            "Lista de Pedidos de Produtos",
                             dataHoraCriacao,
                             itensPedido,
                             formatadorNumero,
@@ -275,11 +250,11 @@ class RealizarPedidoMedicamento extends JDialog {
     }
 
     private class ItemPedido {
-        Medicamento medicamento;
+        Produto produto;
         int quantidade;
 
-        public ItemPedido(Medicamento medicamento, int quantidade) {
-            this.medicamento = medicamento;
+        public ItemPedido(Produto produto, int quantidade) {
+            this.produto = produto;
             this.quantidade = quantidade;
         }
     }
@@ -287,9 +262,9 @@ class RealizarPedidoMedicamento extends JDialog {
     private class FiltroFormatoNumerico extends DocumentFilter {
 
         private DecimalFormat formatadorDecimal;
-        private RealizarPedidoMedicamento janela;
+        private RealizarPedidoProduto janela;
 
-        public FiltroFormatoNumerico(DecimalFormat formatador, RealizarPedidoMedicamento janela) {
+        public FiltroFormatoNumerico(DecimalFormat formatador, RealizarPedidoProduto janela) {
             this.formatadorDecimal = formatador;
             this.janela = janela;
         }
@@ -348,7 +323,7 @@ class RealizarPedidoMedicamento extends JDialog {
         }
     }
 
-    private class ImpressaoPedido implements Printable {
+    private class ImpressaoPedido implements java.awt.print.Printable {
 
         private String tituloFarmacia;
         private String titulo;
@@ -356,14 +331,15 @@ class RealizarPedidoMedicamento extends JDialog {
         private List<ItemPedido> itensPedido;
         private NumberFormat formatadorNumero;
         private DecimalFormat formatadorDecimal;
-        private final int[] larguraColunas = { 130, 100, 80, 50, 130, 70, 70 };
+        private final int[] larguraColunas = { 130, 100, 80, 50, 130, 100, 70, 70 };
         private final String[] cabecalhoColunas = {
                 "Nome",
                 "Categoria",
-                "F. Farm.",
-                "Dosagem",
+                "Embalagem",
+                "Qnt. Embalagem",
+                "Medida",
                 "Fornecedor",
-                "Preço Un.",
+                "Preço Unit.",
                 "Qtd. Solicitada"
         };
 
@@ -458,38 +434,46 @@ class RealizarPedidoMedicamento extends JDialog {
             int alturaLinha = fm.getHeight() + 2;
 
             g2d.drawString(
-                    ajustarString(item.medicamento.getNome(), larguraColunas[0], fm), posicaoXLinha, y);
+                    ajustarString(item.produto.getNome(), larguraColunas[0], fm), posicaoXLinha, y);
             posicaoXLinha += larguraColunas[0];
 
             g2d.drawString(
-                    ajustarString(item.medicamento.getCategoria().getNome(), larguraColunas[1], fm),
+                    ajustarString(item.produto.getCategoria().getNome(), larguraColunas[1], fm),
                     posicaoXLinha,
                     y);
             posicaoXLinha += larguraColunas[1];
 
             g2d.drawString(
-                    ajustarString(item.medicamento.getFormaFarmaceutica(), larguraColunas[2], fm),
+                    ajustarString(item.produto.getEmbalagem(), larguraColunas[2], fm),
                     posicaoXLinha,
                     y);
             posicaoXLinha += larguraColunas[2];
 
             g2d.drawString(
-                    ajustarString(item.medicamento.getDosagem(), larguraColunas[3], fm), posicaoXLinha, y);
+                    ajustarString(String.valueOf(item.produto.getQntEmbalagem()), larguraColunas[3], fm),
+                    posicaoXLinha,
+                    y);
             posicaoXLinha += larguraColunas[3];
 
             g2d.drawString(
-                    ajustarString(item.medicamento.getFornecedor().getNome(), larguraColunas[4], fm),
+                    ajustarString(item.produto.getQntMedida(), larguraColunas[4], fm),
                     posicaoXLinha,
                     y);
             posicaoXLinha += larguraColunas[4];
 
-            String valorUnitarioFormatado = String.format("R$ %.2f", item.medicamento.getValorUnit());
-            g2d.drawString(ajustarString(valorUnitarioFormatado, larguraColunas[5], fm), posicaoXLinha, y);
+            g2d.drawString(
+                    ajustarString(item.produto.getFornecedor().getNome(), larguraColunas[5], fm),
+                    posicaoXLinha,
+                    y);
             posicaoXLinha += larguraColunas[5];
 
-            String quantidadeFormatada = formatadorDecimal.format(item.quantidade);
-            g2d.drawString(ajustarString(quantidadeFormatada, larguraColunas[6], fm), posicaoXLinha, y);
+            String valorUnitarioFormatado = String.format("R$ %.2f", item.produto.getValor());
+            g2d.drawString(ajustarString(valorUnitarioFormatado, larguraColunas[6], fm), posicaoXLinha, y);
             posicaoXLinha += larguraColunas[6];
+
+            String quantidadeFormatada = formatadorDecimal.format(item.quantidade);
+            g2d.drawString(ajustarString(quantidadeFormatada, larguraColunas[7], fm), posicaoXLinha, y);
+            posicaoXLinha += larguraColunas[7];
 
             y += alturaLinha;
             return y;
