@@ -272,7 +272,6 @@ public class ProdutoDAO {
         ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 Produto prod = new Produto();
-                prod.setId(rs.getInt("id"));
                 prod.setNome(rs.getString("nome"));
                 prod.setValor(rs.getBigDecimal("valor"));
                 prod.setQntEstoque(rs.getInt("qntEstoque"));
@@ -280,12 +279,10 @@ public class ProdutoDAO {
                 prod.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
                        
                 Categoria categoria = new Categoria();
-                categoria.setId(rs.getInt("categoria_id"));
                 categoria.setNome(rs.getString("categoria_nome"));
                 prod.setCategoria(categoria);
                        
                 Fornecedor fornecedor = new Fornecedor();
-                fornecedor.setId(rs.getInt("fornecedor_id"));
                 fornecedor.setNome(rs.getString("fornecedor_nome"));
                 prod.setFornecedor(fornecedor);
                 
@@ -302,7 +299,7 @@ public class ProdutoDAO {
     public static List<Produto> listarBaixoEstoqueProdutos(Connection conn) throws SQLException {
         List<Produto> produtosEstoque = new ArrayList<>();
         
-        String sql = "SELECT p.id, p.nome, p.valor, p.qntEstoque, p.qntMedida, p.dataValidade, " +
+        String sql = "SELECT p.nome, p.valor, p.qntEstoque, p.qntMedida, p.dataValidade, " +
                      "c.nome AS categoria_nome, fo.nome AS fornecedor_nome " +
                      "FROM produto p " +
                      "JOIN categoria c ON p.categoria_id = c.id " +
@@ -321,7 +318,6 @@ public class ProdutoDAO {
             
             while (rs.next()) {
                 Produto prod = new Produto();
-                prod.setId(rs.getInt("id"));
                 prod.setNome(rs.getString("nome"));
                 prod.setValor(rs.getBigDecimal("valor"));
                 prod.setQntEstoque(rs.getInt("qntEstoque"));

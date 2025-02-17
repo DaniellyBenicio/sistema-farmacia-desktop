@@ -62,7 +62,7 @@ public class PrincipalEstoque extends JPanel {
         JButton btnProduto = criarBotao("ESTOQUE DE PRODUTOS");
 
         btnMedicamento.addActionListener(e -> abrirEstoqueMedicamento());
-      //  btnProduto.addActionListener(e -> abrirEstoqueProduto());
+        btnProduto.addActionListener(e -> abrirEstoqueProduto());
 
         painelBotoes.add(btnMedicamento);
         painelBotoes.add(btnProduto);
@@ -87,5 +87,9 @@ public class PrincipalEstoque extends JPanel {
 
     private void abrirEstoqueMedicamento() {
         layoutCartao.show(painelCentral, "EstoqueMedicamento");
+    }
+
+    private void abrirEstoqueProduto() {
+        layoutCartao.show(painelCentral, "EstoqueProduto");
     }
 }

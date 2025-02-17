@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import views.BarrasSuperiores.PainelSuperior;
 import views.Clientes.ListaDeClientes;
 import views.Estoque.EstoqueMedicamento;
+import views.Estoque.EstoqueProduto;
 import views.Estoque.PrincipalEstoque;
 import views.Fornecedor.CadastrarFornecedor;
 import views.Fornecedor.ListaDeFornecedores;
@@ -33,6 +34,7 @@ public class Farmacia extends JFrame {
     private JPanel painelCentral;
     private PrincipalEstoque principalEstoque;
     private EstoqueMedicamento estoqueMedicamento;
+    private EstoqueProduto estoqueProduto;
 
     public Farmacia() {
         setTitle("Farmácia");
@@ -54,6 +56,7 @@ public class Farmacia extends JFrame {
         }
         principalEstoque = new PrincipalEstoque(conexão, layoutCartao, painelCentral);
         estoqueMedicamento = new EstoqueMedicamento(conexão, principalEstoque, layoutCartao, painelCentral);
+        estoqueProduto = new EstoqueProduto(conexão, principalEstoque, layoutCartao, painelCentral);
 
         painelCentral.add(new RealizarVenda(), "Vendas");
         painelCentral.add(new CadastrarFornecedor(), "CadastrarFornecedor");
@@ -65,6 +68,7 @@ public class Farmacia extends JFrame {
         painelCentral.add(new ListaDeProdutos(conexão), "ListaDeProdutos");
         painelCentral.add(principalEstoque, "GerenciamentoDeEstoque");
         painelCentral.add(estoqueMedicamento, "EstoqueMedicamento");
+        painelCentral.add(estoqueProduto, "EstoqueProduto");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
         add(painelSuperior, BorderLayout.NORTH);
