@@ -259,7 +259,7 @@ public class EstoqueProduto extends JPanel {
         if (termo.isEmpty() || termo.equals("buscar")) {
             try {
                 if (baixoEstoqueSelecionado) {
-                    produtosFiltrados = ProdutoController.listarBaixoEstoqueProduto(this.conn);
+                    produtosFiltrados = ProdutoDAO.listarBaixoEstoqueProdutos(this.conn);
                 } else {
                     produtosFiltrados = ProdutoController.listarEstoqueProduto(this.conn);
                 }
@@ -365,7 +365,7 @@ public class EstoqueProduto extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Selecionar", "Nome", "Categoria", "Medida", "Fornecedor", "Validade",
+        String[] colunas = { "Selecionar", "Nome", "Categoria", "Embalagem", "Qnt. Embalagem" , "Medida", "Fornecedor", "Validade",
                 "Preço Unitário", "Quantidade" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {
@@ -390,7 +390,7 @@ public class EstoqueProduto extends JPanel {
                     c.setBackground(Color.WHITE);
                 }
 
-                if (baixoEstoqueSelecionado && column == 7) {
+                if (baixoEstoqueSelecionado && column == 9) {
                     c.setForeground(Color.RED);
                 } else {
                     c.setForeground(Color.BLACK);
@@ -416,13 +416,15 @@ public class EstoqueProduto extends JPanel {
         }
 
         tabela.getColumnModel().getColumn(0).setPreferredWidth(10);
-        tabela.getColumnModel().getColumn(1).setPreferredWidth(170);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(110);
-        tabela.getColumnModel().getColumn(3).setPreferredWidth(60);
-        tabela.getColumnModel().getColumn(4).setPreferredWidth(10);
-        tabela.getColumnModel().getColumn(5).setPreferredWidth(120);
-        tabela.getColumnModel().getColumn(6).setPreferredWidth(10);
+        tabela.getColumnModel().getColumn(1).setPreferredWidth(150);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(120);
+        tabela.getColumnModel().getColumn(3).setPreferredWidth(40);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(40);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(10);
+        tabela.getColumnModel().getColumn(6).setPreferredWidth(140);
         tabela.getColumnModel().getColumn(7).setPreferredWidth(20);
+        tabela.getColumnModel().getColumn(8).setPreferredWidth(30);
+        tabela.getColumnModel().getColumn(9).setPreferredWidth(20);
 
         tabela.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -451,15 +453,17 @@ public class EstoqueProduto extends JPanel {
         } else {
             for (int i = 0; i < produtos.size(); i++) {
                 Produto produto = produtos.get(i);
-                Object[] rowData = new Object[9];
+                Object[] rowData = new Object[10];
                 rowData[0] = linhasSelecionadas.get(i);
                 rowData[1] = produto.getNome();
                 rowData[2] = produto.getCategoria().getNome();
-                rowData[3] = produto.getQntMedida();
-                rowData[4] = produto.getFornecedor().getNome();
-                rowData[5] = formatarData(produto.getDataValidade());
-                rowData[6] = produto.getValor();
-                rowData[7] = formatarEstoque(produto.getQntEstoque());
+                rowData[3] = produto.getEmbalagem();
+                rowData[4] = produto.getQntEmbalagem();
+                rowData[5] = produto.getQntMedida();
+                rowData[6] = produto.getFornecedor().getNome();
+                rowData[7] = formatarData(produto.getDataValidade());
+                rowData[8] = produto.getValor();
+                rowData[9] = formatarEstoque(produto.getQntEstoque());
 
                 modeloTabela.addRow(rowData);
             }
