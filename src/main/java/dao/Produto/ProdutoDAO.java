@@ -124,7 +124,7 @@ public class ProdutoDAO {
 
     public static List<Produto> listarTodos(Connection conn) throws SQLException {
         List<Produto> produtos = new ArrayList<>();        
-        String sql = "SELECT p.nome, p.valor, p.qntEstoque, p.dataValidade, "
+        String sql = "SELECT p.id, p.nome, p.valor, p.qntEstoque, p.dataValidade, "
                         + "p.dataFabricacao, p.qntMedida, p.embalagem, p.qntEmbalagem, "
                         + "f.nome AS funcionario_nome, "
                         + "fa.nome AS fabricante_nome, "
@@ -142,6 +142,7 @@ public class ProdutoDAO {
             while (rs.next()) { 
                 Produto prod = new Produto();
                 prod = new Produto();
+                prod.setId(rs.getInt("id"));
                 prod.setNome(rs.getString("nome"));
                 prod.setValor(rs.getBigDecimal("valor"));
                 prod.setQntEstoque(rs.getInt("qntEstoque"));
