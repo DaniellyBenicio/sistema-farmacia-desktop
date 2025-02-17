@@ -257,7 +257,7 @@ public class ProdutoDAO {
 
     public static List<Produto> listarEstoqueProdutos(Connection conn) throws SQLException {
         List<Produto> produtosEstoque = new ArrayList<>();
-        String sql = "SELECT p.nome, p.valor, p.qntEstoque, p.qntMedida, p.dataValidade, " +
+        String sql = "SELECT p.nome, p.valor, p.qntEstoque, p.qntMedida, p.dataValidade, p.Embalagem, p.qntEmbalagem," +
                     "c.nome AS categoria_nome, fo.nome AS fornecedor_nome " +
                     "FROM produto p " +
                     "JOIN categoria c ON p.categoria_id = c.id " +
@@ -273,6 +273,8 @@ public class ProdutoDAO {
                 prod.setQntEstoque(rs.getInt("qntEstoque"));
                 prod.setQntMedida(rs.getString("qntMedida"));
                 prod.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
+                prod.setEmbalagem(rs.getString("embalagem"));
+                prod.setQntEmbalagem(rs.getInt("qntEmbalagem"));
                        
                 Categoria categoria = new Categoria();
                 categoria.setNome(rs.getString("categoria_nome"));
@@ -295,7 +297,7 @@ public class ProdutoDAO {
     public static List<Produto> listarBaixoEstoqueProdutos(Connection conn) throws SQLException {
         List<Produto> produtosEstoque = new ArrayList<>();
         
-        String sql = "SELECT p.nome, p.valor, p.qntEstoque, p.qntMedida, p.dataValidade, " +
+        String sql = "SELECT p.nome, p.valor, p.qntEstoque, p.qntMedida, p.dataValidade, p.Embalagem, p.qntEmbalagem," +
                      "c.nome AS categoria_nome, fo.nome AS fornecedor_nome " +
                      "FROM produto p " +
                      "JOIN categoria c ON p.categoria_id = c.id " +
@@ -315,6 +317,8 @@ public class ProdutoDAO {
                 prod.setQntEstoque(rs.getInt("qntEstoque"));
                 prod.setQntMedida(rs.getString("qntMedida"));
                 prod.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
+                prod.setEmbalagem(rs.getString("embalagem"));
+                prod.setQntEmbalagem(rs.getInt("qntEmbalagem"));
                        
                 Categoria categoria = new Categoria();
                 categoria.setNome(rs.getString("categoria_nome"));
