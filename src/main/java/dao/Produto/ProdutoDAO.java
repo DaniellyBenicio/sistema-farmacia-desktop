@@ -126,10 +126,10 @@ public class ProdutoDAO {
         List<Produto> produtos = new ArrayList<>();        
         String sql = "SELECT p.id, p.nome, p.valor, p.qntEstoque, p.dataValidade, "
                         + "p.dataFabricacao, p.qntMedida, p.embalagem, p.qntEmbalagem, "
-                        + "f.nome AS funcionario_nome, "
-                        + "fa.nome AS fabricante_nome, "
-                        + "fo.nome AS fornecedor_nome, "
-                        + "c.nome AS categoria_nome "
+                        + "f.id AS funcionario_id, f.nome AS funcionario_nome, "
+                        + "fa.id AS fabricante_id, fa.nome AS fabricante_nome, "
+                        + "fo.id AS fornecedor_id, fo.nome AS fornecedor_nome, "
+                        + "c.id AS categoria_id, c.nome AS categoria_nome "
                         + "FROM produto p "
                         + "JOIN funcionario f ON p.funcionario_id = f.id "
                         + "JOIN fabricante fa ON p.fabricante_id = fa.id "
@@ -153,18 +153,23 @@ public class ProdutoDAO {
                 prod.setQntEmbalagem(rs.getInt("qntEmbalagem"));
     
                 Funcionario funcionario = new Funcionario();
+                funcionario.setId(rs.getInt("funcionario_id"));
                 funcionario.setNome(rs.getString("funcionario_nome"));
                 prod.setFuncionario(funcionario);
                 
                 Fabricante fabricante = new Fabricante();
+                fabricante.setId(rs.getInt("fabricante_id"));
+
                 fabricante.setNome(rs.getString("fabricante_nome"));
                 prod.setFabricante(fabricante);
     
                 Fornecedor fornecedor = new Fornecedor();
+                fornecedor.setId(rs.getInt("fornecedor_id"));
                 fornecedor.setNome(rs.getString("fornecedor_nome"));
                 prod.setFornecedor(fornecedor);
     
                 Categoria cat = new Categoria();
+                categoria.setId(rs.getInt("categoria_id"));
                 cat.setNome(rs.getString("categoria_nome"));
                 prod.setCategoria(cat);
 
