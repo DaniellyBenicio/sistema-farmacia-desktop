@@ -12,6 +12,8 @@ import dao.Medicamento.MedicamentoDAO;
 import models.Medicamento.Medicamento;
 
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -126,32 +128,43 @@ public class EstoqueMedicamento extends JPanel {
         painelVoltar.add(voltar);
         painelSuperior.add(painelVoltar, BorderLayout.WEST);
 
-        JPanel painelTitulo = new JPanel();
-        painelTitulo.setLayout(new BoxLayout(painelTitulo, BoxLayout.Y_AXIS));
-        painelTitulo.setBorder(BorderFactory.createEmptyBorder(50, 0, 35, 0));
+        JPanel painelTituloPrincipal = new JPanel();
+        painelTituloPrincipal.setLayout(new BoxLayout(painelTituloPrincipal, BoxLayout.Y_AXIS));
+        painelTituloPrincipal.setBorder(BorderFactory.createEmptyBorder(50, 0, 35, 0));
 
-        JLabel titulo = new JLabel("ESTOQUE DE MEDICAMENTOS");
-        titulo.setFont(new Font("Arial", Font.BOLD, 20));
-        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        painelTitulo.add(titulo);
+        JLabel tituloPrincipal = new JLabel("ESTOQUE DE MEDICAMENTOS");
+        tituloPrincipal.setFont(new Font("Arial", Font.BOLD, 20));
+        tituloPrincipal.setAlignmentX(Component.CENTER_ALIGNMENT);
+        painelTituloPrincipal.add(tituloPrincipal);
+        painelSuperior.add(painelTituloPrincipal, BorderLayout.CENTER);
 
-        JPanel painelBuscarTitulo = new JPanel();
-        painelBuscarTitulo.setLayout(new BoxLayout(painelBuscarTitulo, BoxLayout.X_AXIS));
-        painelBuscarTitulo.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 50));
+        JPanel painelBusca = new JPanel();
+        painelBusca.setLayout(new BoxLayout(painelBusca, BoxLayout.Y_AXIS));
+        painelBusca.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 50));
+
         JLabel buscarTitulo = new JLabel("Buscar Medicamento");
         buscarTitulo.setFont(new Font("Arial", Font.BOLD, 16));
-        painelBuscarTitulo.add(buscarTitulo);
+        buscarTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        painelBusca.add(buscarTitulo);
+        painelBusca.add(Box.createVerticalStrut(5));
 
-        JPanel painelBuscaBotao = new JPanel();
-        painelBuscaBotao.setLayout(new BoxLayout(painelBuscaBotao, BoxLayout.X_AXIS));
-        painelBuscaBotao.setBorder(BorderFactory.createEmptyBorder(0, 30, 30, 50));
+        JPanel painelBuscaCampoBotoes = new JPanel();
+        painelBuscaCampoBotoes.setLayout(new BoxLayout(painelBuscaCampoBotoes, BoxLayout.X_AXIS));
+        painelBuscaCampoBotoes.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JTextField campoBusca = new JTextField();
         campoBusca.setFont(new Font("Arial", Font.PLAIN, 14));
         campoBusca.setPreferredSize(new Dimension(600, 30));
         campoBusca.setMaximumSize(new Dimension(600, 30));
         campoBusca.setText("Buscar");
         campoBusca.setForeground(Color.GRAY);
+
+        campoBusca.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String termoBusca = campoBusca.getText();
+                buscarMedicamento(termoBusca);
+            }
+        });
 
         campoBusca.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
@@ -174,17 +187,17 @@ public class EstoqueMedicamento extends JPanel {
         campoBusca.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                filtrarMedicamentos(campoBusca.getText());
+                buscarMedicamento(campoBusca.getText());
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                filtrarMedicamentos(campoBusca.getText());
+                buscarMedicamento(campoBusca.getText());
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                filtrarMedicamentos(campoBusca.getText());
+                buscarMedicamento(campoBusca.getText());
             }
         });
 
@@ -226,16 +239,71 @@ public class EstoqueMedicamento extends JPanel {
             }
         });
 
-        painelBuscaBotao.add(campoBusca);
-        painelBuscaBotao.add(Box.createHorizontalGlue());
-        painelBuscaBotao.add(baixoEstoque);
-        painelBuscaBotao.add(Box.createHorizontalStrut(10));
+        painelBuscaCampoBotoes.add(campoBusca);
+        painelBuscaCampoBotoes.add(Box.createHorizontalGlue());
+        painelBuscaCampoBotoes.add(baixoEstoque);
+        painelBuscaCampoBotoes.add(Box.createHorizontalStrut(10));
 
-        painelSuperior.add(painelTitulo, BorderLayout.CENTER);
-        painelSuperior.add(painelBuscarTitulo, BorderLayout.SOUTH);
-        painelSuperior.add(painelBuscaBotao, BorderLayout.SOUTH);
+        painelBusca.add(painelBuscaCampoBotoes);
+        painelSuperior.add(painelBusca, BorderLayout.SOUTH);
 
         return painelSuperior;
+    }
+
+    private void buscarMedicamento(String termoBusca) {
+        List<Boolean> linhasSelecionadasAnterior = new ArrayList<>(linhasSelecionadas);
+        List<Medicamento> medicamentosFiltrados = new ArrayList<>();
+
+        String termo = (termoBusca != null) ? termoBusca.trim().toLowerCase() : "";
+
+        if (termo.isEmpty() || termo.equals("buscar")) {
+            try {
+                if (baixoEstoqueSelecionado) {
+                    medicamentosFiltrados = MedicamentoDAO.listarBaixoEstoque(this.conn);
+                } else {
+                    medicamentosFiltrados = MedicamentoController.listarEstoqueMedicamento(this.conn);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erro ao carregar medicamentos.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        } else {
+            try {
+                if (baixoEstoqueSelecionado) {
+                    medicamentosFiltrados = medicamentos.stream()
+                            .filter(medicamento -> {
+                                String nome = medicamento.getNome().toLowerCase();
+                                String categoria = medicamento.getCategoria().getNome().toLowerCase();
+                                return nome.contains(termo) || categoria.contains(termo);
+                            })
+                            .collect(Collectors.toList());
+                } else {
+                    medicamentosFiltrados = MedicamentoDAO.buscarPorCategoriaOuNome(this.conn, termo);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erro ao buscar medicamentos.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+
+        linhasSelecionadas.clear();
+        for (Medicamento medicamento : medicamentosFiltrados) {
+            boolean selecionado = false;
+            for (int i = 0; i < medicamentos.size(); i++) {
+                if (medicamentos.get(i).getId() == medicamento.getId() && i < linhasSelecionadasAnterior.size()) {
+                    selecionado = linhasSelecionadasAnterior.get(i);
+                    break;
+                }
+            }
+            linhasSelecionadas.add(selecionado);
+        }
+
+        medicamentos = medicamentosFiltrados;
+        carregarDados();
+        atualizarEstadoBotaoPedido();
     }
 
     private JButton criarBotaoRealizarPedido() {
@@ -409,45 +477,6 @@ public class EstoqueMedicamento extends JPanel {
         realizarPedidoButton.setEnabled(algumSelecionado && baixoEstoqueSelecionado);
     }
 
-    private void filtrarMedicamentos(String filtro) {
-        List<Boolean> linhasSelecionadasAnterior = new ArrayList<>(linhasSelecionadas);
-        List<Medicamento> medicamentosFiltrados;
-
-        if (filtro.isEmpty() || filtro.equals("Buscar")) {
-            try {
-                medicamentosFiltrados = MedicamentoController.listarEstoqueMedicamento(this.conn);
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return;
-            }
-        } else {
-            try {
-                medicamentosFiltrados = MedicamentoController.listarEstoqueMedicamento(this.conn).stream()
-                        .filter(medicamento -> medicamento.getNome().toLowerCase().contains(filtro.toLowerCase()))
-                        .collect(Collectors.toList());
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return;
-            }
-        }
-
-        linhasSelecionadas.clear();
-        for (Medicamento medicamento : medicamentosFiltrados) {
-            boolean selecionado = false;
-            for (int i = 0; i < medicamentos.size(); i++) {
-                if (medicamentos.get(i).getId() == medicamento.getId() && i < linhasSelecionadasAnterior.size()) {
-                    selecionado = linhasSelecionadasAnterior.get(i);
-                    break;
-                }
-            }
-            linhasSelecionadas.add(selecionado);
-        }
-
-        medicamentos = medicamentosFiltrados;
-        carregarDados();
-        atualizarEstadoBotaoPedido();
-    }
-
     private List<Medicamento> obterMedicamentosSelecionados() {
         List<Medicamento> selecionados = new ArrayList<>();
         for (int i = 0; i < medicamentos.size(); i++) {
@@ -457,5 +486,4 @@ public class EstoqueMedicamento extends JPanel {
         }
         return selecionados;
     }
-
 }
