@@ -114,5 +114,16 @@ public class MedicamentoController {
         }
     } 
 
+    public static List<Medicamento> buscarPorCategoriaNome(Connection conn, String termo) throws SQLException {
+        if (termo == null || termo.trim().isEmpty()) {
+            throw new IllegalArgumentException("O nome da categoria não pode ser nulo ou vazio.");
+        }
+        try {
+            return MedicamentoDAO.buscarPorCategoriaOuNome(conn, termo);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao listar medicamentos por categoria ou nome.", e);
+        }
+    }
+
 
 }

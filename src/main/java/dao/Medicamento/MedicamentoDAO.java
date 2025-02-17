@@ -251,6 +251,65 @@ public class MedicamentoDAO {
         return medicamentos;
     }
     
+    public static List<Medicamento> buscarPorCategoriaOuNome(Connection conn, String termo) throws SQLException {
+        List<Medicamento> medicamentos = new ArrayList<>();
+        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.dataValidade, " +
+                     "m.dataFabricacao, m.tipoReceita, m.qnt, m.tipo, " +
+                     "c.nome AS categoria_nome, " +
+                     "f.nome AS funcionario_nome, " +
+                     "fa.nome AS fabricante_nome, " +
+                     "fo.nome AS fornecedor_nome " +
+                     "FROM medicamento m " +
+                     "JOIN categoria c ON m.categoria_id = c.id " +
+                     "JOIN funcionario f ON m.funcionario_id = f.id " +
+                     "JOIN fabricante fa ON m.fabricante_id = fa.id " +
+                     "JOIN fornecedor fo ON m.fornecedor_id = fo.id " +
+                     "WHERE c.nome LIKE ? OR m.nome LIKE ? " +
+                     "ORDER BY m.nome ASC";
+    
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, "%" + termo + "%");
+            pstmt.setString(2, "%" + termo + "%");
+    
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Medicamento med = new Medicamento();
+                    med.setNome(rs.getString("nome"));
+                    med.setDosagem(rs.getString("dosagem"));
+                    med.setFormaFarmaceutica(rs.getString("formaFarmaceutica"));
+                    med.setValorUnit(rs.getBigDecimal("valorUnit"));
+                    med.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
+                    med.setDataFabricacao(YearMonth.from(rs.getDate("dataFabricacao").toLocalDate()));
+                    med.setTipoReceita(Medicamento.TipoReceita.valueOf(rs.getString("tipoReceita")));
+                    med.setQnt(rs.getInt("qnt"));
+                    med.setTipo(Medicamento.Tipo.valueOf(rs.getString("tipo")));
+    
+                    Categoria cat = new Categoria();
+                    cat.setNome(rs.getString("categoria_nome"));
+                    med.setCategoria(cat);
+    
+                    Funcionario fun = new Funcionario();
+                    fun.setNome(rs.getString("funcionario_nome"));
+                    med.setFuncionario(fun);
+    
+                    Fabricante fabricante = new Fabricante();
+                    fabricante.setNome(rs.getString("fabricante_nome"));
+                    med.setFabricante(fabricante);
+    
+                    Fornecedor fornecedor = new Fornecedor();
+                    fornecedor.setNome(rs.getString("fornecedor_nome"));
+                    med.setFornecedor(fornecedor);
+    
+                    medicamentos.add(med);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar medicamentos por categoria ou nome: " + e.getMessage());
+            throw e;
+        }
+    
+        return medicamentos;
+    }   
 
     public static void deletarMedicamento(Connection conn, Medicamento m) throws SQLException {
         String sql = "delete from medicamento where id = ?";
