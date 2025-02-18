@@ -11,6 +11,7 @@ import javax.swing.text.DocumentFilter;
 
 import java.awt.*;
 import java.awt.print.PageFormat;
+import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.text.DecimalFormat;
@@ -323,7 +324,7 @@ class RealizarPedidoProduto extends JDialog {
         }
     }
 
-    private class ImpressaoPedido implements java.awt.print.Printable {
+    public class ImpressaoPedido implements Printable {
 
         private String tituloFarmacia;
         private String titulo;
@@ -331,16 +332,15 @@ class RealizarPedidoProduto extends JDialog {
         private List<ItemPedido> itensPedido;
         private NumberFormat formatadorNumero;
         private DecimalFormat formatadorDecimal;
-        private final int[] larguraColunas = { 130, 100, 80, 50, 130, 100, 70, 70 };
+        private final int[] larguraColunas = { 140, 130, 100, 80, 110, 70, 60 };
         private final String[] cabecalhoColunas = {
                 "Nome",
                 "Categoria",
                 "Embalagem",
-                "Qnt. Embalagem",
                 "Medida",
                 "Fornecedor",
                 "Preço Unit.",
-                "Qtd. Solicitada"
+                "Qtd."
         };
 
         public ImpressaoPedido(
@@ -373,28 +373,24 @@ class RealizarPedidoProduto extends JDialog {
             int larguraPagina = (int) formatoPagina.getImageableWidth();
 
             g2d.setColor(Color.BLACK);
-
             Font fonteTitulo = new Font("Arial", Font.BOLD, 14);
             g2d.setFont(fonteTitulo);
             FontMetrics fm = g2d.getFontMetrics();
 
             int larguraTituloFarmacia = fm.stringWidth(tituloFarmacia);
-            int posicaoXTituloFarmacia = (larguraPagina - larguraTituloFarmacia) / 2;
-            g2d.drawString(tituloFarmacia, posicaoXTituloFarmacia, y);
+            g2d.drawString(tituloFarmacia, (larguraPagina - larguraTituloFarmacia) / 2, y);
             y += fm.getHeight() + 5;
 
             int larguraTitulo = fm.stringWidth(titulo);
-            int posicaoXTitulo = (larguraPagina - larguraTitulo) / 2;
-            g2d.drawString(titulo, posicaoXTitulo, y);
+            g2d.drawString(titulo, (larguraPagina - larguraTitulo) / 2, y);
             y += fm.getHeight() + 10;
 
-            g2d.setFont(new Font("Arial", Font.ITALIC, 9));
+            g2d.setFont(new Font("Arial", Font.ITALIC, 12));
             g2d.drawString("Lista criada em: " + data, x, y);
             y += fm.getHeight() + 5;
 
             y = imprimirCabecalhoColunas(g2d, x, y, larguraPagina);
-
-            Font fonteDados = new Font("Arial", Font.PLAIN, 8);
+            Font fonteDados = new Font("Arial", Font.PLAIN, 10);
             g2d.setFont(fonteDados);
             fm = g2d.getFontMetrics();
             for (ItemPedido item : itensPedido) {
@@ -408,89 +404,99 @@ class RealizarPedidoProduto extends JDialog {
         }
 
         private int imprimirCabecalhoColunas(Graphics2D g2d, int x, int y, int larguraPagina) {
-            Font fonteCabecalho = new Font("Arial", Font.BOLD, 9);
+            Font fonteCabecalho = new Font("Arial", Font.BOLD, 12);
             g2d.setFont(fonteCabecalho);
             FontMetrics fm = g2d.getFontMetrics();
             int posicaoXCabecalho = x;
 
-            y += fm.getAscent();
+            y += fm.getAscent() - 2;
 
             for (int i = 0; i < cabecalhoColunas.length; i++) {
-                String cabecalho = cabecalhoColunas[i];
-                int larguraColuna = larguraColunas[i];
-                int posicaoXCabecalhoColuna = posicaoXCabecalho + (larguraColuna - fm.stringWidth(cabecalho)) / 2;
-                g2d.drawString(cabecalho, posicaoXCabecalhoColuna, y);
-                posicaoXCabecalho += larguraColuna;
+                g2d.drawString(cabecalhoColunas[i], posicaoXCabecalho + 5, y);
+                posicaoXCabecalho += larguraColunas[i];
             }
+
+            g2d.drawLine(10, y + 2, larguraPagina - 20, y + 2);
+
             y += fm.getHeight() + 5;
-            g2d.drawLine(10, y - fm.getHeight() - 5, larguraPagina - 20, y - fm.getHeight() - 5);
 
             return y;
         }
 
-        private int imprimirLinha(
-                Graphics2D g2d, int x, int y, ItemPedido item, FontMetrics fm, int larguraPagina) {
+        private int imprimirLinha(Graphics2D g2d, int x, int y, ItemPedido item, FontMetrics fm, int larguraPagina) {
             int posicaoXLinha = x;
-            int alturaLinha = fm.getHeight() + 2;
+            int alturaMaximaLinha = y;
 
-            g2d.drawString(
-                    ajustarString(item.produto.getNome(), larguraColunas[0], fm), posicaoXLinha, y);
+            int yNome = imprimirTextoQuebrado(g2d, posicaoXLinha + 5, y, item.produto.getNome(), larguraColunas[0], fm);
+            alturaMaximaLinha = Math.max(alturaMaximaLinha, yNome);
             posicaoXLinha += larguraColunas[0];
 
-            g2d.drawString(
-                    ajustarString(item.produto.getCategoria().getNome(), larguraColunas[1], fm),
-                    posicaoXLinha,
-                    y);
+            int yCategoria = imprimirTextoQuebrado(g2d, posicaoXLinha + 5, y, item.produto.getCategoria().getNome(),
+                    larguraColunas[1], fm);
+            alturaMaximaLinha = Math.max(alturaMaximaLinha, yCategoria);
             posicaoXLinha += larguraColunas[1];
 
-            g2d.drawString(
-                    ajustarString(item.produto.getEmbalagem(), larguraColunas[2], fm),
-                    posicaoXLinha,
-                    y);
+            imprimirTextoSemQuebra(g2d, posicaoXLinha + 5, y, item.produto.getEmbalagem(), larguraColunas[2], fm);
             posicaoXLinha += larguraColunas[2];
 
-            g2d.drawString(
-                    ajustarString(String.valueOf(item.produto.getQntEmbalagem()), larguraColunas[3], fm),
-                    posicaoXLinha,
-                    y);
+            imprimirTextoSemQuebra(g2d, posicaoXLinha + 5, y, item.produto.getQntMedida(), larguraColunas[3], fm);
             posicaoXLinha += larguraColunas[3];
 
-            g2d.drawString(
-                    ajustarString(item.produto.getQntMedida(), larguraColunas[4], fm),
-                    posicaoXLinha,
-                    y);
+            int yFornecedor = imprimirTextoQuebrado(g2d, posicaoXLinha + 5, y, item.produto.getFornecedor().getNome(),
+                    larguraColunas[4], fm);
+            alturaMaximaLinha = Math.max(alturaMaximaLinha, yFornecedor);
             posicaoXLinha += larguraColunas[4];
 
-            g2d.drawString(
-                    ajustarString(item.produto.getFornecedor().getNome(), larguraColunas[5], fm),
-                    posicaoXLinha,
-                    y);
+            String valorUnitarioFormatado = String.format("R$ %.2f", item.produto.getValor());
+            imprimirTextoSemQuebra(g2d, posicaoXLinha + 5, y, valorUnitarioFormatado, larguraColunas[5], fm);
             posicaoXLinha += larguraColunas[5];
 
-            String valorUnitarioFormatado = String.format("R$ %.2f", item.produto.getValor());
-            g2d.drawString(ajustarString(valorUnitarioFormatado, larguraColunas[6], fm), posicaoXLinha, y);
+            String quantidadeFormatada = formatadorDecimal.format(item.quantidade);
+            imprimirTextoSemQuebra(g2d, posicaoXLinha + 5, y, quantidadeFormatada, larguraColunas[6], fm);
             posicaoXLinha += larguraColunas[6];
 
-            String quantidadeFormatada = formatadorDecimal.format(item.quantidade);
-            g2d.drawString(ajustarString(quantidadeFormatada, larguraColunas[7], fm), posicaoXLinha, y);
-            posicaoXLinha += larguraColunas[7];
+            g2d.setStroke(new BasicStroke(1.2f));
+            g2d.drawLine(10, alturaMaximaLinha - 8, larguraPagina - 20, alturaMaximaLinha - 8);
 
-            y += alturaLinha;
-            return y;
+            return alturaMaximaLinha + fm.getHeight() + 5;
         }
 
-        private String ajustarString(String texto, int larguraColuna, FontMetrics fm) {
+        private int imprimirTextoQuebrado(Graphics2D g2d, int x, int y, String texto, int larguraColuna,
+                FontMetrics fm) {
             if (texto == null || texto.isEmpty()) {
-                return "";
+                return y;
             }
-            while (fm.stringWidth(texto) > larguraColuna) {
-                if (texto.length() > 3) {
-                    texto = texto.substring(0, texto.length() - 1);
+
+            String[] palavras = texto.split(" ");
+            StringBuilder linhaAtual = new StringBuilder();
+            int yAtual = y;
+            int alturaLinha = fm.getHeight();
+
+            for (String palavra : palavras) {
+                String testeLinha = linhaAtual.length() == 0 ? palavra : linhaAtual + " " + palavra;
+                if (fm.stringWidth(testeLinha) <= larguraColuna) {
+                    linhaAtual.append(linhaAtual.length() == 0 ? palavra : " " + palavra);
                 } else {
-                    return "...";
+                    g2d.drawString(linhaAtual.toString(), x, yAtual);
+                    yAtual += alturaLinha;
+                    linhaAtual = new StringBuilder(palavra);
                 }
             }
-            return texto;
+
+            if (linhaAtual.length() > 0) {
+                g2d.drawString(linhaAtual.toString(), x, yAtual);
+                yAtual += alturaLinha;
+            }
+            return yAtual;
         }
+
+        private void imprimirTextoSemQuebra(Graphics2D g2d, int x, int y, String texto, int larguraColuna,
+                FontMetrics fm) {
+            if (texto == null || texto.isEmpty()) {
+                return;
+            }
+            g2d.drawString(texto, x, y);
+        }
+
     }
 }
