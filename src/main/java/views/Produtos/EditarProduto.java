@@ -4,22 +4,22 @@ import javax.swing.*;
 import javax.swing.text.MaskFormatter;
 import javax.swing.text.NumberFormatter;
 
-import org.w3c.dom.events.MouseEvent;
-
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.List;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import controllers.Fabricante.FabricanteController;
 import controllers.Fornecedor.FornecedorController;
@@ -32,8 +32,6 @@ import models.Categoria.Categoria;
 import models.Fabricante.Fabricante;
 import models.Fornecedor.Fornecedor;
 import models.Funcionario.Funcionario;
-import models.Medicamento.Medicamento.Tipo;
-import models.Medicamento.Medicamento.TipoReceita;
 import models.Produto.Produto;
 import views.BarrasSuperiores.PainelSuperior;
 import views.Fornecedor.CadastrarFornecedor;
@@ -97,7 +95,7 @@ public class EditarProduto extends JPanel {
         camposPanel.add(nomeLabel, gbc);
 
         nomeProdutoField = new JTextField();
-        nomeProdutoField.setPreferredSize(new Dimension(400, 40));
+        nomeProdutoField.setPreferredSize(new Dimension(280, 40));
         estilizarCamposFormulario(nomeProdutoField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -110,16 +108,16 @@ public class EditarProduto extends JPanel {
         camposPanel.add(embalagemLabel, gbc);
 
         String[] tiposdeEmbalagem = { "Selecione", "Bisnaga", "Caixa", "Frasco", "Garrafa", "Lata", "Pacote", "Pote",
-                "Refil", "Rolo", "Spray", "Tubo", "Vidro" };
+                "Refil", "Rolo", "Spray", "Tubo", "Vidro", "Outros" };
         embalagemComboBox = new JComboBox<>(tiposdeEmbalagem);
-        embalagemComboBox.setPreferredSize(new Dimension(180, 40));
+        embalagemComboBox.setPreferredSize(new Dimension(150, 40));
         estilizarComboBox(embalagemComboBox, fieldFont);
         gbc.gridx = 1;
         gbc.gridy = 1;
         camposPanel.add(embalagemComboBox, gbc);
 
         embalagemField = new JTextField();
-        embalagemField.setPreferredSize(new Dimension(180, 40));
+        embalagemField.setPreferredSize(new Dimension(150, 40));
         estilizarCamposFormulario(embalagemField, fieldFont);
         embalagemField.setVisible(false);
         gbc.gridx = 1;
@@ -138,21 +136,30 @@ public class EditarProduto extends JPanel {
             }
         });
 
+        JLabel quantidadeEmbalagemLabel = new JLabel("Qnt. Embalagem");
+        quantidadeEmbalagemLabel.setFont(labelFont);
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        camposPanel.add(quantidadeEmbalagemLabel, gbc);
+
+        quantidadeEmbalagemField = new JTextField();
+        quantidadeEmbalagemField.setPreferredSize(new Dimension(140, 40));
+        estilizarCamposFormulario(quantidadeEmbalagemField, fieldFont);
+        gbc.gridx = 2;
+        gbc.gridy = 1;
+        camposPanel.add(quantidadeEmbalagemField, gbc);
+
         JLabel categoriaLabel = new JLabel("Categoria");
         categoriaLabel.setFont(labelFont);
-        gbc.gridx = 2;
+        gbc.gridx = 3;
         gbc.gridy = 0;
         camposPanel.add(categoriaLabel, gbc);
 
-        String[] tiposDeCategoria = {
-                "Selecione", "Acessórios e Utilidades Pessoais", "Alimentícios", "Cosméticos e Perfumaria",
-                "Dermocosméticos",
-                "Fraldas e Acessórios", "Higiene e Cuidado Pessoal", "Materiais Hospitalares", "Ortopedia",
-                "Saúde Sexual e Reprodutiva", "Suplementos e Vitaminas" };
-        categoriaComboBox = new JComboBox<>(tiposDeCategoria);
-        categoriaComboBox.setPreferredSize(new Dimension(235, 40));
+        String[] categoriaProdutos = obterCategoriaProdutos();
+        categoriaComboBox = new JComboBox<>(categoriaProdutos);
+        categoriaComboBox.setPreferredSize(new Dimension(145, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
-        gbc.gridx = 2;
+        gbc.gridx = 3;
         gbc.gridy = 1;
         camposPanel.add(categoriaComboBox, gbc);
 
@@ -163,14 +170,14 @@ public class EditarProduto extends JPanel {
         camposPanel.add(fabricanteLabel, gbc);
 
         fabricanteComboBox = new JComboBox<>(obterFabricantes());
-        fabricanteComboBox.setPreferredSize(new Dimension(400, 40));
+        fabricanteComboBox.setPreferredSize(new Dimension(280, 40));
         estilizarComboBox(fabricanteComboBox, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 3;
         camposPanel.add(fabricanteComboBox, gbc);
 
         fabricanteField = new JTextField();
-        fabricanteField.setPreferredSize(new Dimension(400, 40));
+        fabricanteField.setPreferredSize(new Dimension(280, 40));
         estilizarCamposFormulario(fabricanteField, fieldFont);
         fabricanteField.setVisible(false);
         gbc.gridx = 0;
@@ -189,7 +196,6 @@ public class EditarProduto extends JPanel {
             }
         });
 
-        // Medida
         JLabel medidaLabel = new JLabel("Medida");
         medidaLabel.setFont(labelFont);
         gbc.gridx = 1;
@@ -197,10 +203,10 @@ public class EditarProduto extends JPanel {
         camposPanel.add(medidaLabel, gbc);
 
         qntMedidaField = new JTextField();
-        qntMedidaField.setPreferredSize(new Dimension(180, 40));
+        qntMedidaField.setPreferredSize(new Dimension(150, 40));
         estilizarCamposFormulario(qntMedidaField, fieldFont);
-        qntMedidaField.setText("Medidas: mL, kg, L, un");
-        qntMedidaField.setForeground(Color.GRAY);
+        qntMedidaField.setText("Medidas: mL, g, L, un");
+        qntMedidaField.setForeground(Color.BLACK);
         qntMedidaField.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -214,7 +220,7 @@ public class EditarProduto extends JPanel {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (qntMedidaField.getText().isEmpty()) {
                     qntMedidaField.setText("Medidas: mL, g, L, un");
-                    qntMedidaField.setForeground(Color.BLACK);
+                    qntMedidaField.setForeground(Color.GRAY);
                 }
             }
         });
@@ -222,30 +228,19 @@ public class EditarProduto extends JPanel {
         gbc.gridy = 3;
         camposPanel.add(qntMedidaField, gbc);
 
-         // Estoque
-         JLabel estoqueLabel = new JLabel("Estoque");
-         estoqueLabel.setFont(labelFont);
-         gbc.gridx = 2;
-         gbc.gridy = 2;
-         camposPanel.add(estoqueLabel, gbc);
- 
-         NumberFormatter estoqueFormatter = new NumberFormatter();
-         estoqueFormatter.setValueClass(Integer.class);
-         estoqueFormatter.setAllowsInvalid(false);
-         estoqueFormatter.setCommitsOnValidEdit(true);
-         estoqueFormatter.setMinimum(1);
-         estoqueFormatter.setMaximum(Integer.MAX_VALUE);
- 
-         estoqueFormatter.setFormat(NumberFormat.getInstance());
- 
-         estoqueField = new JFormattedTextField(estoqueFormatter);
-         estoqueField.setPreferredSize(new Dimension(170, 40));
-         estilizarCamposFormulario(estoqueField, fieldFont);
-         gbc.gridx = 2;
-         gbc.gridy = 3;
-         camposPanel.add(estoqueField, gbc);
+        JLabel estoqueLabel = new JLabel("Estoque");
+        estoqueLabel.setFont(labelFont);
+        gbc.gridx = 2;
+        gbc.gridy = 2;
+        camposPanel.add(estoqueLabel, gbc);
 
-        // Fornecedor
+        estoqueField = new JTextField();
+        estoqueField.setPreferredSize(new Dimension(140, 40));
+        estilizarCamposFormulario(estoqueField, fieldFont);
+        gbc.gridx = 2;
+        gbc.gridy = 3;
+        camposPanel.add(estoqueField, gbc);
+
         JLabel fornecedorLabel = new JLabel("Fornecedor");
         fornecedorLabel.setFont(labelFont);
         gbc.gridx = 0;
@@ -253,7 +248,7 @@ public class EditarProduto extends JPanel {
         camposPanel.add(fornecedorLabel, gbc);
 
         fornecedorComboBox = new JComboBox<>(obterFornecedores());
-        fornecedorComboBox.setPreferredSize(new Dimension(400, 40));
+        fornecedorComboBox.setPreferredSize(new Dimension(280, 40));
         estilizarComboBox(fornecedorComboBox, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 5;
@@ -292,12 +287,11 @@ public class EditarProduto extends JPanel {
             MaskFormatter dataFormatter = new MaskFormatter("##/####");
             dataFormatter.setPlaceholderCharacter('_');
             dataFabricacaoField = new JFormattedTextField(dataFormatter);
-            dataFabricacaoField.setPreferredSize(new Dimension(170, 40));
+            dataFabricacaoField.setPreferredSize(new Dimension(150, 40));
             estilizarCamposFormulario(dataFabricacaoField, fieldFont);
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
         gbc.gridx = 1;
         gbc.gridy = 5;
         camposPanel.add(dataFabricacaoField, gbc);
@@ -312,21 +306,19 @@ public class EditarProduto extends JPanel {
             MaskFormatter dataFormatter = new MaskFormatter("##/####");
             dataFormatter.setPlaceholderCharacter('_');
             dataValidadeField = new JFormattedTextField(dataFormatter);
-            dataValidadeField.setPreferredSize(new Dimension(170, 40));
+            dataValidadeField.setPreferredSize(new Dimension(140, 40));
             estilizarCamposFormulario(dataValidadeField, fieldFont);
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
         gbc.gridx = 2;
         gbc.gridy = 5;
         camposPanel.add(dataValidadeField, gbc);
 
-        // Valor Unitário
         JLabel valorUnitarioLabel = new JLabel("Valor Unitário (R$)");
         valorUnitarioLabel.setFont(labelFont);
-        gbc.gridx = 0;
-        gbc.gridy = 6;
+        gbc.gridx = 3;
+        gbc.gridy = 2;
         camposPanel.add(valorUnitarioLabel, gbc);
 
         NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
@@ -341,7 +333,7 @@ public class EditarProduto extends JPanel {
                 try {
                     return super.stringToValue(text);
                 } catch (ParseException e) {
-                    return null; // Handle invalid input
+                    return null;
                 }
             }
         };
@@ -351,26 +343,34 @@ public class EditarProduto extends JPanel {
         formatter.setMaximum(999999.99);
 
         valorUnitarioField = new JFormattedTextField(formatter);
-        valorUnitarioField.setPreferredSize(new Dimension(120, 40));
+        valorUnitarioField.setPreferredSize(new Dimension(145, 40));
         estilizarCamposFormulario(valorUnitarioField, fieldFont);
-        gbc.gridx = 0;
-        gbc.gridy = 7;
+        gbc.gridx = 3;
+        gbc.gridy = 3;
         camposPanel.add(valorUnitarioField, gbc);
 
-        JLabel quantidadeEmbalagemLabel = new JLabel("Qnt. Embalagem");
-        quantidadeEmbalagemLabel.setFont(labelFont);
-        gbc.gridx = 1;
-        gbc.gridy = 6;
-        camposPanel.add(quantidadeEmbalagemLabel, gbc);
-
-        quantidadeEmbalagemField = new JTextField();
-        quantidadeEmbalagemField.setPreferredSize(new Dimension(120, 40));
-        estilizarCamposFormulario(quantidadeEmbalagemField, fieldFont);
-        gbc.gridx = 1;
-        gbc.gridy = 7;
-        camposPanel.add(quantidadeEmbalagemField, gbc);
-
         return camposPanel;
+    }
+
+    private String[] obterCategoriaProdutos() {
+        List<String> categoriasdeProdutoPreDefinidas = new ArrayList<>(Arrays.asList(
+                "Acessórios e Utilidades Pessoais", "Alimentícios", "Cosméticos e Perfumaria",
+                "Dermocosméticos", "Fraldas e Acessórios", "Higiene e Cuidado Pessoal", "Materiais Hospitalares",
+                "Ortopedia", "Saúde Sexual e Reprodutiva", "Suplementos e Vitaminas"));
+
+        Set<String> categoriaProdutos = new LinkedHashSet<>();
+        categoriaProdutos.add("Selecione");
+        categoriaProdutos.addAll(categoriasdeProdutoPreDefinidas);
+
+        try (Connection conn = ConexaoBD.getConnection()) {
+            List<String> categoriaProdutosDoBanco = ProdutoController.listarCategoriasProduto(conn);
+            categoriaProdutos.addAll(categoriaProdutosDoBanco);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return categoriaProdutos.toArray(new String[0]);
+
     }
 
     private String[] obterFornecedores() {
@@ -471,17 +471,18 @@ public class EditarProduto extends JPanel {
     private void salvarProduto(int ProdutoId) {
         try {
             int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
-            String nomeProduto = nomeProdutoField.getText();
-            String qntMedida = qntMedidaField.getText();
+
+            String nomeProduto = nomeProdutoField.getText().trim().toLowerCase();
+            String categoriaProduto = (String) categoriaComboBox.getSelectedItem();
             String embalagem = (String) embalagemComboBox.getSelectedItem();
-            String categoriaNome = (String) categoriaComboBox.getSelectedItem();
+            String qntMedida = qntMedidaField.getText().trim();
+            String fabricanteNome = fabricanteField.getText().trim();
             String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
-            String fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
-            String dataFabricacaoTexto = dataFabricacaoField.getText().trim();
-            String dataValidadeTexto = dataValidadeField.getText().trim();
-            String estoqueTexto = estoqueField.getText().trim();
-            String valorTexto = valorUnitarioField.getText().replace("R$", "").trim().replace(",", ".");
+            String fabricacaoData = dataFabricacaoField.getText().trim();
+            String validadeData = dataValidadeField.getText().trim();
+            String valorUnitarioTexto = valorUnitarioField.getText().trim();
             String qntEmbalagemTexto = quantidadeEmbalagemField.getText().trim();
+            String qntestoqueTexto = estoqueField.getText().trim();
 
             StringBuilder errorMessage = new StringBuilder("Por favor, corrija os seguintes erros: \n");
             boolean hasError = false;
@@ -490,8 +491,9 @@ public class EditarProduto extends JPanel {
                 errorMessage.append("Nome deve ser preenchido.\n");
                 hasError = true;
             } else {
-                if (!nomeProduto.matches("^[\\p{L}\\d\\s]*$")) {
-                    errorMessage.append("Nome inválido (apenas letras, números e espaços são permitidos).\n");
+                if (!nomeProduto.matches("^[\\p{L}\\d][\\p{L}\\d\\s]*$")) {
+                    errorMessage.append(
+                            "Nome inválido (apenas letras, números e espaços são permitidos, e não pode começar com espaço).\n");
                     hasError = true;
                 }
             }
@@ -507,9 +509,25 @@ public class EditarProduto extends JPanel {
                 hasError = true;
             }
 
-            // ajustar aqui
-            if (categoriaNome.isEmpty()) {
-                errorMessage.append("Pelo menos uma categoria deve ser selecionada.\n");
+            int qntEmbalagem = 0;
+            if (!qntEmbalagemTexto.isEmpty()) {
+                try {
+                    qntEmbalagem = Integer.parseInt(qntEmbalagemTexto);
+                    if (qntEmbalagem <= 0) {
+                        errorMessage.append("A quantidade por embalagem deve ser um número inteiro positivo.\n");
+                        hasError = true;
+                    }
+                } catch (NumberFormatException e) {
+                    errorMessage.append("Quantidade por embalagem inválida. Use apenas números inteiros.\n");
+                    hasError = true;
+                }
+            } else {
+                errorMessage.append("Quantidade por embalagem deve ser informada.\n");
+                hasError = true;
+            }
+
+            if ("Selecione".equals(categoriaProduto) || categoriaProduto.isEmpty()) {
+                errorMessage.append("Categoria deve ser selecionada.\n");
                 hasError = true;
             }
 
@@ -527,30 +545,46 @@ public class EditarProduto extends JPanel {
                 }
             }
 
-            if (qntMedida.isEmpty()) {
+            if (qntMedida.isEmpty() || qntMedida.equals("Medidas: mL, kg, L, un")) {
                 errorMessage.append("Medida deve ser informada.\n");
                 hasError = true;
-            } else if (!qntMedida.toLowerCase().matches("\\d+(\\.\\d+)?(ml|l|g|kg|un)")) {
-                errorMessage.append("Informe a medida com as seguintes unidades válidas:\n" +
-                        "(mL, kg, L, un).\n" +
-                        "Exemplo: 500mL, 10kg\n");
+            } else if (!qntMedida.toLowerCase().matches("^\\d+(\\.\\d+)?(ml|l|g|kg|un)$")) {
+                errorMessage.append("Medida inválida. Use um formato como 100ml, 1kg, 2L, 5un\n");
                 hasError = true;
-            } else {
-                double qntMedidaValor = Double.parseDouble(qntMedida.replaceAll("[^\\d.]", ""));
-                if (qntMedidaValor <= 0) {
-                    errorMessage.append("A medida deve ser um valor positivo.\n");
-                    hasError = true;
-                }
             }
 
-            Integer estoque = (Integer) ((JFormattedTextField) estoqueField).getValue(); // Get the Integer value
-    
-            if (estoque == null) {
-                errorMessage.append("O estoque não pode ser vazio.\n");
+            int qntEstoque = 0;
+            if (!qntestoqueTexto.isEmpty()) {
+                try {
+                    qntEstoque = Integer.parseInt(qntestoqueTexto);
+                    if (qntEstoque <= 0) {
+                        errorMessage.append("A quantidade do estoque deve ser um número inteiro positivo.\n");
+                        hasError = true;
+                    }
+                } catch (NumberFormatException e) {
+                    errorMessage.append("Quantidade de estoque inválida. Use apenas números inteiros.\n");
+                    hasError = true;
+                }
+            } else {
+                errorMessage.append("Quantidade no estoque deve ser informada.\n");
                 hasError = true;
-            } else if (estoque < 0) {
-                errorMessage.append("A quantidade informada para estoque não pode ser negativa\n");
+            }
+
+            BigDecimal valorUnitario = null;
+            if (valorUnitarioTexto.isEmpty()) {
+                errorMessage.append("O valor unitário deve ser informado.\n");
                 hasError = true;
+            } else {
+                try {
+                    valorUnitario = new BigDecimal(valorUnitarioTexto.replace(",", "."));
+                    if (valorUnitario.compareTo(BigDecimal.ZERO) <= 0) {
+                        errorMessage.append("O valor unitário deve ser maior que zero.\n");
+                        hasError = true;
+                    }
+                } catch (NumberFormatException e) {
+                    errorMessage.append("Valor unitário inválido. Use um formato numérico válido.\n");
+                    hasError = true;
+                }
             }
 
             if ("Selecione".equals(fornecedorNome)) {
@@ -576,21 +610,15 @@ public class EditarProduto extends JPanel {
                 return;
             }
 
-            Categoria categoria = new Categoria();
-            categoria.setNome(categoriaNome);
-
-            Fabricante fabricante = new Fabricante();
-            fabricante.setNome(fabricanteNome);
-
             LocalDate dataFabricacao = null, dataValidade = null;
-            if (dataFabricacaoTexto.equals("/") || dataValidadeTexto.equals("/")) {
+            if (fabricacaoData.equals("") || validadeData.equals("")) {
                 errorMessage.append("As datas de fabricação e validade devem ser preenchidas corretamente.\n");
                 hasError = true;
             } else {
                 try {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
-                    YearMonth ymFabricacao = YearMonth.parse(dataFabricacaoTexto, formatter);
-                    YearMonth ymValidade = YearMonth.parse(dataValidadeTexto, formatter);
+                    YearMonth ymFabricacao = YearMonth.parse(fabricacaoData, formatter);
+                    YearMonth ymValidade = YearMonth.parse(validadeData, formatter);
                     dataFabricacao = ymFabricacao.atDay(28);
                     dataValidade = ymValidade.atDay(28);
                 } catch (DateTimeParseException ex) {
@@ -628,51 +656,16 @@ public class EditarProduto extends JPanel {
                 }
             }
 
-            if (valorTexto.isEmpty()) {
-                errorMessage.append("O valor unitário deve ser informado.\n");
-                hasError = true;
-            }
-
-            if (qntEmbalagemTexto.isEmpty()) {
-                errorMessage.append("Quantidade por embalagem deve ser informada.\n");
-                hasError = true;
-            } else if (!qntEmbalagemTexto.matches("\\d+")) {
-                errorMessage.append("Quantidade por embalagem deve ser um número inteiro válido.\n");
-                hasError = true;
-            } else {
-                int quantidadeEmbalagem = Integer.parseInt(qntEmbalagemTexto);
-                if (quantidadeEmbalagem <= 0) {
-                    errorMessage.append("Quantidade por embalagem deve ser um número maior que zero.\n");
-                    hasError = true;
-                }
-            }
-
             if (hasError) {
                 JOptionPane.showMessageDialog(this, errorMessage.toString(), "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            BigDecimal valorUnitario;
+            Categoria categoria = new Categoria();
+            categoria.setNome(categoriaProduto);
 
-            if (valorTexto.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "O valor unitário deve ser informado.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (!valorTexto.matches("\\d+(\\.\\d{1,2})?")) {
-                JOptionPane.showMessageDialog(this, "Valor unitário deve ser um número válido.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            valorUnitario = new BigDecimal(valorTexto);
-
-            if (valorUnitario.compareTo(BigDecimal.ZERO) <= 0) {
-                JOptionPane.showMessageDialog(this, "O valor unitário deve ser maior que zero.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            Fabricante fabricante = new Fabricante();
+            fabricante.setNome(fabricanteNome);
 
             YearMonth dataFabricacaoYearMonth = YearMonth.from(dataFabricacao);
             YearMonth dataValidadeYearMonth = YearMonth.from(dataValidade);
@@ -696,7 +689,7 @@ public class EditarProduto extends JPanel {
                 produtoExistente.setDataFabricacao(dataFabricacaoYearMonth);
                 produtoExistente.setDataValidade(dataValidadeYearMonth);
                 produtoExistente.setValor(valorUnitario);
-                produtoExistente.setQntEstoque(estoque);
+                produtoExistente.setQntEstoque(qntEstoque);
                 produtoExistente.setQntEmbalagem(Integer.parseInt(qntEmbalagemTexto));
 
                 ProdutoController.atualizarProduto(conn, produtoExistente);
@@ -727,8 +720,24 @@ public class EditarProduto extends JPanel {
 
     private void estilizarComboBox(JComboBox<String> comboBox, Font font) {
         comboBox.setBackground(Color.WHITE);
+        comboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
+                Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (isSelected) {
+                    component.setBackground(new Color(24, 39, 55));
+                    component.setForeground(Color.WHITE);
+                } else {
+                    component.setBackground(Color.WHITE);
+                    component.setForeground(Color.BLACK);
+                }
+                return component;
+            }
+        });
         comboBox.setFont(font);
         comboBox.setFocusable(false);
         comboBox.setSelectedIndex(0);
     }
+
 }

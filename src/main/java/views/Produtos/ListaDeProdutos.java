@@ -164,7 +164,7 @@ public class ListaDeProdutos extends JPanel {
         cadastrarButton.setBackground(new Color(24, 39, 55));
         cadastrarButton.setForeground(Color.WHITE);
         cadastrarButton.setFocusPainted(false);
-        cadastrarButton.setPreferredSize(new Dimension(220, 30));
+        cadastrarButton.setPreferredSize(new Dimension(180, 30));
         painelBuscaBotao.add(cadastrarButton);
 
         cadastrarButton.addActionListener(e -> {
@@ -227,15 +227,15 @@ public class ListaDeProdutos extends JPanel {
         tabela.getColumnModel().getColumn(8).setCellRenderer(new RenderizadorBotoes());
         tabela.getColumnModel().getColumn(8).setCellEditor(new EditorBotoes(new JTextField()));
 
-        tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
+        tabela.getColumnModel().getColumn(0).setPreferredWidth(180);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(90);
-        tabela.getColumnModel().getColumn(3).setPreferredWidth(90);
-        tabela.getColumnModel().getColumn(4).setPreferredWidth(90);
-        tabela.getColumnModel().getColumn(5).setPreferredWidth(90);
-        tabela.getColumnModel().getColumn(6).setPreferredWidth(70);
-        tabela.getColumnModel().getColumn(7).setPreferredWidth(50);
-        tabela.getColumnModel().getColumn(8).setPreferredWidth(150);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(30);
+        tabela.getColumnModel().getColumn(3).setPreferredWidth(40);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(30);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(40);
+        tabela.getColumnModel().getColumn(6).setPreferredWidth(55);
+        tabela.getColumnModel().getColumn(7).setPreferredWidth(10);
+        tabela.getColumnModel().getColumn(8).setPreferredWidth(130);
 
         tabela.setCellSelectionEnabled(false);
         tabela.setRowSelectionAllowed(false);

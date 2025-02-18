@@ -21,7 +21,7 @@ public class ExcluirProduto {
         Produto produto;
 
         try (Connection conn = ConexaoBD.getConnection()) {
-            produto = ProdutoDAO.buscarPorId(conn, produtoId); 
+            produto = ProdutoDAO.buscarPorId(conn, produtoId);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Erro ao recuperar produto.", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
@@ -30,7 +30,7 @@ public class ExcluirProduto {
         if (produto == null) {
             JOptionPane.showMessageDialog(null, "Produto não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
-        } 
+        }
 
         String mensagemConfirmacao = "Você realmente deseja excluir o produto \"" + produto.getNome() + "\"?";
 
@@ -47,7 +47,7 @@ public class ExcluirProduto {
 
         if (resposta == 0) {
             try (Connection conn = ConexaoBD.getConnection()) {
-                ProdutoController.excluirProduto(conn, produto); 
+                ProdutoController.excluirProduto(conn, produto);
                 JOptionPane.showMessageDialog(null, "Produto excluído com sucesso!", "Sucesso",
                         JOptionPane.INFORMATION_MESSAGE);
             } catch (SQLException e) {
