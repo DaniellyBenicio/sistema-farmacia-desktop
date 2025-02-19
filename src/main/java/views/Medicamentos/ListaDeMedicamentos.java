@@ -75,17 +75,17 @@ public class ListaDeMedicamentos extends JPanel {
         NumberFormat numberFormat = NumberFormat.getInstance();
 
         for (Medicamento medicamento : medicamentos) {
-            Object[] dadosMedicamento = new Object[11];
+            Object[] dadosMedicamento = new Object[10];
             dadosMedicamento[0] = medicamento.getNome();
             dadosMedicamento[1] = medicamento.getCategoria().getNome();
             dadosMedicamento[2] = medicamento.getFormaFarmaceutica();
             dadosMedicamento[3] = medicamento.getEmbalagem();
             dadosMedicamento[4] = medicamento.getQntEmbalagem();
-            dadosMedicamento[6] = medicamento.getDosagem();
-            dadosMedicamento[7] = formatarData(medicamento.getDataValidade());
-            dadosMedicamento[8] = numberFormat.format(medicamento.getQnt());
-            dadosMedicamento[9] = medicamento.getValorUnit();
-            dadosMedicamento[10] = "";
+            dadosMedicamento[5] = medicamento.getDosagem();
+            dadosMedicamento[6] = formatarData(medicamento.getDataValidade());
+            dadosMedicamento[7] = numberFormat.format(medicamento.getQnt());
+            dadosMedicamento[8] = medicamento.getValorUnit();
+            dadosMedicamento[9] = "";
 
             medicamentosFiltrados.add(dadosMedicamento);
         }
@@ -227,19 +227,17 @@ public class ListaDeMedicamentos extends JPanel {
         tabela.getColumnModel().getColumn(9).setCellRenderer(new RenderizadorBotoes());
         tabela.getColumnModel().getColumn(9).setCellEditor(new EditorBotoes(new JTextField()));
 
-        // Ajustando a largura das colunas
         tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(100);
-        tabela.getColumnModel().getColumn(3).setPreferredWidth(80);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(80);
+        tabela.getColumnModel().getColumn(3).setPreferredWidth(60);
         tabela.getColumnModel().getColumn(4).setPreferredWidth(80);
-        tabela.getColumnModel().getColumn(5).setPreferredWidth(80);
-        tabela.getColumnModel().getColumn(6).setPreferredWidth(80);
-        tabela.getColumnModel().getColumn(7).setPreferredWidth(80);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(60);
+        tabela.getColumnModel().getColumn(6).setPreferredWidth(50);
+        tabela.getColumnModel().getColumn(7).setPreferredWidth(50);
         tabela.getColumnModel().getColumn(8).setPreferredWidth(80);
         tabela.getColumnModel().getColumn(9).setPreferredWidth(150);
 
-        // Desabilita seleções nas células
         tabela.setCellSelectionEnabled(false);
         tabela.setRowSelectionAllowed(false);
         tabela.setColumnSelectionAllowed(false);

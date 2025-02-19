@@ -37,8 +37,6 @@ import models.Fabricante.Fabricante;
 import models.Fornecedor.Fornecedor;
 import models.Funcionario.Funcionario;
 import models.Medicamento.Medicamento;
-import models.Medicamento.Medicamento.Tipo;
-import models.Medicamento.Medicamento.TipoReceita;
 
 import views.BarrasSuperiores.PainelSuperior;
 import views.Fornecedor.CadastrarFornecedor;
@@ -97,7 +95,6 @@ public class CadastrarMedicamento extends JPanel {
         Font labelFont = new Font("Arial", Font.BOLD, 15);
         Font fieldFont = new Font("Arial", Font.PLAIN, 14);
 
-        // Linha 1
         JLabel nomeLabel = new JLabel("Nome");
         nomeLabel.setFont(labelFont);
         gbc.gridx = 0;
@@ -207,7 +204,6 @@ public class CadastrarMedicamento extends JPanel {
             }
         });
 
-        // Linha 2
         JLabel fornecedorLabel = new JLabel("Fornecedor");
         fornecedorLabel.setFont(labelFont);
         gbc.gridx = 0;
@@ -346,7 +342,6 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 3;
         camposPanel.add(estoqueField, gbc);
 
-        // Linha 3
         JLabel fabricanteLabel = new JLabel("Fabricante");
         fabricanteLabel.setFont(labelFont);
         gbc.gridx = 0;
@@ -590,344 +585,331 @@ public class CadastrarMedicamento extends JPanel {
                 String dataValidadeTexto = dataValidadeField.getText().trim();
                 String valorTexto = valorUnitarioField.getText().replace("R$", "").trim().replace(",", ".");
 
-                boolean allFieldsEmpty = nomeMedicamento.isEmpty() &&
-                        ("Selecione".equals(tipoNome)) &&
-                        (categoriaNome == null || categoriaNome.isEmpty() || "Selecione".equals(categoriaNome)) &&
-                        (dosagem == null || dosagem.isEmpty()) &&
-                        (fornecedorNome == null || fornecedorNome.isEmpty() || "Selecione".equals(fornecedorNome)) &&
-                        (formaFarmaceuticaNome == null || formaFarmaceuticaNome.isEmpty()
-                                || "Selecione".equals(formaFarmaceuticaNome))
-                        &&
-                        (tipoReceitaNome == null || tipoReceitaNome.isEmpty() || "Selecione".equals(tipoReceitaNome)) &&
-                        (fabricanteNome == null || fabricanteNome.isEmpty() || "Selecione".equals(fabricanteNome)) &&
-                        (estoqueTexto == null || estoqueTexto.isEmpty()) &&
-                        (valorTexto == null || valorTexto.isEmpty());
-
-                if (allFieldsEmpty) {
-                    JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.", "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
                 if (nomeMedicamento.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "O nome do medicamento não pode ser vazio.", "Erro",
+                    JOptionPane.showMessageDialog(this, "O nome do medicamento é obrigatório.", "Erro",
                             JOptionPane.ERROR_MESSAGE);
+                    nomedoMedicamentoField.requestFocusInWindow();
                     return;
-                } else {
-                    if (!nomeMedicamento.matches("^[\\p{L}\\d\\s]*$")) {
-                        JOptionPane.showMessageDialog(this,
-                                "Nome inválido (apenas letras, números e espaços são permitidos).",
-                                "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
                 }
 
                 if ("Selecione".equals(tipoNome)) {
-                    JOptionPane.showMessageDialog(this, "Por favor, selecione o tipo de medicamento.", "Erro",
+                    JOptionPane.showMessageDialog(this, "Selecione o tipo do medicamento.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    tipoComboBox.requestFocusInWindow();
+                    return;
+                }
+
+                if (embalagemComboBox.isVisible() && "Selecione".equals(embalagem)) {
+                    JOptionPane.showMessageDialog(this, "Selecione a embalagem.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    embalagemComboBox.requestFocusInWindow();
+                    return;
+                }
+
+                if (!embalagemComboBox.isVisible() && embalagemField.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Preencha a embalagem.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    embalagemField.requestFocusInWindow();
+                    return;
+                }
+
+                if (qntEmbalagemTexto.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Preencha a quantidade por embalagem.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    quantidadeEmbalagemField.requestFocusInWindow();
+                    return;
+                }
+
+                if (categoriaComboBox.isVisible() && "Selecione".equals(categoriaNome)) {
+                    JOptionPane.showMessageDialog(this, "Selecione a categoria.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    categoriaComboBox.requestFocusInWindow();
+                    return;
+                }
+
+                if (!categoriaComboBox.isVisible() && categoriaField.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Preencha a categoria.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    categoriaField.requestFocusInWindow();
+                    return;
+                }
+
+                if (dosagem.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Preencha a dosagem.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    dosagemField.requestFocusInWindow();
+                    return;
+                }
+
+                if ("Selecione".equals(fornecedorNome)) {
+                    JOptionPane.showMessageDialog(this, "Selecione o fornecedor.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    fornecedorComboBox.requestFocusInWindow();
+                    return;
+                }
+
+                if (formaFarmaceuticaComboBox.isVisible() && "Selecione".equals(formaFarmaceuticaNome)) {
+                    JOptionPane.showMessageDialog(this, "Selecione a forma farmacêutica.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    formaFarmaceuticaComboBox.requestFocusInWindow();
+                    return;
+                }
+
+                if (!formaFarmaceuticaComboBox.isVisible() && formaFarmaceuticaField.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Preencha a forma farmacêutica.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    formaFarmaceuticaField.requestFocusInWindow();
+                    return;
+                }
+
+                if ("Selecione".equals(tipoReceitaNome)) {
+                    JOptionPane.showMessageDialog(this, "Selecione o tipo de receita.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    receitaComboBox.requestFocusInWindow();
+                    return;
+                }
+
+                if (estoqueTexto.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Preencha o estoque.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    estoqueField.requestFocusInWindow();
+                    return;
+                }
+
+                if (fabricanteComboBox.isVisible() && "Selecione".equals(fabricanteNome)) {
+                    JOptionPane.showMessageDialog(this, "Selecione o fabricante.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    fabricanteComboBox.requestFocusInWindow();
+                    return;
+                }
+
+                if (!fabricanteComboBox.isVisible() && fabricanteNome.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Preencha o fabricante.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    fabricanteField.requestFocusInWindow();
+                    return;
+                }
+
+                if (dataFabricacaoTexto.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Preencha a data de fabricação.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    dataFabricacaoField.requestFocusInWindow();
+                    return;
+                }
+                if (dataValidadeTexto.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Preencha a data de validade.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    dataValidadeField.requestFocusInWindow();
+                    return;
+                }
+                if (valorTexto.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Preencha o valor unitário.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    valorUnitarioField.requestFocusInWindow();
+                    return;
+                }
+
+                int qntEmbalagem = 0;
+                try {
+                    qntEmbalagem = Integer.parseInt(qntEmbalagemTexto);
+                    if (qntEmbalagem <= 0) {
+                        JOptionPane.showMessageDialog(this,
+                                "A quantidade na embalagem deve ser um número inteiro positivo.", "Erro",
+                                JOptionPane.ERROR_MESSAGE);
+                        quantidadeEmbalagemField.requestFocusInWindow();
+                        return;
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "Quantidade na embalagem inválida. Use apenas números inteiros.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    quantidadeEmbalagemField.requestFocusInWindow();
+                    return;
+                }
+
+                Integer estoque = null;
+                try {
+                    estoque = (Integer) ((JFormattedTextField) estoqueField).getValue();
+                    if (estoque == null || estoque < 0) {
+                        JOptionPane.showMessageDialog(this, "Estoque inválido. Use um número inteiro positivo.", "Erro",
+                                JOptionPane.ERROR_MESSAGE);
+                        estoqueField.requestFocusInWindow();
+                        return;
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Estoque inválido. Use um número inteiro.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    estoqueField.requestFocusInWindow();
+                    return;
+                }
+
+                BigDecimal valorUnitario = null;
+                try {
+                    valorUnitario = new BigDecimal(valorTexto);
+                    if (valorUnitario.compareTo(BigDecimal.ZERO) <= 0) {
+                        JOptionPane.showMessageDialog(this, "O valor unitário deve ser maior que zero.", "Erro",
+                                JOptionPane.ERROR_MESSAGE);
+                        valorUnitarioField.requestFocusInWindow();
+                        return;
+                    }
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Valor unitário inválido. Use um número.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    valorUnitarioField.requestFocusInWindow();
+                    return;
+                }
+
+                if (!dosagem.toLowerCase().matches("^[0-9]+([.,][0-9]+)?(mg|g|mcg|ml|l)$")) {
+                    JOptionPane.showMessageDialog(this,
+                            "Dosagem inválida. Use um formato como 500mg, 10g, 1.5ml.",
+                            "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    dosagemField.requestFocusInWindow();
+                    return;
+                }
+
+                LocalDate dataFabricacao = null;
+                LocalDate dataValidade = null;
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
+
+                try {
+                    YearMonth ymFabricacao = YearMonth.parse(dataFabricacaoTexto, formatter);
+                    dataFabricacao = ymFabricacao.atEndOfMonth();
+                } catch (DateTimeParseException ex) {
+                    JOptionPane.showMessageDialog(this, "Data de fabricação inválida. Use o formato MM/YYYY.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    dataFabricacaoField.requestFocusInWindow();
+                    return;
+                }
+
+                try {
+                    YearMonth ymValidade = YearMonth.parse(dataValidadeTexto, formatter);
+                    dataValidade = ymValidade.atEndOfMonth();
+                } catch (DateTimeParseException ex) {
+                    JOptionPane.showMessageDialog(this, "Data de validade inválida. Use o formato MM/YYYY.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    dataValidadeField.requestFocusInWindow();
+                    return;
+                }
+
+                if (dataFabricacao.isAfter(LocalDate.now())) {
+                    JOptionPane.showMessageDialog(this, "A data de fabricação não pode ser no futuro.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (dataValidade.isBefore(dataFabricacao)) {
+                    JOptionPane.showMessageDialog(this,
+                            "A data de validade não pode ser anterior à data de fabricação.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (dataValidade.isBefore(LocalDate.now())) {
+                    JOptionPane.showMessageDialog(this, "A data de validade não pode ser anterior à data atual.",
+                            "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                Medicamento.Tipo tipo = Medicamento.Tipo.valueOf(tipoNome.toUpperCase());
+
+                String embalagemFinal = embalagemComboBox.isVisible() ? embalagem : embalagemField.getText().trim();
+
+                String categoriaNomeFinal = categoriaComboBox.isVisible() ? categoriaNome
+                        : categoriaField.getText().trim();
+
+                String fornecedorNomeFinal = fornecedorNome;
+
+                String formaFarmaceuticaFinal = formaFarmaceuticaComboBox.isVisible() ? formaFarmaceuticaNome
+                        : formaFarmaceuticaField.getText().trim();
+                Medicamento.TipoReceita tipoReceita = Medicamento.TipoReceita.valueOf(tipoReceitaNome.toUpperCase());
+
+                String fabricanteNomeFinal = fabricanteComboBox.isVisible() ? fabricanteNome
+                        : fabricanteField.getText().trim();
+
+                Categoria categoria = new Categoria();
+                categoria.setNome(categoriaNomeFinal);
+
+                Fabricante fabricante = new Fabricante();
+                fabricante.setNome(fabricanteNomeFinal);
+
+                Funcionario funcionario = null;
+                Fornecedor fornecedor = null;
+
+                try (Connection conn = ConexaoBD.getConnection()) {
+                    fornecedor = FornecedorDAO.buscarFornecedorPorNome(conn, fornecedorNomeFinal);
+                    funcionario = FuncionarioDAO.buscarFuncionarioId(conn, idFuncionario);
+
+                    if (funcionario == null) {
+                        JOptionPane.showMessageDialog(this, "Funcionário não encontrado com ID: " + idFuncionario,
+                                "Erro", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Erro na busca: " + ex.getMessage(), "Erro",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                if ("Outros".equals(embalagem)) {
-                    embalagem = embalagemField.getText().trim();
-                    if (embalagem.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Embalagem deve ser preenchida.\n", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
+                Medicamento medicamento = new Medicamento(
+                        nomeMedicamento,
+                        dosagem,
+                        formaFarmaceuticaFinal,
+                        valorUnitario,
+                        dataValidade,
+                        dataFabricacao,
+                        tipoReceita,
+                        estoque,
+                        tipo,
+                        embalagemFinal,
+                        qntEmbalagem,
+                        categoria,
+                        fabricante,
+                        fornecedor,
+                        funcionario);
 
-                    } else if ("Selecione".equals(embalagem)) {
-                        JOptionPane.showMessageDialog(this, "Embalagem deve ser selecionada.\n", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
+                try (Connection conn = ConexaoBD.getConnection()) {
+                    MedicamentoController.cadastrarMedicamento(conn, medicamento);
+                    JOptionPane.showMessageDialog(this, "Medicamento cadastrado com sucesso!", "Sucesso",
+                            JOptionPane.INFORMATION_MESSAGE);
 
-                    int qntEmbalagem = 0;
-                    if (!qntEmbalagemTexto.isEmpty()) {
-                        try {
-                            qntEmbalagem = Integer.parseInt(qntEmbalagemTexto);
-                            if (qntEmbalagem <= 0) {
-                                JOptionPane.showMessageDialog(this,
-                                        "A quantidade por embalagem deve ser um número inteiro positivo.\n", "Erro",
-                                        JOptionPane.ERROR_MESSAGE);
-                                return;
-                            }
-                        } catch (NumberFormatException e1) {
-                            JOptionPane.showMessageDialog(this,
-                                    "Quantidade por embalagem inválida. Use apenas números inteiros.\n", "Erro",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Quantidade por embalagem deve ser informada.\n", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
+                    nomedoMedicamentoField.setText("");
+                    tipoComboBox.setSelectedIndex(0);
+                    embalagemComboBox.setSelectedIndex(0);
+                    quantidadeEmbalagemField.setText("");
+                    categoriaComboBox.setSelectedIndex(0);
+                    dosagemField.setText("Ex: mg, g, mcg, ml, l");
+                    dosagemField.setForeground(Color.GRAY);
+                    fornecedorComboBox.setSelectedIndex(0);
+                    formaFarmaceuticaComboBox.setSelectedIndex(0);
+                    receitaComboBox.setSelectedIndex(0);
+                    estoqueField.setText("");
+                    fabricanteComboBox.setSelectedIndex(0);
+                    dataFabricacaoField.setText("");
+                    dataValidadeField.setText("");
+                    valorUnitarioField.setText("");
 
-                    Tipo tipo = Tipo.valueOf(tipoNome.toUpperCase());
+                    categoriaField.setText("");
+                    categoriaField.setVisible(false);
+                    categoriaComboBox.setVisible(true);
 
-                    if ("Outros".equals(categoriaNome)) {
-                        categoriaNome = categoriaField.getText().trim();
+                    embalagemField.setText("");
+                    embalagemField.setVisible(false);
+                    embalagemComboBox.setVisible(true);
 
-                        if (categoriaNome.isEmpty()) {
-                            JOptionPane.showMessageDialog(this, "A categoria não pode ser vazia.", "Erro",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                    }
+                    formaFarmaceuticaField.setText("");
+                    formaFarmaceuticaField.setVisible(false);
+                    formaFarmaceuticaComboBox.setVisible(true);
 
-                    if ("Selecione".equals(categoriaNome)) {
-                        JOptionPane.showMessageDialog(this, "Por favor, selecione uma categoria.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
+                    fabricanteField.setText("");
+                    fabricanteField.setVisible(false);
+                    fabricanteComboBox.setVisible(true);
 
-                    if (dosagem.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "A dosagem não pode ser vazia.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    } else {
-                        if (!dosagem.toLowerCase().matches("\\d+(\\.\\d+)?(mg|g|mcg|ml|l)")) {
-                            JOptionPane.showMessageDialog(this,
-                                    "Informe a dosagem com as seguintes unidades válidas:\n" +
-                                            "(mg, g, mcg, ml, l).\n" +
-                                            "Exemplo: 500mg, 10g",
-                                    "Erro",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                        double dosagemValor = Double.parseDouble(dosagem.replaceAll("[^\\d.]", ""));
-                        if (dosagemValor <= 0) {
-                            JOptionPane.showMessageDialog(this, "A dosagem deve ser um valor positivo.", "Erro",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                    }
-
-                    if ("Selecione".equals(fornecedorNome)) {
-                        JOptionPane.showMessageDialog(this, "Por favor, selecione um fornecedor.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    Funcionario funcionario;
-                    Fornecedor fornecedor;
-
-                    // Conecta ao banco de dados para buscar fornecedor e funcionário
-                    try (Connection conn = ConexaoBD.getConnection()) {
-                        fornecedor = FornecedorDAO.buscarFornecedorPorNome(conn, fornecedorNome);
-                        funcionario = FuncionarioDAO.buscarFuncionarioId(conn, idFuncionario);
-
-                        if (funcionario == null) {
-                            JOptionPane.showMessageDialog(this, "Funcionário não encontrado com ID: " + idFuncionario,
-                                    "Erro", JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                        System.out.println("Objeto funcionário encontrado: " + funcionario);
-                    } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(this, "Erro na busca: " + ex.getMessage(), "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    if ("Selecione".equals(formaFarmaceuticaNome)) {
-                        JOptionPane.showMessageDialog(this, "Por favor, selecione uma forma farmacêutica.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    if ("Outros".equals(formaFarmaceuticaNome)) {
-                        formaFarmaceuticaNome = formaFarmaceuticaField.getText().trim();
-                        if (formaFarmaceuticaNome.isEmpty()) {
-                            JOptionPane.showMessageDialog(this, "A forma farmacêutica não pode ser vazia.", "Erro",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                    }
-
-                    if ("Selecione".equals(tipoReceitaNome)) {
-                        JOptionPane.showMessageDialog(this, "Por favor, selecione o tipo de receita.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    TipoReceita tipoReceita = TipoReceita.valueOf(tipoReceitaNome.toUpperCase());
-
-                    if (estoqueTexto.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "O estoque não pode ser vazio.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    Integer estoque = (Integer) ((JFormattedTextField) estoqueField).getValue();
-
-                    if (estoque == null) {
-                        JOptionPane.showMessageDialog(this, "O estoque não pode ser vazio.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    if (estoque < 0) {
-                        JOptionPane.showMessageDialog(this, "A quantidade informada para estoque não pode ser negativa",
-                                "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    if (fabricanteField.isVisible()) {
-                        fabricanteNome = fabricanteField.getText().trim();
-                        if (fabricanteNome.isEmpty()) {
-                            JOptionPane.showMessageDialog(this, "Por favor, insira o nome do fabricante.", "Erro",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                    } else {
-                        fabricanteNome = (String) fabricanteComboBox.getSelectedItem();
-                    }
-
-                    if ("Selecione".equals(fabricanteNome) || fabricanteNome.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Por favor, selecione um fabricante.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    if (dataFabricacaoTexto.isEmpty() || dataValidadeTexto.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "As datas de fabricação e validade devem ser preenchidas.",
-                                "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    LocalDate dataFabricacao, dataValidade;
-
-                    try {
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
-                        YearMonth ymFabricacao = YearMonth.parse(dataFabricacaoTexto, formatter);
-                        YearMonth ymValidade = YearMonth.parse(dataValidadeTexto, formatter);
-
-                        dataFabricacao = ymFabricacao.atDay(28);
-                        dataValidade = ymValidade.atDay(28);
-                    } catch (DateTimeParseException ex) {
-                        JOptionPane.showMessageDialog(this, "Formato de data inválido. Use MM/yyyy.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    LocalDate dataMinima = LocalDate.now().minusYears(5);
-
-                    if (dataFabricacao.isBefore(dataMinima)) {
-                        JOptionPane.showMessageDialog(this,
-                                "Data de fabricação inválida! Deve ser posterior a "
-                                        + dataMinima.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ".",
-                                "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    if (dataFabricacao.isAfter(LocalDate.now())) {
-                        JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser posterior à data atual.",
-                                "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    if (dataValidade.isBefore(dataFabricacao)) {
-                        JOptionPane.showMessageDialog(this,
-                                "Data inválida! Não pode ser anterior à data de fabricação.",
-                                "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    if (dataValidade.isBefore(LocalDate.now())) {
-                        JOptionPane.showMessageDialog(this, "Data inválida! Não pode ser anterior à data atual.",
-                                "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    LocalDate dataValidadeMaxima = dataFabricacao.plusYears(5);
-                    if (dataValidade.isAfter(dataValidadeMaxima)) {
-                        JOptionPane.showMessageDialog(this,
-                                "Data de validade inválida! Não pode ser superior a 5 anos a partir da data de fabricação.",
-                                "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    BigDecimal valorUnitario;
-                    try {
-                        valorUnitario = new BigDecimal(valorTexto);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(this, "Valor unitário deve ser um número válido.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    if (valorUnitario.compareTo(BigDecimal.ZERO) <= 0) {
-                        JOptionPane.showMessageDialog(this, "O valor unitário deve ser maior que zero.", "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    Categoria categoria = new Categoria();
-                    categoria.setNome(categoriaNome);
-
-                    Fabricante fabricante = new Fabricante();
-                    fabricante.setNome(fabricanteNome);
-
-                    Medicamento medicamento = new Medicamento(nomeMedicamento, dosagem, formaFarmaceuticaNome,
-                            valorUnitario, dataValidade,
-                            dataFabricacao, tipoReceita, estoque, tipo, embalagem, qntEmbalagem, categoria, fabricante,
-                            fornecedor, funcionario);
-
-                    try (Connection conn = ConexaoBD.getConnection()) {
-                        MedicamentoController.cadastrarMedicamento(conn, medicamento);
-                        JOptionPane.showMessageDialog(null, "Medicamento cadastrado com sucesso!", "Sucesso",
-                                JOptionPane.INFORMATION_MESSAGE);
-
-                        nomedoMedicamentoField.setText("");
-                        dosagemField.setText("");
-                        estoqueField.setText("");
-                        valorUnitarioField.setText("");
-                        dataFabricacaoField.setText("");
-                        dataValidadeField.setText("");
-                        fabricanteField.setText("");
-                        quantidadeEmbalagemField.setText("");
-                        tipoComboBox.setSelectedItem("");
-                        categoriaComboBox.setSelectedItem("");
-                        embalagemComboBox.setSelectedItem("");
-                        fornecedorComboBox.setSelectedItem("");
-                        formaFarmaceuticaComboBox.setSelectedItem("");
-                        receitaComboBox.setSelectedItem("");
-                        fabricanteComboBox.setSelectedItem("");
-
-                        categoriaField.setText("");
-                        categoriaField.setVisible(false);
-                        categoriaComboBox.setVisible(true);
-                        embalagemField.setText("");
-                        embalagemField.setVisible(false);
-                        embalagemComboBox.setVisible(true);
-                        formaFarmaceuticaField.setText("");
-                        formaFarmaceuticaField.setVisible(false);
-                        formaFarmaceuticaComboBox.setVisible(true);
-
-                        nomedoMedicamentoField.requestFocus();
-
-                        atualizarCategorias();
-                        atualizarFormasFarmaceuticas();
-                        atualizarFabricantes();
-                        atualizarFornecedores();
-                    } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(this, "Erro ao cadastrar medicamento: " + ex.getMessage(), "Erro",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
+                    atualizarCategorias();
+                    atualizarFormasFarmaceuticas();
+                    atualizarFabricantes();
+                    atualizarFornecedores();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Erro ao cadastrar medicamento: " + ex.getMessage(), "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
                 }
 
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao cadastrar medicamento: " + ex.getMessage(), "Erro",
+                JOptionPane.showMessageDialog(this, "Erro inesperado: " + ex.getMessage(), "Erro",
                         JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             }
-
         });
 
         cancelarButton.addActionListener(e -> {
