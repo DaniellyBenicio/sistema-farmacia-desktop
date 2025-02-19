@@ -196,7 +196,8 @@ public class ListaDeMedicamentos extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Nome", "Categoria", "F. Farmacêutica", "Embalagem", "Qnt. Embalagem", "Dosagem", "Validade", "Estoque", "Preço Unitário",
+        String[] colunas = { "Nome", "Categoria", "F. Farmacêutica", "Embalagem", "Qnt. Embalagem", "Dosagem",
+                "Validade", "Estoque", "Preço Unitário",
                 "Ações" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {
@@ -275,7 +276,7 @@ public class ListaDeMedicamentos extends JPanel {
         modeloTabela.setRowCount(0);
 
         if (medicamentosFiltrados.isEmpty()) {
-            modeloTabela.addRow(new Object[] { "Medicamento não encontrado.", "", "", "", "", "", "", "", ""});
+            modeloTabela.addRow(new Object[] { "Medicamento não encontrado.", "", "", "", "", "", "", "", "" });
         } else {
             for (Object[] medicamento : medicamentosFiltrados) {
                 modeloTabela.addRow(medicamento);
