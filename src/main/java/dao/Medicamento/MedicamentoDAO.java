@@ -54,7 +54,7 @@ public class MedicamentoDAO {
 
         Fornecedor fornecedor = FornecedorDAO.fornecedorPorId(conn, m.getFornecedor().getId());
 
-        String sql = "INSERT INTO medicamento (nome, dosagem, formaFarmaceutica, valorUnit, dataValidade, dataFabricacao, tipoReceita, qnt, tipo, categoria_id, funcionario_id, fabricante_id, fornecedor_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO medicamento (nome, dosagem, formaFarmaceutica, valorUnit, dataValidade, dataFabricacao, tipoReceita, qnt, tipo, embalagem, qntEmbalagem, categoria_id, funcionario_id, fabricante_id, fornecedor_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, m.getNome());
             pstmt.setString(2, m.getDosagem());
@@ -65,10 +65,12 @@ public class MedicamentoDAO {
             pstmt.setString(7, m.getTipoReceita().name());
             pstmt.setInt(8, m.getQnt());
             pstmt.setString(9, m.getTipo().name());
-            pstmt.setInt(10, categoriaId);
-            pstmt.setInt(11, m.getFuncionario().getId());
-            pstmt.setInt(12, fabricanteId);
-            pstmt.setInt(13, fornecedor.getId());
+            pstmt.setString(10, m.getEmbalagem());       
+            pstmt.setInt(11, m.getQntEmbalagem());
+            pstmt.setInt(12, categoriaId);
+            pstmt.setInt(13, m.getFuncionario().getId());
+            pstmt.setInt(14, fabricanteId);
+            pstmt.setInt(15, fornecedor.getId());
 
             pstmt.executeUpdate();
 
@@ -101,7 +103,7 @@ public class MedicamentoDAO {
     
         Fornecedor fornecedor = FornecedorDAO.fornecedorPorId(conn, m.getFornecedor().getId());
     
-        String sql = "UPDATE medicamento SET nome = ?, dosagem = ?, formaFarmaceutica = ?, valorUnit = ?, dataValidade = ?, dataFabricacao = ?, tipoReceita = ?, qnt = ?, tipo = ?, categoria_id = ?, fabricante_id = ?, fornecedor_id = ? WHERE id = ?";
+        String sql = "UPDATE medicamento SET nome = ?, dosagem = ?, formaFarmaceutica = ?, valorUnit = ?, dataValidade = ?, dataFabricacao = ?, tipoReceita = ?, qnt = ?, tipo = ?, embalagem = ?, qntEmbalagem = ?, categoria_id = ?, fabricante_id = ?, fornecedor_id = ? WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, m.getNome());
             pstmt.setString(2, m.getDosagem());
@@ -112,10 +114,12 @@ public class MedicamentoDAO {
             pstmt.setString(7, m.getTipoReceita().name());
             pstmt.setInt(8, m.getQnt());
             pstmt.setString(9, m.getTipo().name());
-            pstmt.setInt(10, categoriaId);
-            pstmt.setInt(11, fabricanteId);
-            pstmt.setInt(12, fornecedor.getId());
-            pstmt.setInt(13, m.getId());
+            pstmt.setString(10, m.getEmbalagem());       
+            pstmt.setInt(11, m.getQntEmbalagem());
+            pstmt.setInt(12, categoriaId);
+            pstmt.setInt(13, fabricanteId);
+            pstmt.setInt(14, fornecedor.getId());
+            pstmt.setInt(15, m.getId());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar medicamento: " + e.getMessage());
@@ -151,7 +155,9 @@ public class MedicamentoDAO {
                     medicamento.setTipoReceita(Medicamento.TipoReceita.valueOf(rs.getString("tipoReceita")));
                     medicamento.setQnt(rs.getInt("qnt"));
                     medicamento.setTipo(Medicamento.Tipo.valueOf(rs.getString("tipo")));
-    
+                    medicamento.setEmbalagem(rs.getString("embalagem"));
+                    medicamento.setQntEmbalagem(rs.getInt("QntEmbalagem"));
+                    
                     // Categoria
                     Categoria categoria = new Categoria();
                     categoria.setId(rs.getInt("categoria_id"));
@@ -176,18 +182,6 @@ public class MedicamentoDAO {
                     fornecedor.setNome(rs.getString("fornecedor_nome"));
                     medicamento.setFornecedor(fornecedor);
 
-                    System.out.println("Medicamento: " + medicamento.getNome() +
-                    ", Tipo de medicamento: " + medicamento.getTipo() +
-                   ", Categoria: " + categoria.getNome() +
-                   ", Dosagem: " + medicamento.getDosagem() +
-                   ", Fornecedor: " + fornecedor.getNome() +
-                   ", Forma Farmaceutica: " + medicamento.getFormaFarmaceutica() +
-                   ", Receita: " + medicamento.getTipoReceita() +
-                   ", Estoque: " + medicamento.getQnt() +
-                   ", Fabricante: " + fabricante.getNome() +
-                   ", Fabricação: " + medicamento.getDataFabricacao() +
-                   ", Validade: " + medicamento.getDataValidade() +
-                   ", Valor Unitário: " + medicamento.getValorUnit());
                 }
             }
         } catch (SQLException e) {
@@ -201,7 +195,7 @@ public class MedicamentoDAO {
 
     public static List<Medicamento> listarTodos(Connection conn) throws SQLException {
         List<Medicamento> medicamentos = new ArrayList<>();
-        String sql = "SELECT m.id, m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.dataValidade, m.dataFabricacao, m.tipoReceita, m.qnt, m.tipo, m.categoria_id, m.funcionario_id, m.fabricante_id, m.fornecedor_id, c.nome as categoria_nome, f.nome as funcionario_nome, fa.nome as fabricante_nome, fo.nome as fornecedor_nome "
+        String sql = "SELECT m.id, m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.dataValidade, m.dataFabricacao, m.tipoReceita, m.qnt, m.tipo, m.embalagem, m.qntEmbalagem, m.categoria_id, m.funcionario_id, m.fabricante_id, m.fornecedor_id, c.nome as categoria_nome, f.nome as funcionario_nome, fa.nome as fabricante_nome, fo.nome as fornecedor_nome "
                     + "FROM medicamento m "
                     + "JOIN categoria c ON m.categoria_id = c.id "
                     + "JOIN funcionario f ON m.funcionario_id = f.id "
@@ -221,6 +215,8 @@ public class MedicamentoDAO {
                 med.setTipoReceita(Medicamento.TipoReceita.valueOf(rs.getString("tipoReceita")));
                 med.setQnt(rs.getInt("qnt"));
                 med.setTipo(Medicamento.Tipo.valueOf(rs.getString("tipo")));
+                med.setEmbalagem(rs.getString("embalagem"));
+                med.setQntEmbalagem(rs.getInt("QntEmbalagem"));
     
                 Categoria cat = new Categoria();
                 cat.setId(rs.getInt("categoria_id"));
@@ -254,7 +250,7 @@ public class MedicamentoDAO {
     public static List<Medicamento> buscarPorCategoriaOuNome(Connection conn, String termo) throws SQLException {
         List<Medicamento> medicamentos = new ArrayList<>();
         String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.dataValidade, " +
-                     "m.dataFabricacao, m.tipoReceita, m.qnt, m.tipo, " +
+                     "m.dataFabricacao, m.tipoReceita, m.qnt, m.tipo, m.embalagem, m.qntEmbalagem, " +
                      "c.nome AS categoria_nome, " +
                      "f.nome AS funcionario_nome, " +
                      "fa.nome AS fabricante_nome, " +
@@ -283,6 +279,8 @@ public class MedicamentoDAO {
                     med.setTipoReceita(Medicamento.TipoReceita.valueOf(rs.getString("tipoReceita")));
                     med.setQnt(rs.getInt("qnt"));
                     med.setTipo(Medicamento.Tipo.valueOf(rs.getString("tipo")));
+                    med.setEmbalagem(rs.getString("embalagem"));
+                    med.setQntEmbalagem(rs.getInt("QntEmbalagem"));
     
                     Categoria cat = new Categoria();
                     cat.setNome(rs.getString("categoria_nome"));
@@ -375,7 +373,7 @@ public class MedicamentoDAO {
 
     public static List<Medicamento> listarEstoqueMedicamentos(Connection conn) throws SQLException {
         List<Medicamento> medicamentosEstoque = new ArrayList<>();
-        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.qnt, m.dataValidade, "
+        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.qnt, m.dataValidade, m.embalagem, m.qntEmbalagem, "
                    + "c.nome AS categoria_nome, "
                    + "fo.nome AS fornecedor_nome "
                    + "FROM medicamento m "
@@ -394,6 +392,8 @@ public class MedicamentoDAO {
                 medicamento.setValorUnit(rs.getBigDecimal("valorUnit"));
                 medicamento.setQnt(rs.getInt("qnt"));
                 medicamento.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
+                medicamento.setEmbalagem(rs.getString("embalagem"));
+                medicamento.setQntEmbalagem(rs.getInt("QntEmbalagem"));
                 
                 Categoria categoria = new Categoria();
                 categoria.setNome(rs.getString("categoria_nome"));
@@ -415,7 +415,7 @@ public class MedicamentoDAO {
 
     public static List<Medicamento> listarBaixoEstoque(Connection conn) throws SQLException {
         List<Medicamento> baixoEstoque = new ArrayList<>();
-        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, c.nome AS categoria_nome, m.dataValidade, " +
+        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, c.nome AS categoria_nome, m.dataValidade, m.embalagem, m.qntEmbalagem" +
                      "f.nome AS fornecedor_nome, m.qnt " +
                      "FROM medicamento m " +
                      "JOIN categoria c ON m.categoria_id = c.id " +
@@ -450,6 +450,8 @@ public class MedicamentoDAO {
                 medicamento.setDosagem(rs.getString("dosagem"));
                 medicamento.setQnt(rs.getInt("qnt"));
                 medicamento.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
+                medicamento.setEmbalagem(rs.getString("embalagem"));
+                medicamento.setQntEmbalagem(rs.getInt("QntEmbalagem"));
                 
                 Categoria categoria = new Categoria();
                 categoria.setNome(rs.getString("categoria_nome"));

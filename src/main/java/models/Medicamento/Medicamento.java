@@ -20,6 +20,8 @@ public class Medicamento {
     private TipoReceita tipoReceita;
     private int qnt;
     private Tipo tipo;
+    private String embalagem;
+    private int qntEmbalagem;
     private Categoria categoria;
     private Fabricante fabricante;
     private Fornecedor fornecedor;
@@ -27,7 +29,7 @@ public class Medicamento {
 
     public Medicamento(){};
 
-    public Medicamento(String nome, String dosagem, String formaFarmaceutica, BigDecimal valorUnit, LocalDate dataValidade, LocalDate dataFabricacao, TipoReceita tipoReceita, int qnt, Tipo tipo, Categoria categoria, Fabricante fabricante, Fornecedor fornecedor, Funcionario funcionario) {
+    public Medicamento(String nome, String dosagem, String formaFarmaceutica, BigDecimal valorUnit, LocalDate dataValidade, LocalDate dataFabricacao, TipoReceita tipoReceita, int qnt, Tipo tipo, String embalagem, int qntEmbalagem, Categoria categoria, Fabricante fabricante, Fornecedor fornecedor, Funcionario funcionario) {
         this.nome = nome;
         this.dosagem = dosagem;
         this.formaFarmaceutica = formaFarmaceutica;
@@ -37,6 +39,8 @@ public class Medicamento {
         this.tipoReceita = tipoReceita;
         this.qnt = qnt;
         this.tipo = tipo;
+        this.embalagem = embalagem;
+        this.qntEmbalagem = qntEmbalagem;
         this.categoria = categoria;
         this.fabricante = fabricante;
         this.fornecedor = fornecedor;
@@ -200,6 +204,28 @@ public class Medicamento {
 
     public void setTipo(Tipo tipo) {
         this.tipo = tipo;
+    }
+
+    public String getEmbalagem() {
+        return embalagem;
+    }
+    
+    public void setEmbalagem(String embalagem) {
+        if (embalagem == null || embalagem.trim().isEmpty()) {
+            throw new IllegalArgumentException("A embalagem não pode ser nula ou vazia.");
+        }
+        this.embalagem = embalagem;
+    }
+    
+    public int getQntEmbalagem() {
+        return qntEmbalagem;
+    }
+    
+    public void setQntEmbalagem(int qntEmbalagem) {
+        if (qntEmbalagem <= 0) {
+            throw new IllegalArgumentException("A quantidade na embalagem deve ser maior que zero.");
+        }
+        this.qntEmbalagem = qntEmbalagem;
     }
 
     public Categoria getCategoria() {

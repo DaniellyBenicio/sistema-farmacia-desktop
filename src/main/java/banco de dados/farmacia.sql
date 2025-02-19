@@ -44,7 +44,6 @@ create table fabricante(
 );
 
 create  table medicamento(
-	-- falta inserir o campo embalagem e ver como ficará a questao de env, caixa
 	id int primary key auto_increment not null,
     nome varchar(50) not null COLLATE utf8mb4_bin,
     dosagem varchar (50) not null COLLATE utf8mb4_bin,
@@ -55,6 +54,8 @@ create  table medicamento(
     tipoReceita enum('SIMPLES', 'ESPECIAL'),
     qnt int not null,
     tipo enum('ÉTICO', 'GENÉRICO', 'SIMILAR'),
+    embalagem varchar (50) not null COLLATE utf8mb4_bin,
+    qntEmbalagem int not null,
     categoria_id int not null,
     funcionario_id int not null,
     fabricante_id int not null,
@@ -63,7 +64,7 @@ create  table medicamento(
     foreign key (funcionario_id) references funcionario (id),
     foreign key (fabricante_id) references fabricante (id),
     foreign key (fornecedor_id) references fornecedor (id),    
-	unique (nome, dosagem, formaFarmaceutica, dataValidade, dataFabricacao, fabricante_id)
+	unique (nome, dosagem, formaFarmaceutica, embalagem, qntEmbalagem, dataValidade, dataFabricacao, fabricante_id)
 );
 
 create table cliente(
@@ -105,6 +106,7 @@ create table produto (
 
 
 drop database farmacia;
+
 
 
 
