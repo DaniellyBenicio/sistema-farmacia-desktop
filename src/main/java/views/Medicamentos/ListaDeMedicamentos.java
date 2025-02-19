@@ -75,15 +75,17 @@ public class ListaDeMedicamentos extends JPanel {
         NumberFormat numberFormat = NumberFormat.getInstance();
 
         for (Medicamento medicamento : medicamentos) {
-            Object[] dadosMedicamento = new Object[8];
+            Object[] dadosMedicamento = new Object[11];
             dadosMedicamento[0] = medicamento.getNome();
             dadosMedicamento[1] = medicamento.getCategoria().getNome();
             dadosMedicamento[2] = medicamento.getFormaFarmaceutica();
-            dadosMedicamento[3] = medicamento.getDosagem();
-            dadosMedicamento[4] = formatarData(medicamento.getDataValidade());
-            dadosMedicamento[5] = numberFormat.format(medicamento.getQnt());
-            dadosMedicamento[6] = medicamento.getValorUnit();
-            dadosMedicamento[7] = "";
+            dadosMedicamento[3] = medicamento.getEmbalagem();
+            dadosMedicamento[4] = medicamento.getQntEmbalagem();
+            dadosMedicamento[6] = medicamento.getDosagem();
+            dadosMedicamento[7] = formatarData(medicamento.getDataValidade());
+            dadosMedicamento[8] = numberFormat.format(medicamento.getQnt());
+            dadosMedicamento[9] = medicamento.getValorUnit();
+            dadosMedicamento[10] = "";
 
             medicamentosFiltrados.add(dadosMedicamento);
         }
@@ -194,13 +196,13 @@ public class ListaDeMedicamentos extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Nome", "Categoria", "F. Farmacêutica", "Dosagem", "Validade", "Estoque", "Preço Unitário",
+        String[] colunas = { "Nome", "Categoria", "F. Farmacêutica", "Embalagem", "Qnt. Embalagem", "Dosagem", "Validade", "Estoque", "Preço Unitário",
                 "Ações" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 7;
+                return column == 9;
             }
         };
 
@@ -222,8 +224,8 @@ public class ListaDeMedicamentos extends JPanel {
             tabela.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        tabela.getColumnModel().getColumn(7).setCellRenderer(new RenderizadorBotoes());
-        tabela.getColumnModel().getColumn(7).setCellEditor(new EditorBotoes(new JTextField()));
+        tabela.getColumnModel().getColumn(9).setCellRenderer(new RenderizadorBotoes());
+        tabela.getColumnModel().getColumn(9).setCellEditor(new EditorBotoes(new JTextField()));
 
         // Ajustando a largura das colunas
         tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
@@ -233,7 +235,9 @@ public class ListaDeMedicamentos extends JPanel {
         tabela.getColumnModel().getColumn(4).setPreferredWidth(80);
         tabela.getColumnModel().getColumn(5).setPreferredWidth(80);
         tabela.getColumnModel().getColumn(6).setPreferredWidth(80);
-        tabela.getColumnModel().getColumn(7).setPreferredWidth(150);
+        tabela.getColumnModel().getColumn(7).setPreferredWidth(80);
+        tabela.getColumnModel().getColumn(8).setPreferredWidth(80);
+        tabela.getColumnModel().getColumn(9).setPreferredWidth(150);
 
         // Desabilita seleções nas células
         tabela.setCellSelectionEnabled(false);
@@ -257,6 +261,8 @@ public class ListaDeMedicamentos extends JPanel {
                             medicamento.getNome(),
                             medicamento.getCategoria().getNome(),
                             medicamento.getFormaFarmaceutica(),
+                            medicamento.getEmbalagem(),
+                            medicamento.getQntEmbalagem(),
                             medicamento.getDosagem(),
                             formatarData(medicamento.getDataValidade()),
                             numberFormat.format(medicamento.getQnt()),
@@ -271,7 +277,7 @@ public class ListaDeMedicamentos extends JPanel {
         modeloTabela.setRowCount(0);
 
         if (medicamentosFiltrados.isEmpty()) {
-            modeloTabela.addRow(new Object[] { "Medicamento não encontrado.", "", "", "", "", "", "" });
+            modeloTabela.addRow(new Object[] { "Medicamento não encontrado.", "", "", "", "", "", "", "", ""});
         } else {
             for (Object[] medicamento : medicamentosFiltrados) {
                 modeloTabela.addRow(medicamento);

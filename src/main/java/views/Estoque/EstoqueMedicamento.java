@@ -71,8 +71,10 @@ public class EstoqueMedicamento extends JPanel {
         carregarDados();
 
         atualizarEstadoBotaoPedido();
-        iniciarTimer();
+        //iniciarTimer();
     }
+
+    /*
 
     private void iniciarTimer() {
         timer = new Timer(3000, e -> {
@@ -81,7 +83,7 @@ public class EstoqueMedicamento extends JPanel {
             }
         });
         timer.start();
-    }
+    } */
 
     private boolean isCampoBuscaPreenchido() {
         return campoBusca.getText() != null && !campoBusca.getText().trim().isEmpty()
@@ -365,7 +367,7 @@ public class EstoqueMedicamento extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Selecionar", "Nome", "Categoria", "F. Farmacêutica", "Dosagem", "Fornecedor", "Validade",
+        String[] colunas = { "Selecionar", "Nome", "Categoria", "Embalagem", "F. Farmacêutica", "Dosagem", "Fornecedor", "Validade",
                 "Preço Unitário", "Quantidade" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {
@@ -390,7 +392,7 @@ public class EstoqueMedicamento extends JPanel {
                     c.setBackground(Color.WHITE);
                 }
 
-                if (baixoEstoqueSelecionado && column == 8) {
+                if (baixoEstoqueSelecionado && column == 9) {
                     c.setForeground(Color.RED);
                 } else {
                     c.setForeground(Color.BLACK);
@@ -419,11 +421,12 @@ public class EstoqueMedicamento extends JPanel {
         tabela.getColumnModel().getColumn(1).setPreferredWidth(170);
         tabela.getColumnModel().getColumn(2).setPreferredWidth(110);
         tabela.getColumnModel().getColumn(3).setPreferredWidth(60);
-        tabela.getColumnModel().getColumn(4).setPreferredWidth(10);
-        tabela.getColumnModel().getColumn(5).setPreferredWidth(120);
-        tabela.getColumnModel().getColumn(6).setPreferredWidth(10);
-        tabela.getColumnModel().getColumn(7).setPreferredWidth(20);
-        tabela.getColumnModel().getColumn(8).setPreferredWidth(10);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(60);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(10);
+        tabela.getColumnModel().getColumn(6).setPreferredWidth(120);
+        tabela.getColumnModel().getColumn(7).setPreferredWidth(10);
+        tabela.getColumnModel().getColumn(8).setPreferredWidth(20);
+        tabela.getColumnModel().getColumn(9).setPreferredWidth(10);
 
         tabela.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -448,20 +451,21 @@ public class EstoqueMedicamento extends JPanel {
         modeloTabela.setRowCount(0);
 
         if (medicamentos == null || medicamentos.isEmpty()) {
-            modeloTabela.addRow(new Object[] { false, "Nenhum medicamento encontrado.", "", "", "", "", "", "", "" });
+            modeloTabela.addRow(new Object[] { false, "Nenhum medicamento encontrado.", "", "", "", "", "", "", "", "" });
         } else {
             for (int i = 0; i < medicamentos.size(); i++) {
                 Medicamento medicamento = medicamentos.get(i);
-                Object[] rowData = new Object[9];
+                Object[] rowData = new Object[11];
                 rowData[0] = linhasSelecionadas.get(i);
                 rowData[1] = medicamento.getNome();
                 rowData[2] = medicamento.getCategoria().getNome();
-                rowData[3] = medicamento.getFormaFarmaceutica();
-                rowData[4] = medicamento.getDosagem();
-                rowData[5] = medicamento.getFornecedor().getNome();
-                rowData[6] = formatarData(medicamento.getDataValidade());
-                rowData[7] = medicamento.getValorUnit();
-                rowData[8] = formatarEstoque(medicamento.getQnt());
+                rowData[3] = medicamento.getEmbalagem();
+                rowData[4] = medicamento.getFormaFarmaceutica();
+                rowData[5] = medicamento.getDosagem();
+                rowData[6] = medicamento.getFornecedor().getNome();
+                rowData[7] = formatarData(medicamento.getDataValidade());
+                rowData[8] = medicamento.getValorUnit();
+                rowData[9] = formatarEstoque(medicamento.getQnt());
 
                 modeloTabela.addRow(rowData);
             }
