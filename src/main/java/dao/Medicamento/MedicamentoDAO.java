@@ -470,6 +470,28 @@ public class MedicamentoDAO {
         
         return baixoEstoque;
     }
+
+    
+    public static List<String> medicamentoCategoria(Connection conn) throws SQLException {
+        String sql = "SELECT DISTINCT c.nome AS categoria " +
+                     "FROM medicamento m " +
+                     "INNER JOIN categoria c ON m.categoria_id = c.id " +
+                     "ORDER BY c.nome ASC";
+        List<String> medCategoria = new ArrayList<>();
+    
+        try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                medCategoria.add(rs.getString("categoria"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar categoria dos medicamentos: " + e.getMessage());
+            throw e;
+        }
+        return medCategoria;
+    }
+
+    //embalagem: scaixa, envelope
+
     
     
 }
