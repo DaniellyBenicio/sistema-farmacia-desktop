@@ -415,7 +415,7 @@ public class MedicamentoDAO {
 
     public static List<Medicamento> listarBaixoEstoque(Connection conn) throws SQLException {
         List<Medicamento> baixoEstoque = new ArrayList<>();
-        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, c.nome AS categoria_nome, m.dataValidade, m.embalagem, m.qntEmbalagem" +
+        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, c.nome AS categoria_nome, m.dataValidade, m.embalagem, " +
                      "f.nome AS fornecedor_nome, m.qnt " +
                      "FROM medicamento m " +
                      "JOIN categoria c ON m.categoria_id = c.id " +
@@ -451,7 +451,7 @@ public class MedicamentoDAO {
                 medicamento.setQnt(rs.getInt("qnt"));
                 medicamento.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
                 medicamento.setEmbalagem(rs.getString("embalagem"));
-                medicamento.setQntEmbalagem(rs.getInt("QntEmbalagem"));
+               // medicamento.setQntEmbalagem(rs.getInt("QntEmbalagem"));
                 
                 Categoria categoria = new Categoria();
                 categoria.setNome(rs.getString("categoria_nome"));

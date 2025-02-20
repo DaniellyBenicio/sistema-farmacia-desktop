@@ -16,6 +16,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import java.math.BigDecimal;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -43,6 +45,9 @@ import views.Fornecedor.CadastrarFornecedor;
 public class EditarMedicamento extends JPanel {
     private JTextField nomedoMedicamentoField;
     private JComboBox<String> categoriaComboBox;
+    private JComboBox<String> embalagemComboBox;
+    private JTextField quantidadeEmbalagemField;
+    private JTextField embalagemField;
     private JTextField fabricanteField;
     private JTextField dosagemField;
     private JComboBox<String> tipoComboBox;
@@ -85,8 +90,7 @@ public class EditarMedicamento extends JPanel {
     }
 
     private JPanel criarCamposPanel() {
-        JPanel camposPanel = new JPanel();
-        camposPanel.setLayout(new GridBagLayout());
+        JPanel camposPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 20, 0, 10);
         gbc.anchor = GridBagConstraints.WEST;
@@ -101,31 +105,93 @@ public class EditarMedicamento extends JPanel {
         camposPanel.add(nomeLabel, gbc);
 
         nomedoMedicamentoField = new JTextField();
-        nomedoMedicamentoField.setPreferredSize(new Dimension(400, 40));
+        nomedoMedicamentoField.setPreferredSize(new Dimension(300, 40));
         estilizarCamposFormulario(nomedoMedicamentoField, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
         camposPanel.add(nomedoMedicamentoField, gbc);
 
+        JLabel tipoLabel = new JLabel("Tipo de Medicamento");
+        tipoLabel.setFont(labelFont);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        camposPanel.add(tipoLabel, gbc);
+
+        String[] tipos = obterTipoDeMedicamentos();
+        tipoComboBox = new JComboBox<>(tipos);
+        tipoComboBox.setPreferredSize(new Dimension(170, 40));
+        estilizarComboBox(tipoComboBox, fieldFont);
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        camposPanel.add(tipoComboBox, gbc);
+
+        JLabel embalagemLabel = new JLabel("Embalagem");
+        embalagemLabel.setFont(labelFont);
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        camposPanel.add(embalagemLabel, gbc);
+
+        String[] tiposdeEmbalagem = { "Selecione", "Bisnaga", "Caixa", "Frasco", "Garrafa", "Lata", "Pacote", "Pote",
+                "Refil", "Rolo", "Spray", "Tubo", "Vidro", "Outros" };
+        embalagemComboBox = new JComboBox<>(tiposdeEmbalagem);
+        embalagemComboBox.setPreferredSize(new Dimension(150, 40));
+        estilizarComboBox(embalagemComboBox, fieldFont);
+        gbc.gridx = 2;
+        gbc.gridy = 1;
+        camposPanel.add(embalagemComboBox, gbc);
+
+        embalagemField = new JTextField();
+        embalagemField.setPreferredSize(new Dimension(150, 40));
+        estilizarCamposFormulario(embalagemField, fieldFont);
+        embalagemField.setVisible(false);
+        gbc.gridx = 2;
+        gbc.gridy = 1;
+        camposPanel.add(embalagemField, gbc);
+
+        embalagemComboBox.addActionListener(e -> {
+            if ("Outros".equals(embalagemComboBox.getSelectedItem())) {
+                embalagemComboBox.setVisible(false);
+                embalagemField.setVisible(true);
+                embalagemField.requestFocus();
+            } else {
+                embalagemField.setText("");
+                embalagemField.setVisible(false);
+                embalagemComboBox.setVisible(true);
+            }
+        });
+
+        JLabel quantidadeEmbalagemLabel = new JLabel("Qnt. Embalagem");
+        quantidadeEmbalagemLabel.setFont(labelFont);
+        gbc.gridx = 3;
+        gbc.gridy = 0;
+        camposPanel.add(quantidadeEmbalagemLabel, gbc);
+
+        quantidadeEmbalagemField = new JTextField();
+        quantidadeEmbalagemField.setPreferredSize(new Dimension(150, 40));
+        estilizarCamposFormulario(quantidadeEmbalagemField, fieldFont);
+        gbc.gridx = 3;
+        gbc.gridy = 1;
+        camposPanel.add(quantidadeEmbalagemField, gbc);
+
         JLabel categoriaLabel = new JLabel("Categoria");
         categoriaLabel.setFont(labelFont);
-        gbc.gridx = 2;
+        gbc.gridx = 4;
         gbc.gridy = 0;
         camposPanel.add(categoriaLabel, gbc);
 
         String[] categorias = obterCategorias();
         categoriaComboBox = new JComboBox<>(categorias);
-        categoriaComboBox.setPreferredSize(new Dimension(200, 40));
+        categoriaComboBox.setPreferredSize(new Dimension(150, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
-        gbc.gridx = 2;
+        gbc.gridx = 4;
         gbc.gridy = 1;
         camposPanel.add(categoriaComboBox, gbc);
 
         categoriaField = new JTextField();
-        categoriaField.setPreferredSize(new Dimension(200, 40));
+        categoriaField.setPreferredSize(new Dimension(150, 40));
         estilizarCamposFormulario(categoriaField, fieldFont);
         categoriaField.setVisible(false);
-        gbc.gridx = 2;
+        gbc.gridx = 4;
         gbc.gridy = 1;
         camposPanel.add(categoriaField, gbc);
 
@@ -141,55 +207,6 @@ public class EditarMedicamento extends JPanel {
             }
         });
 
-        JLabel tipoLabel = new JLabel("Tipo de Medicamento");
-        tipoLabel.setFont(labelFont);
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        camposPanel.add(tipoLabel, gbc);
-
-        String[] tiposdeMedicamentos = obterTipoDeMedicamentos();
-        tipoComboBox = new JComboBox<>(tiposdeMedicamentos);
-        tipoComboBox.setPreferredSize(new Dimension(200, 40));
-        estilizarComboBox(tipoComboBox, fieldFont);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        camposPanel.add(tipoComboBox, gbc);
-
-        JLabel dosagemLabel = new JLabel("Dosagem");
-        dosagemLabel.setFont(labelFont);
-        gbc.gridx = 3;
-        gbc.gridy = 0;
-        camposPanel.add(dosagemLabel, gbc);
-
-        dosagemField = new JTextField();
-        dosagemField.setPreferredSize(new Dimension(180, 40));
-        estilizarCamposFormulario(dosagemField, fieldFont);
-
-        dosagemField.setText("Medidas: mg, g, mcg, ml, l");
-        dosagemField.setForeground(Color.BLACK);
-
-        dosagemField.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                if (dosagemField.getText().equals("Medidas: mg, g, mcg, ml, l")) {
-                    dosagemField.setText("");
-                    dosagemField.setForeground(Color.BLACK);
-                }
-            }
-
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                if (dosagemField.getText().isEmpty()) {
-                    dosagemField.setText("Medidas: mg, g, mcg, ml, l");
-                    dosagemField.setForeground(Color.GRAY);
-                }
-            }
-        });
-
-        gbc.gridx = 3;
-        gbc.gridy = 1;
-        camposPanel.add(dosagemField, gbc);
-
         JLabel fornecedorLabel = new JLabel("Fornecedor");
         fornecedorLabel.setFont(labelFont);
         gbc.gridx = 0;
@@ -197,7 +214,7 @@ public class EditarMedicamento extends JPanel {
         camposPanel.add(fornecedorLabel, gbc);
 
         fornecedorComboBox = new JComboBox<>(obterFornecedores());
-        fornecedorComboBox.setPreferredSize(new Dimension(400, 40));
+        fornecedorComboBox.setPreferredSize(new Dimension(300, 40));
         estilizarComboBox(fornecedorComboBox, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 3;
@@ -232,16 +249,16 @@ public class EditarMedicamento extends JPanel {
         gbc.gridy = 2;
         camposPanel.add(formaFarmaceuticaLabel, gbc);
 
-        formaFarmaceuticaComboBox = new JComboBox<>();
-        formaFarmaceuticaComboBox.setModel(new DefaultComboBoxModel<>(obterFormasFarmaceuticas()));
-        formaFarmaceuticaComboBox.setPreferredSize(new Dimension(200, 40));
+        String[] formasFarmautecia = obterFormasFarmaceuticas();
+        formaFarmaceuticaComboBox = new JComboBox<>(formasFarmautecia);
+        formaFarmaceuticaComboBox.setPreferredSize(new Dimension(170, 40));
         estilizarComboBox(formaFarmaceuticaComboBox, fieldFont);
         gbc.gridx = 1;
         gbc.gridy = 3;
         camposPanel.add(formaFarmaceuticaComboBox, gbc);
 
         formaFarmaceuticaField = new JTextField();
-        formaFarmaceuticaField.setPreferredSize(new Dimension(200, 40));
+        formaFarmaceuticaField.setPreferredSize(new Dimension(170, 40));
         estilizarCamposFormulario(formaFarmaceuticaField, fieldFont);
         formaFarmaceuticaField.setVisible(false);
         gbc.gridx = 1;
@@ -266,12 +283,52 @@ public class EditarMedicamento extends JPanel {
         gbc.gridy = 2;
         camposPanel.add(receitaLabel, gbc);
 
-        receitaComboBox = new JComboBox<>(obterTipoDeReceita());
-        receitaComboBox.setPreferredSize(new Dimension(200, 40));
+        String[] receitas = obterTipoDeReceita();
+        receitaComboBox = new JComboBox<>(receitas);
+        receitaComboBox.setPreferredSize(new Dimension(150, 40));
         estilizarComboBox(receitaComboBox, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 3;
         camposPanel.add(receitaComboBox, gbc);
+
+        JLabel dosagemLabel = new JLabel("Dosagem");
+        dosagemLabel.setFont(labelFont);
+        gbc.gridx = 3;
+        gbc.gridy = 2;
+        camposPanel.add(dosagemLabel, gbc);
+
+        dosagemField = new JTextField();
+        dosagemField.setPreferredSize(new Dimension(150, 40));
+        estilizarCamposFormulario(dosagemField, fieldFont);
+        dosagemField.setText("Ex: mg, g, mcg, ml, l");
+        dosagemField.setForeground(Color.BLACK);
+
+        dosagemField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent evt) {
+                if (dosagemField.getText().equals("Ex: mg, g, mcg, ml, l")) {
+                    dosagemField.setText("");
+                    dosagemField.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent evt) {
+                if (dosagemField.getText().isEmpty()) {
+                    dosagemField.setText("Ex: mg, g, mcg, ml, l");
+                    dosagemField.setForeground(Color.GRAY);
+                }
+            }
+        });
+        gbc.gridx = 3;
+        gbc.gridy = 3;
+        camposPanel.add(dosagemField, gbc);
+
+        JLabel estoqueLabel = new JLabel("Estoque");
+        estoqueLabel.setFont(labelFont);
+        gbc.gridx = 4;
+        gbc.gridy = 2;
+        camposPanel.add(estoqueLabel, gbc);
 
         NumberFormatter estoqueFormatter = new NumberFormatter();
         estoqueFormatter.setValueClass(Integer.class);
@@ -279,17 +336,12 @@ public class EditarMedicamento extends JPanel {
         estoqueFormatter.setCommitsOnValidEdit(true);
         estoqueFormatter.setMinimum(1);
         estoqueFormatter.setMaximum(Integer.MAX_VALUE);
-
-        JLabel estoqueLabel = new JLabel("Estoque");
-        estoqueLabel.setFont(labelFont);
-        gbc.gridx = 3;
-        gbc.gridy = 2;
-        camposPanel.add(estoqueLabel, gbc);
+        estoqueFormatter.setFormat(NumberFormat.getInstance());
 
         estoqueField = new JFormattedTextField(estoqueFormatter);
-        estoqueField.setPreferredSize(new Dimension(180, 40));
+        estoqueField.setPreferredSize(new Dimension(150, 40));
         estilizarCamposFormulario(estoqueField, fieldFont);
-        gbc.gridx = 3;
+        gbc.gridx = 4;
         gbc.gridy = 3;
         camposPanel.add(estoqueField, gbc);
 
@@ -300,32 +352,19 @@ public class EditarMedicamento extends JPanel {
         camposPanel.add(fabricanteLabel, gbc);
 
         fabricanteComboBox = new JComboBox<>(obterFabricantes());
-        fabricanteComboBox.setPreferredSize(new Dimension(400, 40));
+        fabricanteComboBox.setPreferredSize(new Dimension(300, 40));
         estilizarComboBox(fabricanteComboBox, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 5;
         camposPanel.add(fabricanteComboBox, gbc);
 
         fabricanteField = new JTextField();
-        fabricanteField.setPreferredSize(new Dimension(400, 40));
+        fabricanteField.setPreferredSize(new Dimension(300, 40));
         estilizarCamposFormulario(fabricanteField, fieldFont);
         fabricanteField.setVisible(false);
         gbc.gridx = 0;
         gbc.gridy = 5;
         camposPanel.add(fabricanteField, gbc);
-
-        fabricanteComboBox.addActionListener(e -> {
-            String selectedItem = (String) fabricanteComboBox.getSelectedItem();
-            if ("Outros".equals(selectedItem)) {
-                fabricanteComboBox.setVisible(false);
-                fabricanteField.setVisible(true);
-                fabricanteField.requestFocus();
-            } else {
-                fabricanteField.setText("");
-                fabricanteComboBox.setVisible(true);
-                fabricanteField.setVisible(false);
-            }
-        });
 
         fabricanteComboBox.addActionListener(e -> {
             String selectedItem = (String) fabricanteComboBox.getSelectedItem();
@@ -349,10 +388,10 @@ public class EditarMedicamento extends JPanel {
         try {
             MaskFormatter dataFormatter = new MaskFormatter("##/####");
             dataFabricacaoField = new JFormattedTextField(dataFormatter);
-        } catch (Exception e) {
+        } catch (ParseException e) {
             e.printStackTrace();
         }
-        dataFabricacaoField.setPreferredSize(new Dimension(200, 40));
+        dataFabricacaoField.setPreferredSize(new Dimension(170, 40));
         estilizarCamposFormulario(dataFabricacaoField, fieldFont);
         gbc.gridx = 1;
         gbc.gridy = 5;
@@ -367,10 +406,10 @@ public class EditarMedicamento extends JPanel {
         try {
             MaskFormatter dataFormatter = new MaskFormatter("##/####");
             dataValidadeField = new JFormattedTextField(dataFormatter);
-        } catch (Exception e) {
+        } catch (ParseException e) {
             e.printStackTrace();
         }
-        dataValidadeField.setPreferredSize(new Dimension(200, 40));
+        dataValidadeField.setPreferredSize(new Dimension(150, 40));
         estilizarCamposFormulario(dataValidadeField, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 5;
@@ -382,8 +421,7 @@ public class EditarMedicamento extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(valorUnitarioLabel, gbc);
 
-        NumberFormat format = NumberFormat.getNumberInstance(Locale.getDefault());
-        format.setGroupingUsed(false);
+        NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
         format.setMinimumFractionDigits(2);
         format.setMaximumFractionDigits(2);
         NumberFormatter formatter = new NumberFormatter(format) {
@@ -395,12 +433,12 @@ public class EditarMedicamento extends JPanel {
             }
         };
         formatter.setAllowsInvalid(false);
-        formatter.setOverwriteMode(true);
+        formatter.setOverwriteMode(false);
         formatter.setMinimum(0.0);
         formatter.setMaximum(999999.99);
 
         valorUnitarioField = new JFormattedTextField(formatter);
-        valorUnitarioField.setPreferredSize(new Dimension(180, 40));
+        valorUnitarioField.setPreferredSize(new Dimension(150, 40));
         estilizarCamposFormulario(valorUnitarioField, fieldFont);
         gbc.gridx = 3;
         gbc.gridy = 5;
@@ -413,11 +451,13 @@ public class EditarMedicamento extends JPanel {
         try (Connection conn = ConexaoBD.getConnection()) {
             Medicamento medicamento = MedicamentoController.buscarMedicamentoPorId(conn, medicamentoId);
             if (medicamento != null) {
-                // Set the fields with medication data
                 nomedoMedicamentoField.setText(medicamento.getNome());
                 dosagemField.setText(medicamento.getDosagem());
                 String categoriaNome = medicamento.getCategoria().getNome();
                 categoriaComboBox.setSelectedItem(categoriaNome);
+                String embalagemNome = medicamento.getEmbalagem();
+                embalagemComboBox.setSelectedItem(embalagemNome);
+                quantidadeEmbalagemField.setText(String.valueOf(medicamento.getQntEmbalagem()));
                 String fornecedorNome = medicamento.getFornecedor().getNome();
                 fornecedorComboBox.setSelectedItem(fornecedorNome);
                 String fabricanteNome = medicamento.getFabricante().getNome();
@@ -592,6 +632,8 @@ public class EditarMedicamento extends JPanel {
             String nomeMedicamento = nomedoMedicamentoField.getText();
             String tipoNome = (String) tipoComboBox.getSelectedItem();
             String categoriaNome = (String) categoriaComboBox.getSelectedItem();
+            String embalagem = (String) embalagemComboBox.getSelectedItem();
+            String qntEmbalagemTexto = quantidadeEmbalagemField.getText().trim();
             String dosagem = dosagemField.getText().trim();
             String fornecedorNome = (String) fornecedorComboBox.getSelectedItem();
             String formaFarmaceuticaNome = (String) formaFarmaceuticaComboBox.getSelectedItem();
@@ -617,6 +659,33 @@ public class EditarMedicamento extends JPanel {
 
             if ("Selecione".equals(tipoNome)) {
                 errorMessage.append("Tipo de medicamento deve ser selecionado.\n");
+                hasError = true;
+            }
+
+            if (embalagemComboBox.isVisible() && "Selecione".equals(embalagem)) {
+                errorMessage.append("Selecione a embalagem.\n");
+                hasError = true;
+            }
+
+            if (!embalagemComboBox.isVisible() && embalagemField.getText().trim().isEmpty()) {
+                errorMessage.append("Preencha a embalagem.\n");
+                hasError = true;
+            }
+
+            if (qntEmbalagemTexto.isEmpty()) {
+                errorMessage.append("Preencha a quantidade por embalagem.\n");
+                hasError = true;
+            }
+
+            int qntEmbalagem = 0;
+            try {
+                qntEmbalagem = Integer.parseInt(qntEmbalagemTexto);
+                if (qntEmbalagem <= 0) {
+                    errorMessage.append("A quantidade na embalagem deve ser um número inteiro positivo.\n");
+                    hasError = true;
+                }
+            } catch (NumberFormatException ex) {
+                errorMessage.append("Quantidade na embalagem inválida. Use apenas números inteiros.\n");
                 hasError = true;
             }
 
@@ -811,6 +880,8 @@ public class EditarMedicamento extends JPanel {
                 medicamentoExistente.setNome(nomeMedicamento);
                 medicamentoExistente.setTipo(tipo);
                 medicamentoExistente.setCategoria(categoria);
+                medicamentoExistente.setEmbalagem(embalagem);
+                medicamentoExistente.setQntEmbalagem(qntEmbalagem);
                 medicamentoExistente.setDosagem(dosagem);
                 medicamentoExistente.setFornecedor(fornecedor);
                 medicamentoExistente.setFormaFarmaceutica(formaFarmaceuticaNome);
