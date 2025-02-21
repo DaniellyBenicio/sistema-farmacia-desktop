@@ -49,7 +49,7 @@ class RealizarPedidoMedicamento extends JDialog {
     private DecimalFormat formatadorDecimal;
     private JTable tabela;
     private DefaultTableModel modeloTabela;
-    private final int[] larguraColunas = { 150, 80, 120, 80, 120, 80, 60 };
+    private final int[] larguraColunas = { 150, 80, 80, 120, 40, 120, 60, 60 };
 
     public RealizarPedidoMedicamento(JFrame parent, List<Medicamento> medicamentos) {
         super(parent, "Realizar Pedido de Medicamentos", true);
@@ -122,6 +122,7 @@ class RealizarPedidoMedicamento extends JDialog {
         String[] nomeColunas = {
                 "Nome",
                 "Categoria",
+                "Embalagem",
                 "F. Farmacêutica",
                 "Dosagem",
                 "Fornecedor",
@@ -131,7 +132,7 @@ class RealizarPedidoMedicamento extends JDialog {
         modeloTabela = new DefaultTableModel(nomeColunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 6;
+                return column == 7;
             }
         };
 
@@ -156,6 +157,7 @@ class RealizarPedidoMedicamento extends JDialog {
             Object[] dadosLinha = {
                     medicamento.getNome(),
                     medicamento.getCategoria().getNome(),
+                    medicamento.getEmbalagem(),
                     medicamento.getFormaFarmaceutica(),
                     medicamento.getDosagem(),
                     medicamento.getFornecedor().getNome(),
@@ -172,13 +174,13 @@ class RealizarPedidoMedicamento extends JDialog {
         ((AbstractDocument) campoQuantidade.getDocument())
                 .setDocumentFilter(new FiltroFormatoNumerico(formatadorDecimal, this));
         DefaultCellEditor editorQuantidade = new DefaultCellEditor(campoQuantidade);
-        tabela.getColumnModel().getColumn(6).setCellEditor(editorQuantidade);
+        tabela.getColumnModel().getColumn(7).setCellEditor(editorQuantidade);
     }
 
     private void alinharColunaQuantidade() {
         DefaultTableCellRenderer alinhamentoDireita = new DefaultTableCellRenderer();
         alinhamentoDireita.setHorizontalAlignment(SwingConstants.CENTER);
-        tabela.getColumnModel().getColumn(6).setCellRenderer(alinhamentoDireita);
+        tabela.getColumnModel().getColumn(7).setCellRenderer(alinhamentoDireita);
     }
 
     private JButton criarBotaoPedido() {
@@ -199,7 +201,7 @@ class RealizarPedidoMedicamento extends JDialog {
         boolean campoVazioEncontrado = false;
 
         for (int i = 0; i < tabela.getRowCount(); i++) {
-            Object valorQuantidade = tabela.getValueAt(i, 6);
+            Object valorQuantidade = tabela.getValueAt(i, 7);
             int quantidade = 0;
 
             if (valorQuantidade instanceof Number) {
@@ -357,14 +359,15 @@ class RealizarPedidoMedicamento extends JDialog {
         private List<ItemPedido> itensPedido;
         private NumberFormat formatadorNumero;
         private DecimalFormat formatadorDecimal;
-        private final int[] larguraColunas = { 140, 100, 120, 80, 110, 70, 60 };
+        private final int[] larguraColunas = { 90, 85, 90, 110, 80, 90, 80, 60 };
         private final String[] cabecalhoColunas = {
                 "Nome",
                 "Categoria",
+                "Embalagem",
                 "F. Farmacêutica",
                 "Dosagem",
                 "Fornecedor",
-                "Preço Unt.",
+                "Preço Unit.",
                 "Qtd."
         };
 
@@ -433,67 +436,101 @@ class RealizarPedidoMedicamento extends JDialog {
             g2d.setFont(fonteCabecalho);
             FontMetrics fm = g2d.getFontMetrics();
             int posicaoXCabecalho = x;
-            y += fm.getAscent();
+
+            y += fm.getAscent() - 2;
 
             for (int i = 0; i < cabecalhoColunas.length; i++) {
                 g2d.drawString(cabecalhoColunas[i], posicaoXCabecalho + 5, y);
                 posicaoXCabecalho += larguraColunas[i];
             }
+
+            g2d.drawLine(10, y + 2, larguraPagina - 20, y + 2);
+
             y += fm.getHeight() + 5;
-            g2d.drawLine(10, y - 5, larguraPagina - 20, y - 5); // Alteração aqui: linha abaixo do cabeçalho
 
             return y;
         }
 
         private int imprimirLinha(Graphics2D g2d, int x, int y, ItemPedido item, FontMetrics fm, int larguraPagina) {
             int posicaoXLinha = x;
-            int alturaLinha = fm.getHeight() + 5;
+            int alturaMaximaLinha = y;
 
-            y += fm.getAscent(); // Alteração aqui: mover a linha um pouco para cima
-
-            g2d.drawString(ajustarString(item.medicamento.getNome(), larguraColunas[0], fm), posicaoXLinha + 5, y);
+            int yNome = imprimirTextoQuebrado(g2d, posicaoXLinha + 5, y, item.medicamento.getNome(), larguraColunas[0],
+                    fm);
+            alturaMaximaLinha = Math.max(alturaMaximaLinha, yNome);
             posicaoXLinha += larguraColunas[0];
 
-            g2d.drawString(ajustarString(item.medicamento.getCategoria().getNome(), larguraColunas[1], fm),
-                    posicaoXLinha + 5, y);
+            int yCategoria = imprimirTextoQuebrado(g2d, posicaoXLinha + 5, y, item.medicamento.getCategoria().getNome(),
+                    larguraColunas[1], fm);
+            alturaMaximaLinha = Math.max(alturaMaximaLinha, yCategoria);
             posicaoXLinha += larguraColunas[1];
 
-            g2d.drawString(ajustarString(item.medicamento.getFormaFarmaceutica(), larguraColunas[2], fm),
-                    posicaoXLinha + 5, y);
+            imprimirTextoSemQuebra(g2d, posicaoXLinha + 5, y, item.medicamento.getEmbalagem(), larguraColunas[2], fm); // Adicionado
+                                                                                                                       // para
+                                                                                                                       // "Embalagem"
             posicaoXLinha += larguraColunas[2];
 
-            g2d.drawString(ajustarString(item.medicamento.getDosagem(), larguraColunas[3], fm), posicaoXLinha + 5, y);
+            imprimirTextoSemQuebra(g2d, posicaoXLinha + 5, y, item.medicamento.getFormaFarmaceutica(),
+                    larguraColunas[3], fm);
             posicaoXLinha += larguraColunas[3];
 
-            g2d.drawString(ajustarString(item.medicamento.getFornecedor().getNome(), larguraColunas[4], fm),
-                    posicaoXLinha + 5, y);
+            imprimirTextoSemQuebra(g2d, posicaoXLinha + 5, y, item.medicamento.getDosagem(), larguraColunas[4], fm);
             posicaoXLinha += larguraColunas[4];
 
-            String valorUnitarioFormatado = String.format("R$ %.2f", item.medicamento.getValorUnit());
-            g2d.drawString(ajustarString(valorUnitarioFormatado, larguraColunas[5], fm), posicaoXLinha + 5, y);
+            int yFornecedor = imprimirTextoQuebrado(g2d, posicaoXLinha + 5, y,
+                    item.medicamento.getFornecedor().getNome(), larguraColunas[5], fm);
+            alturaMaximaLinha = Math.max(alturaMaximaLinha, yFornecedor);
             posicaoXLinha += larguraColunas[5];
 
-            String quantidadeFormatada = formatadorDecimal.format(item.quantidade);
-            g2d.drawString(ajustarString(quantidadeFormatada, larguraColunas[6], fm), posicaoXLinha + 5, y);
+            String valorUnitarioFormatado = String.format("R$ %.2f", item.medicamento.getValorUnit());
+            imprimirTextoSemQuebra(g2d, posicaoXLinha + 5, y, valorUnitarioFormatado, larguraColunas[6], fm);
             posicaoXLinha += larguraColunas[6];
 
-            g2d.setStroke(new BasicStroke(1.2f));
-            g2d.drawLine(10, y + 5, larguraPagina - 20, y + 5); // Alteração aqui: linha separadora dos dados
+            String quantidadeFormatada = formatadorDecimal.format(item.quantidade);
+            imprimirTextoSemQuebra(g2d, posicaoXLinha + 5, y, quantidadeFormatada, larguraColunas[7], fm);
+            posicaoXLinha += larguraColunas[7];
 
-            y += alturaLinha;
-            return y;
+            g2d.setStroke(new BasicStroke(1.2f));
+            g2d.drawLine(10, alturaMaximaLinha - 8, larguraPagina - 20, alturaMaximaLinha - 8);
+
+            return alturaMaximaLinha + fm.getHeight() + 5;
         }
 
-        private String ajustarString(String texto, int larguraColuna, FontMetrics fm) {
+        private int imprimirTextoQuebrado(Graphics2D g2d, int x, int y, String texto, int larguraColuna,
+                FontMetrics fm) {
             if (texto == null || texto.isEmpty()) {
-                return "";
+                return y;
             }
-            while (fm.stringWidth(texto) > larguraColuna) {
-                texto = texto.substring(0, texto.length() - 1);
-                if (texto.length() <= 3)
-                    return "...";
+
+            String[] palavras = texto.split(" ");
+            StringBuilder linhaAtual = new StringBuilder();
+            int yAtual = y;
+            int alturaLinha = fm.getHeight();
+
+            for (String palavra : palavras) {
+                String testeLinha = linhaAtual.length() == 0 ? palavra : linhaAtual + " " + palavra;
+                if (fm.stringWidth(testeLinha) <= larguraColuna) {
+                    linhaAtual.append(linhaAtual.length() == 0 ? palavra : " " + palavra);
+                } else {
+                    g2d.drawString(linhaAtual.toString(), x, yAtual);
+                    yAtual += alturaLinha;
+                    linhaAtual = new StringBuilder(palavra);
+                }
             }
-            return texto;
+
+            if (linhaAtual.length() > 0) {
+                g2d.drawString(linhaAtual.toString(), x, yAtual);
+                yAtual += alturaLinha;
+            }
+            return yAtual;
+        }
+
+        private void imprimirTextoSemQuebra(Graphics2D g2d, int x, int y, String texto, int larguraColuna,
+                FontMetrics fm) {
+            if (texto == null || texto.isEmpty()) {
+                return;
+            }
+            g2d.drawString(texto, x, y);
         }
     }
 }

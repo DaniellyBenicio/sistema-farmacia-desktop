@@ -31,7 +31,7 @@ class RealizarPedidoProduto extends JDialog {
     private DefaultTableModel modeloTabela;
     private NumberFormat formatadorNumero;
     private DecimalFormat formatadorDecimal;
-    private final int[] larguraColunas = { 150, 80, 120, 80, 120, 80, 60 };
+    private final int[] larguraColunas = { 150, 120, 70, 80, 40, 120, 80 };
 
     public RealizarPedidoProduto(JFrame parent, List<Produto> produtos) {
         super(parent, "Realizar Pedido de Produtos", true);
@@ -106,7 +106,7 @@ class RealizarPedidoProduto extends JDialog {
                 "Medida",
                 "Fornecedor",
                 "Preço Unitário",
-                "Quantidade"
+                "Qnt. Solicitada"
         };
 
         modeloTabela = new DefaultTableModel(nomeColunas, 0) {
@@ -332,7 +332,7 @@ class RealizarPedidoProduto extends JDialog {
         private List<ItemPedido> itensPedido;
         private NumberFormat formatadorNumero;
         private DecimalFormat formatadorDecimal;
-        private final int[] larguraColunas = { 140, 130, 100, 80, 110, 70, 60 };
+        private final int[] larguraColunas = { 140, 130, 100, 60, 110, 80, 60 };
         private final String[] cabecalhoColunas = {
                 "Nome",
                 "Categoria",

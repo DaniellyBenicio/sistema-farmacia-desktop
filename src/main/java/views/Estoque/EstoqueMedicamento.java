@@ -71,10 +71,8 @@ public class EstoqueMedicamento extends JPanel {
         carregarDados();
 
         atualizarEstadoBotaoPedido();
-        //iniciarTimer();
+        iniciarTimer();
     }
-
-    /*
 
     private void iniciarTimer() {
         timer = new Timer(3000, e -> {
@@ -83,7 +81,7 @@ public class EstoqueMedicamento extends JPanel {
             }
         });
         timer.start();
-    } */
+    }
 
     private boolean isCampoBuscaPreenchido() {
         return campoBusca.getText() != null && !campoBusca.getText().trim().isEmpty()
@@ -367,7 +365,8 @@ public class EstoqueMedicamento extends JPanel {
     }
 
     private JScrollPane criarTabela() {
-        String[] colunas = { "Selecionar", "Nome", "Categoria", "Embalagem", "F. Farmacêutica", "Dosagem", "Fornecedor", "Validade",
+        String[] colunas = { "Selecionar", "Nome", "Categoria", "Embalagem", "F. Farmacêutica", "Dosagem", "Fornecedor",
+                "Validade",
                 "Preço Unitário", "Quantidade" };
 
         modeloTabela = new DefaultTableModel(colunas, 0) {
@@ -420,12 +419,12 @@ public class EstoqueMedicamento extends JPanel {
         tabela.getColumnModel().getColumn(0).setPreferredWidth(10);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(170);
         tabela.getColumnModel().getColumn(2).setPreferredWidth(110);
-        tabela.getColumnModel().getColumn(3).setPreferredWidth(60);
+        tabela.getColumnModel().getColumn(3).setPreferredWidth(40);
         tabela.getColumnModel().getColumn(4).setPreferredWidth(60);
         tabela.getColumnModel().getColumn(5).setPreferredWidth(10);
         tabela.getColumnModel().getColumn(6).setPreferredWidth(120);
         tabela.getColumnModel().getColumn(7).setPreferredWidth(10);
-        tabela.getColumnModel().getColumn(8).setPreferredWidth(20);
+        tabela.getColumnModel().getColumn(8).setPreferredWidth(30);
         tabela.getColumnModel().getColumn(9).setPreferredWidth(10);
 
         tabela.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -451,7 +450,8 @@ public class EstoqueMedicamento extends JPanel {
         modeloTabela.setRowCount(0);
 
         if (medicamentos == null || medicamentos.isEmpty()) {
-            modeloTabela.addRow(new Object[] { false, "Nenhum medicamento encontrado.", "", "", "", "", "", "", "", "" });
+            modeloTabela
+                    .addRow(new Object[] { false, "Nenhum medicamento encontrado.", "", "", "", "", "", "", "", "" });
         } else {
             for (int i = 0; i < medicamentos.size(); i++) {
                 Medicamento medicamento = medicamentos.get(i);

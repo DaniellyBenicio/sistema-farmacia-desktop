@@ -230,7 +230,7 @@ public class ListaDeMedicamentos extends JPanel {
 
         tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(80);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(60);
         tabela.getColumnModel().getColumn(3).setPreferredWidth(60);
         tabela.getColumnModel().getColumn(4).setPreferredWidth(80);
         tabela.getColumnModel().getColumn(5).setPreferredWidth(60);
@@ -290,7 +290,7 @@ public class ListaDeMedicamentos extends JPanel {
 
         public RenderizadorBotoes() {
             setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-            botaoEditar = criarBotao("DETALHES", new Color(24, 39, 55), Color.WHITE);
+            botaoEditar = criarBotao("EDITAR", new Color(24, 39, 55), Color.WHITE);
             botaoExcluir = criarBotao("EXCLUIR", Color.RED, Color.WHITE);
             add(botaoEditar);
             add(botaoExcluir);
@@ -328,7 +328,7 @@ public class ListaDeMedicamentos extends JPanel {
 
         public EditorBotoes(JTextField campoTexto) {
             super(campoTexto);
-            botaoEditar = criarBotao("DETALHES", new Color(24, 39, 55), Color.WHITE);
+            botaoEditar = criarBotao("EDITAR", new Color(24, 39, 55), Color.WHITE);
             botaoExcluir = criarBotao("EXCLUIR", Color.RED, Color.WHITE);
 
             configurarAcoes();
