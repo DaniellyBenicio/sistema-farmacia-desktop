@@ -50,11 +50,11 @@ public class EditarMedicamento extends JPanel {
     private JTextField embalagemField;
     private JTextField fabricanteField;
     private JTextField dosagemField;
+    private JTextField estoqueField;
     private JComboBox<String> tipoComboBox;
     private JComboBox<String> fornecedorComboBox;
     private JFormattedTextField dataFabricacaoField;
     private JFormattedTextField dataValidadeField;
-    private JFormattedTextField estoqueField;
     private JFormattedTextField valorUnitarioField;
     private JTextComponent categoriaField;
     private JComboBox<String> formaFarmaceuticaComboBox;
@@ -330,15 +330,7 @@ public class EditarMedicamento extends JPanel {
         gbc.gridy = 2;
         camposPanel.add(estoqueLabel, gbc);
 
-        NumberFormatter estoqueFormatter = new NumberFormatter();
-        estoqueFormatter.setValueClass(Integer.class);
-        estoqueFormatter.setAllowsInvalid(false);
-        estoqueFormatter.setCommitsOnValidEdit(true);
-        estoqueFormatter.setMinimum(1);
-        estoqueFormatter.setMaximum(Integer.MAX_VALUE);
-        estoqueFormatter.setFormat(NumberFormat.getInstance());
-
-        estoqueField = new JFormattedTextField(estoqueFormatter);
+        estoqueField = new JTextField();
         estoqueField.setPreferredSize(new Dimension(150, 40));
         estilizarCamposFormulario(estoqueField, fieldFont);
         gbc.gridx = 4;
@@ -467,7 +459,7 @@ public class EditarMedicamento extends JPanel {
                 dataFabricacaoField.setText(dataFabricacao);
                 String dataValidade = medicamento.getDataValidade().format(dtf);
                 dataValidadeField.setText(dataValidade);
-                estoqueField.setValue(medicamento.getQnt());
+                estoqueField.setText(String.valueOf(medicamento.getQnt()));
                 BigDecimal valorUnitario = medicamento.getValorUnit();
                 valorUnitarioField.setValue(valorUnitario);
                 Tipo tipoMedicamento = medicamento.getTipo();
@@ -629,7 +621,7 @@ public class EditarMedicamento extends JPanel {
         try {
             int idFuncionario = PainelSuperior.getIdFuncionarioAtual();
 
-            String nomeMedicamento = nomedoMedicamentoField.getText();
+            String nomeMedicamento = nomedoMedicamentoField.getText().trim().toLowerCase();
             String tipoNome = (String) tipoComboBox.getSelectedItem();
             String categoriaNome = (String) categoriaComboBox.getSelectedItem();
             String embalagem = (String) embalagemComboBox.getSelectedItem();
@@ -651,8 +643,9 @@ public class EditarMedicamento extends JPanel {
                 errorMessage.append("Nome deve ser preenchido.\n");
                 hasError = true;
             } else {
-                if (!nomeMedicamento.matches("^[\\p{L}\\d\\s]*$")) {
-                    errorMessage.append("Nome inválido (apenas letras, números e espaços são permitidos).\n");
+                if (!nomeMedicamento.matches("^[\\p{L}\\d][\\p{L}\\d\\s]*$")) {
+                    errorMessage.append(
+                            "Nome inválido (apenas letras, números e espaços são permitidos, e não pode começar com espaço).\n");
                     hasError = true;
                 }
             }
@@ -755,12 +748,20 @@ public class EditarMedicamento extends JPanel {
                 hasError = true;
             }
 
-            Integer estoque = (Integer) ((JFormattedTextField) estoqueField).getValue();
-            if (estoque == null) {
-                errorMessage.append("O estoque não pode ser vazio.\n");
-                hasError = true;
-            } else if (estoque < 0) {
-                errorMessage.append("A quantidade informada para estoque não pode ser negativa.\n");
+            int qntEstoque = 0;
+            if (!estoqueTexto.isEmpty()) {
+                try {
+                    qntEstoque = Integer.parseInt(estoqueTexto);
+                    if (qntEstoque <= 0) {
+                        errorMessage.append("A quantidade do estoque deve ser um número inteiro positivo.\n");
+                        hasError = true;
+                    }
+                } catch (NumberFormatException e1) {
+                    errorMessage.append("Quantidade de estoque inválida. Use apenas números inteiros.\n");
+                    hasError = true;
+                }
+            } else {
+                errorMessage.append("Quantidade no estoque deve ser informada.\n");
                 hasError = true;
             }
 
@@ -886,7 +887,7 @@ public class EditarMedicamento extends JPanel {
                 medicamentoExistente.setFornecedor(fornecedor);
                 medicamentoExistente.setFormaFarmaceutica(formaFarmaceuticaNome);
                 medicamentoExistente.setTipoReceita(tipoReceita);
-                medicamentoExistente.setQnt(estoque);
+                medicamentoExistente.setQnt(qntEstoque);
                 medicamentoExistente.setFabricante(fabricante);
                 medicamentoExistente.setDataFabricacao(dataFabricacaoYearMonth);
                 medicamentoExistente.setDataValidade(dataValidadeYearMonth);
