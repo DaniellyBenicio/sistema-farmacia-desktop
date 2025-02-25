@@ -490,7 +490,29 @@ public class MedicamentoDAO {
         return medCategoria;
     }
 
-    //embalagem: scaixa, envelope
+    /*
+    Analgésicos e Antitérmicos
+    Antibióticos
+    Anti-inflamatórios
+    Antialérgicos e Anti-histamínicos
+    Antifúngicos
+    Antivirais
+    Antiparasitários
+    Psicotrópicos
+    Antidepressivos e Estabilizadores de Humor
+    Ansiolíticos e Sedativos
+    Hipertensivos
+    Antidiabéticos e Insulinas
+    Gastrointestinais
+    Hormônios e Endócrinos
+    Fitoterápicos
+    Relaxantes Musculares
+    Corticosteroides
+    Vitaminas e Suplementos
+    Antieméticos e Reguladores Digestivos
+    Anestésicos Locais
+    Anticonvulsivantes
+    */
 
     
     
