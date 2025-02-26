@@ -5,8 +5,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 import dao.Medicamento.MedicamentoDAO;
+import dao.Produto.ProdutoDAO;
 import models.Medicamento.Medicamento;
-
 
 public class MedicamentoController {
     public static boolean medicamentoExiste(Connection conn, Medicamento m) throws SQLException {
@@ -51,6 +51,14 @@ public class MedicamentoController {
         }
     }
 
+    public static List<String> listarCategoriasMedicamento(Connection conn) throws SQLException {
+        try {
+            return MedicamentoDAO.medicamentoCategoria(conn);
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao listar as categorias dos medicamentos.", e);
+        }
+    }
+
     public static Medicamento buscarMedicamentoPorId(Connection conn, int id) throws SQLException {
         if (id <= 0) {
             throw new IllegalArgumentException("ID inválido.");
@@ -81,7 +89,7 @@ public class MedicamentoController {
             throw new SQLException("Erro ao listar formas farmacêuticas.", e);
         }
     }
-    
+
     public static List<String> listarTiposDeMedicamentos(Connection conn) throws SQLException {
         try {
             return MedicamentoDAO.listarTiposDeMedicamentos(conn);
@@ -104,7 +112,7 @@ public class MedicamentoController {
         } catch (SQLException e) {
             throw new SQLException("Erro ao listar o estoque dos medicamentos.", e);
         }
-    } 
+    }
 
     public static List<Medicamento> listarBaixoEstoqueMedicamento(Connection conn) throws SQLException {
         try {
@@ -112,7 +120,7 @@ public class MedicamentoController {
         } catch (SQLException e) {
             throw new SQLException("Erro ao listar baixo estoque dos medicamentos.", e);
         }
-    } 
+    }
 
     public static List<Medicamento> buscarPorCategoriaNome(Connection conn, String termo) throws SQLException {
         if (termo == null || termo.trim().isEmpty()) {
@@ -124,6 +132,5 @@ public class MedicamentoController {
             throw new SQLException("Erro ao listar medicamentos por categoria ou nome.", e);
         }
     }
-
 
 }

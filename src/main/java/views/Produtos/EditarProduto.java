@@ -35,6 +35,7 @@ import models.Funcionario.Funcionario;
 import models.Produto.Produto;
 import views.BarrasSuperiores.PainelSuperior;
 import views.Fornecedor.CadastrarFornecedor;
+import views.Medicamentos.CadastrarMedicamento.MultiLineComboBoxRenderer;
 
 public class EditarProduto extends JPanel {
     private JTextField nomeProdutoField;
@@ -47,7 +48,7 @@ public class EditarProduto extends JPanel {
     private JFormattedTextField dataFabricacaoField;
     private JFormattedTextField dataValidadeField;
     private JTextField estoqueField;
-    private JFormattedTextField valorUnitarioField;
+    private JTextField valorUnitarioField;
     private JComboBox<String> categoriaComboBox;
     private JTextField quantidadeEmbalagemField;
     private int produtoId;
@@ -157,8 +158,9 @@ public class EditarProduto extends JPanel {
 
         String[] categoriaProdutos = obterCategoriaProdutos();
         categoriaComboBox = new JComboBox<>(categoriaProdutos);
-        categoriaComboBox.setPreferredSize(new Dimension(145, 40));
+        categoriaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
+        categoriaComboBox.setRenderer(new MultiLineComboBoxRenderer());
         gbc.gridx = 3;
         gbc.gridy = 1;
         camposPanel.add(categoriaComboBox, gbc);
@@ -321,29 +323,8 @@ public class EditarProduto extends JPanel {
         gbc.gridy = 2;
         camposPanel.add(valorUnitarioLabel, gbc);
 
-        NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
-        format.setMinimumFractionDigits(2);
-        format.setMaximumFractionDigits(2);
-        NumberFormatter formatter = new NumberFormatter(format) {
-            @Override
-            public Object stringToValue(String text) throws ParseException {
-                if (text == null || text.isEmpty()) {
-                    return null;
-                }
-                try {
-                    return super.stringToValue(text);
-                } catch (ParseException e) {
-                    return null;
-                }
-            }
-        };
-        formatter.setAllowsInvalid(false);
-        formatter.setOverwriteMode(false);
-        formatter.setMinimum(0.0);
-        formatter.setMaximum(999999.99);
-
-        valorUnitarioField = new JFormattedTextField(formatter);
-        valorUnitarioField.setPreferredSize(new Dimension(145, 40));
+        valorUnitarioField = new JTextField();
+        valorUnitarioField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(valorUnitarioField, fieldFont);
         gbc.gridx = 3;
         gbc.gridy = 3;
@@ -418,8 +399,15 @@ public class EditarProduto extends JPanel {
                 String dataValidade = produto.getDataValidade().format(dtf);
                 dataValidadeField.setText(dataValidade);
                 estoqueField.setText(String.valueOf(produto.getQntEstoque()));
+                NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
+                format.setMinimumFractionDigits(2);
+                format.setMaximumFractionDigits(2);
+                format.setGroupingUsed(false);
+
                 BigDecimal valorUnitario = produto.getValor();
-                valorUnitarioField.setValue(valorUnitario);
+                String valorUnitarioString = format.format(valorUnitario);
+
+                valorUnitarioField.setText(valorUnitarioString);
                 quantidadeEmbalagemField.setText(String.valueOf(produto.getQntEmbalagem()));
 
             } else {
@@ -738,6 +726,39 @@ public class EditarProduto extends JPanel {
         comboBox.setFont(font);
         comboBox.setFocusable(false);
         comboBox.setSelectedIndex(0);
+    }
+
+    public class MultiLineComboBoxRenderer extends JLabel implements ListCellRenderer<String> {
+        public MultiLineComboBoxRenderer() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
+                boolean isSelected, boolean cellHasFocus) {
+            setFont(list.getFont());
+
+            if (isSelected) {
+                setBackground(new Color(24, 39, 55));
+                setForeground(Color.WHITE);
+            } else {
+                setBackground(Color.WHITE);
+                setForeground(Color.BLACK);
+            }
+
+            String[] words = value.split(" ");
+            StringBuilder wrappedText = new StringBuilder("<html>");
+            for (String word : words) {
+                if (getFontMetrics(getFont()).stringWidth(wrappedText.toString() + word) > 200) {
+                    wrappedText.append("<br>");
+                }
+                wrappedText.append(word).append(" ");
+            }
+            wrappedText.append("</html>");
+            setText(wrappedText.toString());
+
+            return this;
+        }
     }
 
 }

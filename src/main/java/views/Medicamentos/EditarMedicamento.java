@@ -24,7 +24,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.MaskFormatter;
 import javax.swing.text.NumberFormatter;
 
-import controllers.Categoria.CategoriaController;
 import controllers.Fabricante.FabricanteController;
 import controllers.Fornecedor.FornecedorController;
 import controllers.Medicamento.MedicamentoController;
@@ -55,7 +54,7 @@ public class EditarMedicamento extends JPanel {
     private JComboBox<String> fornecedorComboBox;
     private JFormattedTextField dataFabricacaoField;
     private JFormattedTextField dataValidadeField;
-    private JFormattedTextField valorUnitarioField;
+    private JTextField valorUnitarioField;
     private JTextComponent categoriaField;
     private JComboBox<String> formaFarmaceuticaComboBox;
     private JTextComponent formaFarmaceuticaField;
@@ -131,8 +130,7 @@ public class EditarMedicamento extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(embalagemLabel, gbc);
 
-        String[] tiposdeEmbalagem = { "Selecione", "Bisnaga", "Caixa", "Frasco", "Garrafa", "Lata", "Pacote", "Pote",
-                "Refil", "Rolo", "Spray", "Tubo", "Vidro", "Outros" };
+        String[] tiposdeEmbalagem = { "Selecione", "Ampolas", "Caixa", "Envelope", "Frasco", "Pote", "Outros" };
         embalagemComboBox = new JComboBox<>(tiposdeEmbalagem);
         embalagemComboBox.setPreferredSize(new Dimension(150, 40));
         estilizarComboBox(embalagemComboBox, fieldFont);
@@ -181,8 +179,9 @@ public class EditarMedicamento extends JPanel {
 
         String[] categorias = obterCategorias();
         categoriaComboBox = new JComboBox<>(categorias);
-        categoriaComboBox.setPreferredSize(new Dimension(150, 40));
+        categoriaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
+        categoriaComboBox.setRenderer(new MultiLineComboBoxRenderer());
         gbc.gridx = 4;
         gbc.gridy = 1;
         camposPanel.add(categoriaComboBox, gbc);
@@ -413,23 +412,7 @@ public class EditarMedicamento extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(valorUnitarioLabel, gbc);
 
-        NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
-        format.setMinimumFractionDigits(2);
-        format.setMaximumFractionDigits(2);
-        NumberFormatter formatter = new NumberFormatter(format) {
-            public Object stringToValue(String text) throws ParseException {
-                if (text == null || text.isEmpty()) {
-                    return null;
-                }
-                return super.stringToValue(text);
-            }
-        };
-        formatter.setAllowsInvalid(false);
-        formatter.setOverwriteMode(false);
-        formatter.setMinimum(0.0);
-        formatter.setMaximum(999999.99);
-
-        valorUnitarioField = new JFormattedTextField(formatter);
+        valorUnitarioField = new JTextField();
         valorUnitarioField.setPreferredSize(new Dimension(150, 40));
         estilizarCamposFormulario(valorUnitarioField, fieldFont);
         gbc.gridx = 3;
@@ -460,8 +443,16 @@ public class EditarMedicamento extends JPanel {
                 String dataValidade = medicamento.getDataValidade().format(dtf);
                 dataValidadeField.setText(dataValidade);
                 estoqueField.setText(String.valueOf(medicamento.getQnt()));
+
+                NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
+                format.setMinimumFractionDigits(2);
+                format.setMaximumFractionDigits(2);
+                format.setGroupingUsed(false);
+
                 BigDecimal valorUnitario = medicamento.getValorUnit();
-                valorUnitarioField.setValue(valorUnitario);
+                String valorUnitarioString = format.format(valorUnitario);
+
+                valorUnitarioField.setText(valorUnitarioString);
                 Tipo tipoMedicamento = medicamento.getTipo();
                 tipoComboBox.setSelectedItem(tipoMedicamento.toString());
                 TipoReceita tipoReceita = medicamento.getTipoReceita();
@@ -529,17 +520,19 @@ public class EditarMedicamento extends JPanel {
 
     private String[] obterCategorias() {
         List<String> categoriasPreDefinidas = new ArrayList<>(Arrays.asList(
-                "Analgésico", "Anestésico", "Antitérmico", "Antipirético", "Antibiótico",
-                "Antifúngico", "Antiviral", "Anti-inflamatório", "Antidepressivo", "Antipsicótico",
-                "Ansiolítico", "Antihipertensivo", "Antidiabético", "Antiácidos", "Antialérgicos",
-                "Antieméticos"));
+                "Anestésicos Locais", "Analgésicos e Antitérmicos", "Antibióticos", "Antidiabéticos e Insulinas",
+                "Antieméticos e Reguladores Digestivos", "Anti-inflamatórios", "Antialérgicos e Anti-histamínicos",
+                "Antidepressivos e Estabilizadores de Humor", "Antifúngicos", "Anticonvulsivantes", "Antiparasitários",
+                "Antivirais", "Ansiolíticos e Sedativos",
+                "Corticosteroides", "Fitoterápicos", "Gastrointestinais", "Hipertensivos", "Hormônios e Endócrinos",
+                "Relaxantes Musculares", "Psicotrópicos", "Vitaminas e Suplementos"));
 
         Set<String> categorias = new LinkedHashSet<>();
         categorias.add("Selecione");
         categorias.addAll(categoriasPreDefinidas);
 
         try (Connection conn = ConexaoBD.getConnection()) {
-            List<String> categoriasDoBanco = CategoriaController.listarTodasCategorias(conn);
+            List<String> categoriasDoBanco = MedicamentoController.listarCategoriasMedicamento(conn);
             categorias.addAll(categoriasDoBanco);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -924,5 +917,38 @@ public class EditarMedicamento extends JPanel {
         comboBox.setFont(font);
         comboBox.setFocusable(false);
         comboBox.setSelectedIndex(0);
+    }
+
+    public class MultiLineComboBoxRenderer extends JLabel implements ListCellRenderer<String> {
+        public MultiLineComboBoxRenderer() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
+                boolean isSelected, boolean cellHasFocus) {
+            setFont(list.getFont());
+
+            if (isSelected) {
+                setBackground(new Color(24, 39, 55));
+                setForeground(Color.WHITE);
+            } else {
+                setBackground(Color.WHITE);
+                setForeground(Color.BLACK);
+            }
+
+            String[] words = value.split(" ");
+            StringBuilder wrappedText = new StringBuilder("<html>");
+            for (String word : words) {
+                if (getFontMetrics(getFont()).stringWidth(wrappedText.toString() + word) > 200) {
+                    wrappedText.append("<br>");
+                }
+                wrappedText.append(word).append(" ");
+            }
+            wrappedText.append("</html>");
+            setText(wrappedText.toString());
+
+            return this;
+        }
     }
 }

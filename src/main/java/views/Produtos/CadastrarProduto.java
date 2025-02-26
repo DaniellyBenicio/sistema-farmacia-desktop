@@ -2,13 +2,11 @@ package views.Produtos;
 
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
-import javax.swing.text.NumberFormatter;
 
 import java.awt.*;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -18,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import controllers.Fabricante.FabricanteController;
@@ -47,7 +44,7 @@ public class CadastrarProduto extends JPanel {
     private JFormattedTextField dataFabricacaoField;
     private JFormattedTextField dataValidadeField;
     private JTextField estoqueField;
-    private JFormattedTextField valorUnitarioField;
+    private JTextField valorUnitarioField;
     private JComboBox<String> categoriaComboBox;
     private JTextField quantidadeEmbalagemField;
 
@@ -155,6 +152,7 @@ public class CadastrarProduto extends JPanel {
         categoriaComboBox = new JComboBox<>(categoriaProdutos);
         categoriaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
+        categoriaComboBox.setRenderer(new MultiLineComboBoxRenderer());
         gbc.gridx = 3;
         gbc.gridy = 1;
         camposPanel.add(categoriaComboBox, gbc);
@@ -317,28 +315,7 @@ public class CadastrarProduto extends JPanel {
         gbc.gridy = 2;
         camposPanel.add(valorUnitarioLabel, gbc);
 
-        NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
-        format.setMinimumFractionDigits(2);
-        format.setMaximumFractionDigits(2);
-        NumberFormatter formatter = new NumberFormatter(format) {
-            @Override
-            public Object stringToValue(String text) throws ParseException {
-                if (text == null || text.isEmpty()) {
-                    return null;
-                }
-                try {
-                    return super.stringToValue(text);
-                } catch (ParseException e) {
-                    return null;
-                }
-            }
-        };
-        formatter.setAllowsInvalid(false);
-        formatter.setOverwriteMode(false);
-        formatter.setMinimum(0.0);
-        formatter.setMaximum(999999.99);
-
-        valorUnitarioField = new JFormattedTextField(formatter);
+        valorUnitarioField = new JTextField();
         valorUnitarioField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(valorUnitarioField, fieldFont);
         gbc.gridx = 3;
@@ -697,6 +674,39 @@ public class CadastrarProduto extends JPanel {
         fabricanteComboBox.removeAllItems();
         for (String fabricante : fabricantesAtualizadas) {
             fabricanteComboBox.addItem(fabricante);
+        }
+    }
+
+    public class MultiLineComboBoxRenderer extends JLabel implements ListCellRenderer<String> {
+        public MultiLineComboBoxRenderer() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
+                boolean isSelected, boolean cellHasFocus) {
+            setFont(list.getFont());
+
+            if (isSelected) {
+                setBackground(new Color(24, 39, 55));
+                setForeground(Color.WHITE);
+            } else {
+                setBackground(Color.WHITE);
+                setForeground(Color.BLACK);
+            }
+
+            String[] words = value.split(" ");
+            StringBuilder wrappedText = new StringBuilder("<html>");
+            for (String word : words) {
+                if (getFontMetrics(getFont()).stringWidth(wrappedText.toString() + word) > 200) {
+                    wrappedText.append("<br>");
+                }
+                wrappedText.append(word).append(" ");
+            }
+            wrappedText.append("</html>");
+            setText(wrappedText.toString());
+
+            return this;
         }
     }
 }

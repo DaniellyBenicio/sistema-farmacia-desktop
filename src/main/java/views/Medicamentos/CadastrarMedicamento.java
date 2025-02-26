@@ -6,7 +6,6 @@ import java.awt.event.FocusEvent;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -16,14 +15,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
-import javax.swing.text.NumberFormatter;
 
-import controllers.Categoria.CategoriaController;
 import controllers.Fabricante.FabricanteController;
 import controllers.Fornecedor.FornecedorController;
 import controllers.Medicamento.MedicamentoController;
@@ -180,6 +176,7 @@ public class CadastrarMedicamento extends JPanel {
         categoriaComboBox = new JComboBox<>(categorias);
         categoriaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
+        categoriaComboBox.setRenderer(new MultiLineComboBoxRenderer());
         gbc.gridx = 4;
         gbc.gridy = 1;
         camposPanel.add(categoriaComboBox, gbc);
@@ -410,23 +407,7 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 4;
         camposPanel.add(valorUnitarioLabel, gbc);
 
-        NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
-        format.setMinimumFractionDigits(2);
-        format.setMaximumFractionDigits(2);
-        NumberFormatter formatter = new NumberFormatter(format) {
-            public Object stringToValue(String text) throws ParseException {
-                if (text == null || text.isEmpty()) {
-                    return null;
-                }
-                return super.stringToValue(text);
-            }
-        };
-        formatter.setAllowsInvalid(false);
-        formatter.setOverwriteMode(false);
-        formatter.setMinimum(0.0);
-        formatter.setMaximum(999999.99);
-
-        valorUnitarioField = new JFormattedTextField(formatter);
+        valorUnitarioField = new JTextField();
         valorUnitarioField.setPreferredSize(new Dimension(150, 40));
         estilizarCamposFormulario(valorUnitarioField, fieldFont);
         gbc.gridx = 3;
@@ -451,9 +432,9 @@ public class CadastrarMedicamento extends JPanel {
     private String[] obterCategorias() {
         List<String> categoriasPreDefinidas = new ArrayList<>(Arrays.asList(
                 "Anestésicos Locais", "Analgésicos e Antitérmicos", "Antibióticos", "Antidiabéticos e Insulinas",
-                "Antieméticos e Reguladores Digestivos", "Anti-histamínicos", "Anti-inflamatórios", "Antialérgicos e Anti-histamínicos",
-                "Antidepressivos e Estabilizadores de Humor",
-                "Antifúngicos", "Anticonvulsivantes", "Antiparasitários", "Antivirais", "Ansiolíticos e Sedativos",
+                "Antieméticos e Reguladores Digestivos", "Anti-inflamatórios", "Antialérgicos e Anti-histamínicos",
+                "Antidepressivos e Estabilizadores de Humor", "Antifúngicos", "Anticonvulsivantes", "Antiparasitários",
+                "Antivirais", "Ansiolíticos e Sedativos",
                 "Corticosteroides", "Fitoterápicos", "Gastrointestinais", "Hipertensivos", "Hormônios e Endócrinos",
                 "Relaxantes Musculares", "Psicotrópicos", "Vitaminas e Suplementos"));
 
@@ -462,7 +443,7 @@ public class CadastrarMedicamento extends JPanel {
         categorias.addAll(categoriasPreDefinidas);
 
         try (Connection conn = ConexaoBD.getConnection()) {
-            List<String> categoriasDoBanco = CategoriaController.listarTodasCategorias(conn);
+            List<String> categoriasDoBanco = MedicamentoController.listarCategoriasMedicamento(conn);
             categorias.addAll(categoriasDoBanco);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -932,5 +913,38 @@ public class CadastrarMedicamento extends JPanel {
         comboBox.setFont(font);
         comboBox.setFocusable(false);
         comboBox.setSelectedIndex(0);
+    }
+
+    public class MultiLineComboBoxRenderer extends JLabel implements ListCellRenderer<String> {
+        public MultiLineComboBoxRenderer() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
+                boolean isSelected, boolean cellHasFocus) {
+            setFont(list.getFont());
+
+            if (isSelected) {
+                setBackground(new Color(24, 39, 55));
+                setForeground(Color.WHITE);
+            } else {
+                setBackground(Color.WHITE);
+                setForeground(Color.BLACK);
+            }
+
+            String[] words = value.split(" ");
+            StringBuilder wrappedText = new StringBuilder("<html>");
+            for (String word : words) {
+                if (getFontMetrics(getFont()).stringWidth(wrappedText.toString() + word) > 200) {
+                    wrappedText.append("<br>");
+                }
+                wrappedText.append(word).append(" ");
+            }
+            wrappedText.append("</html>");
+            setText(wrappedText.toString());
+
+            return this;
+        }
     }
 }

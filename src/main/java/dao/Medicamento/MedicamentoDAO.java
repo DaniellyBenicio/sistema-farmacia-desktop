@@ -22,13 +22,13 @@ import models.Funcionario.Funcionario;
 public class MedicamentoDAO {
 
     public static boolean medicamentoExiste(Connection conn, Medicamento m) throws SQLException {
-        String sql = "SELECT count(*) FROM medicamento WHERE id = ?"; 
+        String sql = "SELECT count(*) FROM medicamento WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, m.getId()); 
-    
+            pstmt.setInt(1, m.getId());
+
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0; 
+                    return rs.getInt(1) > 0;
                 }
             }
         } catch (SQLException e) {
@@ -65,7 +65,7 @@ public class MedicamentoDAO {
             pstmt.setString(7, m.getTipoReceita().name());
             pstmt.setInt(8, m.getQnt());
             pstmt.setString(9, m.getTipo().name());
-            pstmt.setString(10, m.getEmbalagem());       
+            pstmt.setString(10, m.getEmbalagem());
             pstmt.setInt(11, m.getQntEmbalagem());
             pstmt.setInt(12, categoriaId);
             pstmt.setInt(13, m.getFuncionario().getId());
@@ -92,17 +92,17 @@ public class MedicamentoDAO {
             System.out.println("O medicamento não existe na base de dados.");
             return;
         }
-    
+
         int categoriaId = CategoriaDAO.criarCategoria(conn, m.getCategoria());
         int fabricanteId = FabricanteDAO.criarFabricante(conn, m.getFabricante());
-    
+
         Fornecedor fornecedorExistente = FornecedorDAO.fornecedorPorId(conn, m.getFornecedor().getId());
         if (fornecedorExistente == null) {
             FornecedorDAO.cadastrarFornecedor(conn, m.getFornecedor());
         }
-    
+
         Fornecedor fornecedor = FornecedorDAO.fornecedorPorId(conn, m.getFornecedor().getId());
-    
+
         String sql = "UPDATE medicamento SET nome = ?, dosagem = ?, formaFarmaceutica = ?, valorUnit = ?, dataValidade = ?, dataFabricacao = ?, tipoReceita = ?, qnt = ?, tipo = ?, embalagem = ?, qntEmbalagem = ?, categoria_id = ?, fabricante_id = ?, fornecedor_id = ? WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, m.getNome());
@@ -114,7 +114,7 @@ public class MedicamentoDAO {
             pstmt.setString(7, m.getTipoReceita().name());
             pstmt.setInt(8, m.getQnt());
             pstmt.setString(9, m.getTipo().name());
-            pstmt.setString(10, m.getEmbalagem());       
+            pstmt.setString(10, m.getEmbalagem());
             pstmt.setInt(11, m.getQntEmbalagem());
             pstmt.setInt(12, categoriaId);
             pstmt.setInt(13, fabricanteId);
@@ -125,23 +125,23 @@ public class MedicamentoDAO {
             System.err.println("Erro ao atualizar medicamento: " + e.getMessage());
             throw e;
         }
-    }    
+    }
 
     public static Medicamento buscarPorId(Connection conn, int id) throws SQLException {
         String sql = "SELECT m.*, c.nome AS categoria_nome, f.nome AS funcionario_nome, "
-                   + "fa.nome AS fabricante_nome, fo.nome AS fornecedor_nome "
-                   + "FROM medicamento m "
-                   + "JOIN categoria c ON m.categoria_id = c.id "
-                   + "JOIN funcionario f ON m.funcionario_id = f.id "
-                   + "JOIN fabricante fa ON m.fabricante_id = fa.id "
-                   + "JOIN fornecedor fo ON m.fornecedor_id = fo.id "
-                   + "WHERE m.id = ?";
-        
+                + "fa.nome AS fabricante_nome, fo.nome AS fornecedor_nome "
+                + "FROM medicamento m "
+                + "JOIN categoria c ON m.categoria_id = c.id "
+                + "JOIN funcionario f ON m.funcionario_id = f.id "
+                + "JOIN fabricante fa ON m.fabricante_id = fa.id "
+                + "JOIN fornecedor fo ON m.fornecedor_id = fo.id "
+                + "WHERE m.id = ?";
+
         Medicamento medicamento = null;
-    
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
-    
+
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     medicamento = new Medicamento();
@@ -157,25 +157,25 @@ public class MedicamentoDAO {
                     medicamento.setTipo(Medicamento.Tipo.valueOf(rs.getString("tipo")));
                     medicamento.setEmbalagem(rs.getString("embalagem"));
                     medicamento.setQntEmbalagem(rs.getInt("QntEmbalagem"));
-                    
+
                     // Categoria
                     Categoria categoria = new Categoria();
                     categoria.setId(rs.getInt("categoria_id"));
                     categoria.setNome(rs.getString("categoria_nome"));
                     medicamento.setCategoria(categoria);
-    
+
                     // Funcionario
                     Funcionario funcionario = new Funcionario();
                     funcionario.setId(rs.getInt("funcionario_id"));
                     funcionario.setNome(rs.getString("funcionario_nome"));
                     medicamento.setFuncionario(funcionario);
-    
+
                     // Fabricante
                     Fabricante fabricante = new Fabricante();
                     fabricante.setId(rs.getInt("fabricante_id"));
                     fabricante.setNome(rs.getString("fabricante_nome"));
                     medicamento.setFabricante(fabricante);
-    
+
                     // Fornecedor
                     Fornecedor fornecedor = new Fornecedor();
                     fornecedor.setId(rs.getInt("fornecedor_id"));
@@ -188,20 +188,19 @@ public class MedicamentoDAO {
             System.err.println("Erro ao buscar medicamento por ID: " + e.getMessage());
             throw e;
         }
-    
+
         return medicamento;
     }
-    
 
     public static List<Medicamento> listarTodos(Connection conn) throws SQLException {
         List<Medicamento> medicamentos = new ArrayList<>();
         String sql = "SELECT m.id, m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.dataValidade, m.dataFabricacao, m.tipoReceita, m.qnt, m.tipo, m.embalagem, m.qntEmbalagem, m.categoria_id, m.funcionario_id, m.fabricante_id, m.fornecedor_id, c.nome as categoria_nome, f.nome as funcionario_nome, fa.nome as fabricante_nome, fo.nome as fornecedor_nome "
-                    + "FROM medicamento m "
-                    + "JOIN categoria c ON m.categoria_id = c.id "
-                    + "JOIN funcionario f ON m.funcionario_id = f.id "
-                    + "JOIN fabricante fa ON m.fabricante_id = fa.id "
-                    + "JOIN fornecedor fo ON m.fornecedor_id = fo.id";
-    
+                + "FROM medicamento m "
+                + "JOIN categoria c ON m.categoria_id = c.id "
+                + "JOIN funcionario f ON m.funcionario_id = f.id "
+                + "JOIN fabricante fa ON m.fabricante_id = fa.id "
+                + "JOIN fornecedor fo ON m.fornecedor_id = fo.id";
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 Medicamento med = new Medicamento();
@@ -217,27 +216,27 @@ public class MedicamentoDAO {
                 med.setTipo(Medicamento.Tipo.valueOf(rs.getString("tipo")));
                 med.setEmbalagem(rs.getString("embalagem"));
                 med.setQntEmbalagem(rs.getInt("QntEmbalagem"));
-    
+
                 Categoria cat = new Categoria();
                 cat.setId(rs.getInt("categoria_id"));
                 cat.setNome(rs.getString("categoria_nome"));
                 med.setCategoria(cat);
-    
+
                 Funcionario fun = new Funcionario();
                 fun.setId(rs.getInt("funcionario_id"));
                 fun.setNome(rs.getString("funcionario_nome"));
                 med.setFuncionario(fun);
-    
+
                 Fabricante fabricante = new Fabricante();
                 fabricante.setId(rs.getInt("fabricante_id"));
                 fabricante.setNome(rs.getString("fabricante_nome"));
                 med.setFabricante(fabricante);
-    
+
                 Fornecedor fornecedor = new Fornecedor();
                 fornecedor.setId(rs.getInt("fornecedor_id"));
                 fornecedor.setNome(rs.getString("fornecedor_nome"));
                 med.setFornecedor(fornecedor);
-    
+
                 medicamentos.add(med);
             }
         } catch (SQLException e) {
@@ -246,27 +245,27 @@ public class MedicamentoDAO {
         }
         return medicamentos;
     }
-    
+
     public static List<Medicamento> buscarPorCategoriaOuNome(Connection conn, String termo) throws SQLException {
         List<Medicamento> medicamentos = new ArrayList<>();
         String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.dataValidade, " +
-                     "m.dataFabricacao, m.tipoReceita, m.qnt, m.tipo, m.embalagem, m.qntEmbalagem, " +
-                     "c.nome AS categoria_nome, " +
-                     "f.nome AS funcionario_nome, " +
-                     "fa.nome AS fabricante_nome, " +
-                     "fo.nome AS fornecedor_nome " +
-                     "FROM medicamento m " +
-                     "JOIN categoria c ON m.categoria_id = c.id " +
-                     "JOIN funcionario f ON m.funcionario_id = f.id " +
-                     "JOIN fabricante fa ON m.fabricante_id = fa.id " +
-                     "JOIN fornecedor fo ON m.fornecedor_id = fo.id " +
-                     "WHERE c.nome LIKE ? OR m.nome LIKE ? " +
-                     "ORDER BY m.nome ASC";
-    
+                "m.dataFabricacao, m.tipoReceita, m.qnt, m.tipo, m.embalagem, m.qntEmbalagem, " +
+                "c.nome AS categoria_nome, " +
+                "f.nome AS funcionario_nome, " +
+                "fa.nome AS fabricante_nome, " +
+                "fo.nome AS fornecedor_nome " +
+                "FROM medicamento m " +
+                "JOIN categoria c ON m.categoria_id = c.id " +
+                "JOIN funcionario f ON m.funcionario_id = f.id " +
+                "JOIN fabricante fa ON m.fabricante_id = fa.id " +
+                "JOIN fornecedor fo ON m.fornecedor_id = fo.id " +
+                "WHERE c.nome LIKE ? OR m.nome LIKE ? " +
+                "ORDER BY m.nome ASC";
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, "%" + termo + "%");
             pstmt.setString(2, "%" + termo + "%");
-    
+
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     Medicamento med = new Medicamento();
@@ -281,23 +280,23 @@ public class MedicamentoDAO {
                     med.setTipo(Medicamento.Tipo.valueOf(rs.getString("tipo")));
                     med.setEmbalagem(rs.getString("embalagem"));
                     med.setQntEmbalagem(rs.getInt("QntEmbalagem"));
-    
+
                     Categoria cat = new Categoria();
                     cat.setNome(rs.getString("categoria_nome"));
                     med.setCategoria(cat);
-    
+
                     Funcionario fun = new Funcionario();
                     fun.setNome(rs.getString("funcionario_nome"));
                     med.setFuncionario(fun);
-    
+
                     Fabricante fabricante = new Fabricante();
                     fabricante.setNome(rs.getString("fabricante_nome"));
                     med.setFabricante(fabricante);
-    
+
                     Fornecedor fornecedor = new Fornecedor();
                     fornecedor.setNome(rs.getString("fornecedor_nome"));
                     med.setFornecedor(fornecedor);
-    
+
                     medicamentos.add(med);
                 }
             }
@@ -305,9 +304,9 @@ public class MedicamentoDAO {
             System.err.println("Erro ao listar medicamentos por categoria ou nome: " + e.getMessage());
             throw e;
         }
-    
+
         return medicamentos;
-    }   
+    }
 
     public static void deletarMedicamento(Connection conn, Medicamento m) throws SQLException {
         String sql = "delete from medicamento where id = ?";
@@ -329,7 +328,7 @@ public class MedicamentoDAO {
     public static ArrayList<String> listarFormasFarmaceuticas(Connection conn) throws SQLException {
         String sql = "SELECT formaFarmaceutica FROM medicamento ORDER BY formaFarmaceutica ASC";
         ArrayList<String> formas = new ArrayList<>();
-    
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 formas.add(rs.getString("formaFarmaceutica"));
@@ -344,7 +343,7 @@ public class MedicamentoDAO {
     public static ArrayList<String> listarTiposDeMedicamentos(Connection conn) throws SQLException {
         String sql = "SELECT tipo FROM medicamento ORDER BY tipo ASC";
         ArrayList<String> formas = new ArrayList<>();
-    
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 formas.add(rs.getString("tipo"));
@@ -374,16 +373,16 @@ public class MedicamentoDAO {
     public static List<Medicamento> listarEstoqueMedicamentos(Connection conn) throws SQLException {
         List<Medicamento> medicamentosEstoque = new ArrayList<>();
         String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, m.qnt, m.dataValidade, m.embalagem, m.qntEmbalagem, "
-                   + "c.nome AS categoria_nome, "
-                   + "fo.nome AS fornecedor_nome "
-                   + "FROM medicamento m "
-                   + "JOIN categoria c ON m.categoria_id = c.id "
-                   + "JOIN fornecedor fo ON m.fornecedor_id = fo.id "
-                   + "ORDER BY m.dataValidade ASC, m.qnt ASC";
-        
-        try (PreparedStatement pstmt = conn.prepareStatement(sql); 
-             ResultSet rs = pstmt.executeQuery()) {
-            
+                + "c.nome AS categoria_nome, "
+                + "fo.nome AS fornecedor_nome "
+                + "FROM medicamento m "
+                + "JOIN categoria c ON m.categoria_id = c.id "
+                + "JOIN fornecedor fo ON m.fornecedor_id = fo.id "
+                + "ORDER BY m.dataValidade ASC, m.qnt ASC";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+                ResultSet rs = pstmt.executeQuery()) {
+
             while (rs.next()) {
                 Medicamento medicamento = new Medicamento();
                 medicamento.setNome(rs.getString("nome"));
@@ -394,54 +393,59 @@ public class MedicamentoDAO {
                 medicamento.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
                 medicamento.setEmbalagem(rs.getString("embalagem"));
                 medicamento.setQntEmbalagem(rs.getInt("QntEmbalagem"));
-                
+
                 Categoria categoria = new Categoria();
                 categoria.setNome(rs.getString("categoria_nome"));
                 medicamento.setCategoria(categoria);
-                
+
                 Fornecedor fornecedor = new Fornecedor();
                 fornecedor.setNome(rs.getString("fornecedor_nome"));
                 medicamento.setFornecedor(fornecedor);
-                
+
                 medicamentosEstoque.add(medicamento);
             }
         } catch (SQLException e) {
             System.err.println("Erro ao listar estoque dos medicamentos: " + e.getMessage());
             throw e;
         }
-        
+
         return medicamentosEstoque;
     }
 
     public static List<Medicamento> listarBaixoEstoque(Connection conn) throws SQLException {
         List<Medicamento> baixoEstoque = new ArrayList<>();
-        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, c.nome AS categoria_nome, m.dataValidade, m.embalagem, " +
-                     "f.nome AS fornecedor_nome, m.qnt " +
-                     "FROM medicamento m " +
-                     "JOIN categoria c ON m.categoria_id = c.id " +
-                     "JOIN fornecedor f ON m.fornecedor_id = f.id " +
-                     "WHERE " +
-                     "(" +
-                     "    (" +
-                     "        c.nome IN ('Antihipertensivo', 'Analgésico', 'Antitérmico', 'Antibiótico', 'Anti-inflamatório', " +
-                     "                   'Antidepressivo', 'Antipsicótico', 'Ansiolítico', 'Antidiabético', 'Antialérgico') " +
-                     "        AND m.qnt < 30 " +
-                     "        AND (" +
-                     "            (m.tipo = 'Genérico' OR m.tipo = 'Similar') AND m.valorUnit <= 40 " +
-                     "            OR m.tipo = 'Ético' AND m.valorUnit <= 50 " +
-                     "        )" +
-                     "    ) " +
-                     "    OR (" +
-                     "        c.nome NOT IN ('Antihipertensivo', 'Analgésico', 'Antitérmico', 'Antibiótico', 'Anti-inflamatório', " +
-                     "                     'Antidepressivo', 'Antipsicótico', 'Ansiolítico', 'Antidiabético', 'Antialérgico') " +
-                     "        AND m.qnt <= 15 " +
-                     "    )" +
-                     ")" +
-                     "ORDER BY m.qnt ASC, m.dataValidade ASC";
-        
-        try (PreparedStatement pstmt = conn.prepareStatement(sql); 
-             ResultSet rs = pstmt.executeQuery()) {
-            
+        String sql = "SELECT m.nome, m.dosagem, m.formaFarmaceutica, m.valorUnit, c.nome AS categoria_nome, m.dataValidade, m.embalagem, "
+                +
+                "f.nome AS fornecedor_nome, m.qnt " +
+                "FROM medicamento m " +
+                "JOIN categoria c ON m.categoria_id = c.id " +
+                "JOIN fornecedor f ON m.fornecedor_id = f.id " +
+                "WHERE " +
+                "(" +
+                "    (" +
+                "        c.nome IN ('Antihipertensivo', 'Analgésico', 'Antitérmico', 'Antibiótico', 'Anti-inflamatório', "
+                +
+                "                   'Antidepressivo', 'Antipsicótico', 'Ansiolítico', 'Antidiabético', 'Antialérgico') "
+                +
+                "        AND m.qnt < 30 " +
+                "        AND (" +
+                "            (m.tipo = 'Genérico' OR m.tipo = 'Similar') AND m.valorUnit <= 40 " +
+                "            OR m.tipo = 'Ético' AND m.valorUnit <= 50 " +
+                "        )" +
+                "    ) " +
+                "    OR (" +
+                "        c.nome NOT IN ('Antihipertensivo', 'Analgésico', 'Antitérmico', 'Antibiótico', 'Anti-inflamatório', "
+                +
+                "                     'Antidepressivo', 'Antipsicótico', 'Ansiolítico', 'Antidiabético', 'Antialérgico') "
+                +
+                "        AND m.qnt <= 15 " +
+                "    )" +
+                ")" +
+                "ORDER BY m.qnt ASC, m.dataValidade ASC";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+                ResultSet rs = pstmt.executeQuery()) {
+
             while (rs.next()) {
                 Medicamento medicamento = new Medicamento();
                 medicamento.setNome(rs.getString("nome"));
@@ -451,34 +455,33 @@ public class MedicamentoDAO {
                 medicamento.setQnt(rs.getInt("qnt"));
                 medicamento.setDataValidade(YearMonth.from(rs.getDate("dataValidade").toLocalDate()));
                 medicamento.setEmbalagem(rs.getString("embalagem"));
-               // medicamento.setQntEmbalagem(rs.getInt("QntEmbalagem"));
-                
+                // medicamento.setQntEmbalagem(rs.getInt("QntEmbalagem"));
+
                 Categoria categoria = new Categoria();
                 categoria.setNome(rs.getString("categoria_nome"));
                 medicamento.setCategoria(categoria);
-                
+
                 Fornecedor fornecedor = new Fornecedor();
                 fornecedor.setNome(rs.getString("fornecedor_nome"));
                 medicamento.setFornecedor(fornecedor);
-                
+
                 baixoEstoque.add(medicamento);
             }
         } catch (SQLException e) {
             System.err.println("Erro ao listar baixo estoque: " + e.getMessage());
             throw e;
         }
-        
+
         return baixoEstoque;
     }
 
-    
     public static List<String> medicamentoCategoria(Connection conn) throws SQLException {
         String sql = "SELECT DISTINCT c.nome AS categoria " +
-                     "FROM medicamento m " +
-                     "INNER JOIN categoria c ON m.categoria_id = c.id " +
-                     "ORDER BY c.nome ASC";
+                "FROM medicamento m " +
+                "INNER JOIN categoria c ON m.categoria_id = c.id " +
+                "ORDER BY c.nome ASC";
         List<String> medCategoria = new ArrayList<>();
-    
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 medCategoria.add(rs.getString("categoria"));
@@ -488,5 +491,5 @@ public class MedicamentoDAO {
             throw e;
         }
         return medCategoria;
-    }    
+    }
 }
