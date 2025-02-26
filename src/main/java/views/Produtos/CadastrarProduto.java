@@ -339,7 +339,7 @@ public class CadastrarProduto extends JPanel {
         formatter.setMaximum(999999.99);
 
         valorUnitarioField = new JFormattedTextField(formatter);
-        valorUnitarioField.setPreferredSize(new Dimension(145, 40));
+        valorUnitarioField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(valorUnitarioField, fieldFont);
         gbc.gridx = 3;
         gbc.gridy = 3;
