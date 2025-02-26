@@ -178,14 +178,14 @@ public class CadastrarMedicamento extends JPanel {
 
         String[] categorias = obterCategorias();
         categoriaComboBox = new JComboBox<>(categorias);
-        categoriaComboBox.setPreferredSize(new Dimension(150, 40));
+        categoriaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
         gbc.gridx = 4;
         gbc.gridy = 1;
         camposPanel.add(categoriaComboBox, gbc);
 
         categoriaField = new JTextField();
-        categoriaField.setPreferredSize(new Dimension(150, 40));
+        categoriaField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(categoriaField, fieldFont);
         categoriaField.setVisible(false);
         gbc.gridx = 4;
@@ -328,7 +328,7 @@ public class CadastrarMedicamento extends JPanel {
         camposPanel.add(estoqueLabel, gbc);
 
         estoqueField = new JTextField();
-        estoqueField.setPreferredSize(new Dimension(150, 40));
+        estoqueField.setPreferredSize(new Dimension(200, 40));
         estilizarCamposFormulario(estoqueField, fieldFont);
         gbc.gridx = 4;
         gbc.gridy = 3;
@@ -450,10 +450,12 @@ public class CadastrarMedicamento extends JPanel {
 
     private String[] obterCategorias() {
         List<String> categoriasPreDefinidas = new ArrayList<>(Arrays.asList(
-                "Analgésico", "Anestésico", "Antitérmico", "Antipirético", "Antibiótico",
-                "Antifúngico", "Antiviral", "Anti-inflamatório", "Antidepressivo", "Antipsicótico",
-                "Ansiolítico", "Antihipertensivo", "Antidiabético", "Antiácidos", "Antialérgicos",
-                "Antieméticos"));
+                "Anestésicos Locais", "Analgésicos e Antitérmicos", "Antibióticos", "Antidiabéticos e Insulinas",
+                "Antieméticos e Reguladores Digestivos", "Anti-histamínicos", "Anti-inflamatórios", "Antialérgicos e Anti-histamínicos",
+                "Antidepressivos e Estabilizadores de Humor",
+                "Antifúngicos", "Anticonvulsivantes", "Antiparasitários", "Antivirais", "Ansiolíticos e Sedativos",
+                "Corticosteroides", "Fitoterápicos", "Gastrointestinais", "Hipertensivos", "Hormônios e Endócrinos",
+                "Relaxantes Musculares", "Psicotrópicos", "Vitaminas e Suplementos"));
 
         Set<String> categorias = new LinkedHashSet<>();
         categorias.add("Selecione");

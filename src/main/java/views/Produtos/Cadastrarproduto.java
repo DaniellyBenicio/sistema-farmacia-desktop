@@ -153,7 +153,7 @@ public class CadastrarProduto extends JPanel {
 
         String[] categoriaProdutos = obterCategoriaProdutos();
         categoriaComboBox = new JComboBox<>(categoriaProdutos);
-        categoriaComboBox.setPreferredSize(new Dimension(145, 40));
+        categoriaComboBox.setPreferredSize(new Dimension(200, 40));
         estilizarComboBox(categoriaComboBox, fieldFont);
         gbc.gridx = 3;
         gbc.gridy = 1;
