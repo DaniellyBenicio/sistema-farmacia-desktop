@@ -122,6 +122,72 @@ create table produto (
     updated_at timestamp default current_timestamp on update current_timestamp
 );
 
+create table venda(
+    id int primary key auto_increment not null, 
+    cliente_id int null,
+    funcionario_id int not null,
+    valorTotal decimal(10,2) not null,
+    desconto decimal(10,2) default 0,
+    formaPagamento enum('DINHEIRO', 'CARTÃO', 'PIX') not null,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    foreign key (cliente_id) references Cliente(id),
+    foreign key (funcionario_id) references Funcionario(id),
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
+);
+
+create table itemVenda (
+    id int primary key auto_increment not null, 
+    venda_id int not null,
+    produto_id int null,
+    medicamento_id int null,
+    qnt int not null check (qnt > 0),
+    precoUnit decimal(10,2) not null check (precoUnit >= 0),
+    subtotal decimal(10,2) generated always as (qnt * precoUnit) stored,
+    desconto decimal(10,2) default 0 check (desconto >= 0),
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp,
+    foreign key (venda_id) references venda(id) on delete cascade,
+    foreign key (produto_id) references produto(id) on delete set null,
+    foreign key (medicamento_id) references medicamento(id) on delete set null
+);
+
+DELIMITER $$
+
+CREATE TRIGGER checarItem BEFORE INSERT ON itemvenda
+FOR EACH ROW
+BEGIN
+    IF NEW.produto_id IS NULL AND NEW.medicamento_id IS NULL THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Erro: A venda precisa ter um produto, medicamento associado ou ambos.';
+    END IF;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER atualizarEstoque 
+AFTER INSERT ON itemVenda 
+FOR EACH ROW
+BEGIN 
+    IF NEW.produto_id IS NOT NULL THEN
+        UPDATE produto
+        SET qntEstoque = GREATEST(qntEstoque - NEW.qnt, 0)
+        WHERE id = NEW.produto_id;
+    END IF;
+
+    IF NEW.medicamento_id IS NOT NULL THEN
+        UPDATE medicamento
+        SET qnt = GREATEST(qnt - NEW.qnt, 0) 
+        WHERE id = NEW.medicamento_id;
+    END IF;
+END $$
+
+DELIMITER ;
+
 
 insert into cargo (nome) values ('Gerente');
 insert into funcionario (nome, telefone, email, cargo_id, status) values ('Danielly', '88998045537', 'd@gmail.com', 1, true);
+
+SHOW TRIGGERS;
