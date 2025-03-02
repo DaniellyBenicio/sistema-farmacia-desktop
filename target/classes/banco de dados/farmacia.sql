@@ -3,7 +3,9 @@ use farmacia;
 
 create table cargo(
 	id int primary key auto_increment not null,
-    nome varchar(50) not null COLLATE utf8mb4_general_ci
+    nome varchar(50) not null COLLATE utf8mb4_general_ci,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
 );
 
 create table funcionario(
@@ -13,7 +15,9 @@ create table funcionario(
     email varchar(100) not null unique,
     cargo_id int not null,
     status BOOLEAN NOT NULL DEFAULT TRUE,
-    foreign key (cargo_id) references cargo(id)
+    foreign key (cargo_id) references cargo(id),
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
 );
 
 create table fornecedor(
@@ -23,24 +27,32 @@ create table fornecedor(
     email varchar(100) not null unique,
     telefone char(11) not null unique,
 	funcionario_id int not null,
-    foreign key (funcionario_id) references funcionario(id) on delete restrict
+    foreign key (funcionario_id) references funcionario(id) on delete restrict,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
 );
 
 create table representante(
 	fornecedor_id int primary key not null,
     nome varchar(50) not null,
     telefone char(11) not null unique,
-    foreign key (fornecedor_id) references fornecedor(id) on delete cascade
+    foreign key (fornecedor_id) references fornecedor(id) on delete cascade,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
 );
 
 create table categoria(
 	id int primary key auto_increment not null,
-    nome varchar(50) not null unique COLLATE utf8mb4_general_ci
+    nome varchar(50) not null unique COLLATE utf8mb4_general_ci,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
 );
 
 create table fabricante(
 	id int primary key auto_increment not null,
-    nome varchar(50) not null unique COLLATE utf8mb4_general_ci
+    nome varchar(50) not null unique COLLATE utf8mb4_general_ci,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
 );
 
 create  table medicamento(
@@ -64,7 +76,9 @@ create  table medicamento(
     foreign key (funcionario_id) references funcionario (id),
     foreign key (fabricante_id) references fabricante (id),
     foreign key (fornecedor_id) references fornecedor (id),    
-	unique (nome, dosagem, formaFarmaceutica, embalagem, qntEmbalagem, dataValidade, dataFabricacao, fabricante_id)
+	unique (nome, dosagem, formaFarmaceutica, embalagem, qntEmbalagem, dataValidade, dataFabricacao, fabricante_id),
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
 );
 
 create table cliente(
@@ -80,7 +94,9 @@ create table cliente(
                 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO') NOT NULL,    
 	pontoReferencia varchar(255),
     funcionario_id int not null,
-    foreign key (funcionario_id) references funcionario(id) 
+    foreign key (funcionario_id) references funcionario(id),
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
 );
 
 create table produto (
@@ -101,14 +117,11 @@ create table produto (
     foreign key (fabricante_id) references fabricante (id),
     foreign key (fornecedor_id) references fornecedor (id),    
     foreign key (categoria_id) references categoria (id),
-    unique (nome, qntMedida, embalagem, fabricante_id, dataFabricacao, dataValidade, categoria_id)
+    unique (nome, qntMedida, embalagem, fabricante_id, dataFabricacao, dataValidade, categoria_id),
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
 );
 
 
-drop database farmacia;
-
-
-
-
-insert into cargo values (1, 'Gerente');
-insert into funcionario values (1, 'Danielly', '88998045537', 'd@gmail.com', 1, true);
+insert into cargo (nome) values ('Gerente');
+insert into funcionario (nome, telefone, email, cargo_id, status) values ('Danielly', '88998045537', 'd@gmail.com', 1, true);
