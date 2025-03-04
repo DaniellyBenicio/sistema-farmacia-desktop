@@ -27,6 +27,7 @@ import views.Funcionario.ListaDeFuncionarios;
 import views.Medicamentos.ListaDeMedicamentos;
 import views.Produtos.ListaDeProdutos;
 import views.Vendas.RealizarVenda;
+import views.Vendas.TelaInicialVendas;
 
 public class Farmacia extends JFrame {
 
@@ -35,6 +36,7 @@ public class Farmacia extends JFrame {
     private PrincipalEstoque principalEstoque;
     private EstoqueMedicamento estoqueMedicamento;
     private EstoqueProduto estoqueProduto;
+    private TelaInicialVendas principalVendas;
 
     public Farmacia() {
         setTitle("Farmácia");
@@ -58,6 +60,8 @@ public class Farmacia extends JFrame {
         estoqueMedicamento = new EstoqueMedicamento(conexão, principalEstoque, layoutCartao, painelCentral);
         estoqueProduto = new EstoqueProduto(conexão, principalEstoque, layoutCartao, painelCentral);
 
+        principalVendas = new TelaInicialVendas(conexão, layoutCartao, painelCentral);
+
         painelCentral.add(new RealizarVenda(), "Vendas");
         painelCentral.add(new CadastrarFornecedor(), "CadastrarFornecedor");
         painelCentral.add(new ListaDeFornecedores(conexão), "ListaDeFornecedores");
@@ -69,12 +73,13 @@ public class Farmacia extends JFrame {
         painelCentral.add(principalEstoque, "GerenciamentoDeEstoque");
         painelCentral.add(estoqueMedicamento, "EstoqueMedicamento");
         painelCentral.add(estoqueProduto, "EstoqueProduto");
+        painelCentral.add(principalVendas, "TelaInicialVendas");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
         add(painelSuperior, BorderLayout.NORTH);
         add(painelCentral, BorderLayout.CENTER);
 
-        layoutCartao.show(painelCentral, "Vendas");
+        layoutCartao.show(painelCentral, "TelaInicialVendas");
 
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
@@ -96,7 +101,7 @@ public class Farmacia extends JFrame {
     public CardLayout getLayoutCartao() {
         return layoutCartao;
     }
-   
+
     public JPanel getPainelCentral() {
         return painelCentral;
     }

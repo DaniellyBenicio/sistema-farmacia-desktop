@@ -350,7 +350,7 @@ public class PainelSuperior extends JPanel {
 
         switch (itemMenu) {
             case "Vendas":
-                layoutAlternativo.show(painelDeVisualizacao, "Vendas");
+                layoutAlternativo.show(painelDeVisualizacao, "TelaInicialVendas");
                 break;
             case "Medicamentos":
                 layoutAlternativo.show(painelDeVisualizacao, "ListaDeMedicamentos");
