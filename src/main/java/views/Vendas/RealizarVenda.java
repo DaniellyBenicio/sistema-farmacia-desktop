@@ -118,8 +118,7 @@ public class RealizarVenda extends JPanel {
         txtPrecoTotal.setMaximumSize(new Dimension(300, 50));
         txtPrecoTotal.setBackground(Color.WHITE);
         txtPrecoTotal.setForeground(Color.BLACK);
-        txtPrecoTotal.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(24, 39, 55), 1),
+        txtPrecoTotal.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(24, 39, 55), 1),
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)));
         txtPrecoTotal.setCaretColor(Color.BLACK);
         txtPrecoTotal.setAlignmentX(Component.LEFT_ALIGNMENT);
