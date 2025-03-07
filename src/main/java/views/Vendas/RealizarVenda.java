@@ -1,127 +1,269 @@
 package views.Vendas;
 
 import javax.swing.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import java.awt.*;
 
 public class RealizarVenda extends JPanel {
-    private JLabel lblProduto, lblCodigo, lblQuantidade, lblPrecoUnitario, lblDesconto, lblPrecoTotal;
-    private JTextField txtProduto, txtCodigo, txtQuantidade, txtPrecoUnitario, txtDesconto, txtPrecoTotal;
+    private JLabel lblItem, lblCodigoProduto, lblQuantidade, lblPrecoUnitario, lblDesconto, lblPrecoTotal;
+    private JTextField txtItem, txtCodigoProduto, txtQuantidade, txtPrecoUnitario, txtDesconto, txtPrecoTotal;
+    private JPanel painelResumoVenda;
+    private JTextArea txtResumoVenda;
 
     public RealizarVenda() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
 
-        lblProduto = new JLabel("Produto");
-        lblProduto.setFont(new Font("Arial", Font.BOLD, 18));
-        lblProduto.setForeground(new Color(24, 39, 55));
-        lblProduto.setAlignmentX(0.0f);
-        add(lblProduto);
+        lblItem = new JLabel("Item");
+        lblItem.setFont(new Font("Arial", Font.BOLD, 18));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 30, 5, 5);
+        add(lblItem, gbc);
 
-        txtProduto = new JTextField();
-        txtProduto.setFont(new Font("Arial", Font.PLAIN, 25));
-        txtProduto.setMaximumSize(new Dimension(2900, 50));
-        txtProduto.setBackground(new Color(24, 39, 55));
-        txtProduto.setForeground(Color.WHITE);
-        txtProduto.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(24, 39, 55), 1),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-        txtProduto.setCaretColor(Color.WHITE);
-        txtProduto.setAlignmentX(0.0f);
-        add(txtProduto);
+        txtItem = createTextFieldItem();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(5, 30, 10, 30);
+        add(txtItem, gbc);
 
-        lblCodigo = new JLabel("Código do Produto");
-        lblCodigo.setFont(new Font("Arial", Font.BOLD, 18));
-        lblCodigo.setForeground(new Color(24, 39, 55));
-        lblCodigo.setAlignmentX(0.0f);
-        lblCodigo.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
-        add(lblCodigo);
+        lblCodigoProduto = new JLabel("Código do Produto");
+        lblCodigoProduto.setFont(new Font("Arial", Font.BOLD, 18));
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 30, 5, 5);
+        add(lblCodigoProduto, gbc);
 
-        txtCodigo = new JTextField();
-        txtCodigo.setFont(new Font("Arial", Font.PLAIN, 25));
-        txtCodigo.setMaximumSize(new Dimension(300, 50));
-        txtCodigo.setBackground(Color.WHITE);
-        txtCodigo.setForeground(Color.BLACK);
-
-        txtCodigo.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(24, 39, 55), 1),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-        txtCodigo.setCaretColor(Color.BLACK);
-        txtCodigo.setAlignmentX(0.0f);
-        add(txtCodigo);
+        txtCodigoProduto = createTextFieldOutrosCampos();
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        gbc.insets = new Insets(5, 30, 10, 30);
+        add(txtCodigoProduto, gbc);
 
         lblQuantidade = new JLabel("Quantidade");
         lblQuantidade.setFont(new Font("Arial", Font.BOLD, 18));
-        lblQuantidade.setForeground(new Color(24, 39, 55));
-        lblQuantidade.setAlignmentX(Component.LEFT_ALIGNMENT);
-        lblQuantidade.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
-        add(lblQuantidade);
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 30, 5, 5);
+        add(lblQuantidade, gbc);
 
-        txtQuantidade = new JTextField();
-        txtQuantidade.setFont(new Font("Arial", Font.PLAIN, 25));
-        txtQuantidade.setMaximumSize(new Dimension(300, 50));
-        txtQuantidade.setBackground(Color.WHITE);
-        txtQuantidade.setForeground(Color.BLACK);
-        txtQuantidade.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(24, 39, 55), 1),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-        txtQuantidade.setCaretColor(Color.BLACK);
-        txtQuantidade.setAlignmentX(Component.LEFT_ALIGNMENT);
-        add(txtQuantidade);
+        txtQuantidade = createTextFieldOutrosCampos();
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        gbc.insets = new Insets(5, 30, 10, 30);
+        add(txtQuantidade, gbc);
 
         lblPrecoUnitario = new JLabel("Preço Unitário");
         lblPrecoUnitario.setFont(new Font("Arial", Font.BOLD, 18));
-        lblPrecoUnitario.setForeground(new Color(24, 39, 55));
-        lblPrecoUnitario.setAlignmentX(Component.LEFT_ALIGNMENT);
-        lblPrecoUnitario.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
-        add(lblPrecoUnitario);
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 30, 5, 5);
+        add(lblPrecoUnitario, gbc);
 
-        txtPrecoUnitario = new JTextField();
-        txtPrecoUnitario.setFont(new Font("Arial", Font.PLAIN, 25));
-        txtPrecoUnitario.setMaximumSize(new Dimension(300, 50));
-        txtPrecoUnitario.setBackground(Color.WHITE);
-        txtPrecoUnitario.setForeground(Color.BLACK);
-        txtPrecoUnitario.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(24, 39, 55), 1),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-        txtPrecoUnitario.setCaretColor(Color.BLACK);
-        txtPrecoUnitario.setAlignmentX(Component.LEFT_ALIGNMENT);
-        add(txtPrecoUnitario);
+        txtPrecoUnitario = createTextFieldOutrosCampos();
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        gbc.insets = new Insets(5, 30, 10, 30);
+        add(txtPrecoUnitario, gbc);
 
         lblDesconto = new JLabel("Desconto");
         lblDesconto.setFont(new Font("Arial", Font.BOLD, 18));
-        lblDesconto.setForeground(new Color(24, 39, 55));
-        lblDesconto.setAlignmentX(Component.LEFT_ALIGNMENT);
-        lblDesconto.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
-        add(lblDesconto);
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 30, 5, 5);
+        add(lblDesconto, gbc);
 
-        txtDesconto = new JTextField();
-        txtDesconto.setFont(new Font("Arial", Font.PLAIN, 25));
-        txtDesconto.setMaximumSize(new Dimension(300, 50));
-        txtDesconto.setBackground(Color.WHITE);
-        txtDesconto.setForeground(Color.BLACK);
-        txtDesconto.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(24, 39, 55), 1),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-        txtDesconto.setCaretColor(Color.BLACK);
-        txtDesconto.setAlignmentX(Component.LEFT_ALIGNMENT);
-        add(txtDesconto);
+        txtDesconto = createTextFieldOutrosCampos();
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        gbc.insets = new Insets(5, 30, 10, 30);
+        add(txtDesconto, gbc);
 
         lblPrecoTotal = new JLabel("Preço Total");
         lblPrecoTotal.setFont(new Font("Arial", Font.BOLD, 18));
-        lblPrecoTotal.setForeground(new Color(24, 39, 55));
-        lblPrecoTotal.setAlignmentX(Component.LEFT_ALIGNMENT);
-        lblPrecoTotal.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
-        add(lblPrecoTotal);
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 30, 5, 5);
+        add(lblPrecoTotal, gbc);
 
-        txtPrecoTotal = new JTextField();
-        txtPrecoTotal.setFont(new Font("Arial", Font.PLAIN, 25));
-        txtPrecoTotal.setMaximumSize(new Dimension(300, 50));
-        txtPrecoTotal.setBackground(Color.WHITE);
-        txtPrecoTotal.setForeground(Color.BLACK);
-        txtPrecoTotal.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(24, 39, 55), 1),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-        txtPrecoTotal.setCaretColor(Color.BLACK);
-        txtPrecoTotal.setAlignmentX(Component.LEFT_ALIGNMENT);
-        add(txtPrecoTotal);
+        txtPrecoTotal = createTextFieldOutrosCampos();
+        gbc.gridx = 0;
+        gbc.gridy = 11;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        gbc.insets = new Insets(5, 30, 10, 30);
+        add(txtPrecoTotal, gbc);
+
+        JButton identificarCliente = new JButton("Identificar Cliente");
+        identificarCliente.setFont(new Font("Arial", Font.BOLD, 18));
+        identificarCliente.setBackground(new Color(24, 39, 55));
+        identificarCliente.setForeground(Color.WHITE);
+        identificarCliente.setFocusPainted(false);
+        identificarCliente.setPreferredSize(new Dimension(200, 40));
+
+        JButton cancelarVenda = new JButton("Cancelar Venda");
+        cancelarVenda.setFont(new Font("Arial", Font.BOLD, 18));
+        cancelarVenda.setBackground(Color.RED);
+        cancelarVenda.setForeground(Color.WHITE);
+        cancelarVenda.setFocusPainted(false);
+        cancelarVenda.setPreferredSize(new Dimension(200, 40));
+
+        JButton confirmarVenda = new JButton("Confirmar Venda");
+        confirmarVenda.setFont(new Font("Arial", Font.BOLD, 18));
+        confirmarVenda.setBackground(new Color(0, 133, 0));
+        confirmarVenda.setForeground(Color.WHITE);
+        confirmarVenda.setFocusPainted(false);
+        confirmarVenda.setPreferredSize(new Dimension(200, 40));
+
+        JLabel lblTotal = new JLabel("Total");
+        lblTotal.setFont(new Font("Arial", Font.BOLD, 18));
+        gbc.gridx = 0;
+        gbc.gridy = 11;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 30, 5, 5);
+        add(lblTotal, gbc);
+
+        JTextField txtTotal = new JTextField();
+        txtTotal.setBackground(Color.WHITE);
+        txtTotal.setForeground(Color.BLACK);
+        txtTotal.setOpaque(true);
+        txtTotal.setFont(new Font("Arial", Font.PLAIN, 20));
+        txtTotal.setPreferredSize(new Dimension(200, 40));
+        txtTotal.setEditable(false);
+
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(5, 30, 5, 30);
+        add(txtTotal, gbc);
+
+        JPanel panelBotoes = new JPanel();
+        panelBotoes.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 20));
+
+        panelBotoes.add(identificarCliente);
+        panelBotoes.add(Box.createRigidArea(new Dimension(30, 0)));
+        panelBotoes.add(cancelarVenda);
+        panelBotoes.add(Box.createRigidArea(new Dimension(30, 0)));
+        panelBotoes.add(confirmarVenda);
+
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(10, 30, 10, 30);
+        add(panelBotoes, gbc);
+
+        AbstractDocument doc = (AbstractDocument) txtItem.getDocument();
+        doc.setDocumentFilter(new UpperCaseDocumentFilter());
+    }
+
+    private JTextField createTextFieldItem() {
+        JTextField textField = new JTextField();
+        textField.setBackground(new Color(24, 39, 55));
+        textField.setForeground(Color.WHITE);
+        textField.setOpaque(true);
+        textField.setFont(new Font("Arial", Font.PLAIN, 20));
+        textField.setPreferredSize(new Dimension(300, 45));
+        return textField;
+    }
+
+    private JTextField createTextFieldOutrosCampos() {
+        JTextField textField = new JTextField();
+        textField.setBackground(Color.WHITE);
+        textField.setForeground(Color.BLACK);
+        textField.setOpaque(true);
+        textField.setFont(new Font("Arial", Font.PLAIN, 20));
+        textField.setPreferredSize(new Dimension(200, 45));
+
+        if (textField == txtQuantidade) {
+            AbstractDocument doc = (AbstractDocument) textField.getDocument();
+            doc.setDocumentFilter(new IntegerDocumentFilter());
+        } else if (textField == txtPrecoUnitario || textField == txtDesconto || textField == txtPrecoTotal) {
+            AbstractDocument doc = (AbstractDocument) textField.getDocument();
+            doc.setDocumentFilter(new DecimalDocumentFilter());
+        }
+
+        return textField;
+    }
+
+    private void atualizarResumoVenda() {
+        String item = txtItem.getText();
+        String codigo = txtCodigoProduto.getText();
+        String quantidade = txtQuantidade.getText();
+        String precoUnitario = txtPrecoUnitario.getText();
+        String desconto = txtDesconto.getText();
+        String precoTotal = txtPrecoTotal.getText();
+
+        String linha = String.format("%s - %s | Qtd: %s | Preço Unit: %s | Desconto: %s | Total: %s\n", 
+                item, codigo, quantidade, precoUnitario, desconto, precoTotal);
+
+        txtResumoVenda.append(linha);
+        txtItem.setText("");
+        txtCodigoProduto.setText("");
+        txtQuantidade.setText("");
+        txtPrecoUnitario.setText("");
+        txtDesconto.setText("");
+        txtPrecoTotal.setText("");
+    }
+
+    private static class DecimalDocumentFilter extends DocumentFilter {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            String result = string.replaceAll("[^0-9,]", "");
+            super.insertString(fb, offset, result, attr);
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String string, AttributeSet attrs) throws BadLocationException {
+            String result = string.replaceAll("[^0-9,]", "");
+            super.replace(fb, offset, length, result, attrs);
+        }
+    }
+
+    private static class IntegerDocumentFilter extends DocumentFilter {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            String result = string.replaceAll("[^0-9]", "");
+            super.insertString(fb, offset, result, attr);
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String string, AttributeSet attrs) throws BadLocationException {
+            String result = string.replaceAll("[^0-9]", "");
+            super.replace(fb, offset, length, result, attrs);
+        }
+    }
+
+    private static class UpperCaseDocumentFilter extends DocumentFilter {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            super.insertString(fb, offset, string.toUpperCase(), attr);
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String string, AttributeSet attrs) throws BadLocationException {
+            super.replace(fb, offset, length, string.toUpperCase(), attrs);
+        }
     }
 }
