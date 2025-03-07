@@ -28,6 +28,7 @@ import views.Medicamentos.ListaDeMedicamentos;
 import views.Produtos.ListaDeProdutos;
 import views.Vendas.RealizarVenda;
 import views.Vendas.TelaInicialVendas;
+import views.Vendas.VisualizarVendas;
 
 public class Farmacia extends JFrame {
 
@@ -37,6 +38,8 @@ public class Farmacia extends JFrame {
     private EstoqueMedicamento estoqueMedicamento;
     private EstoqueProduto estoqueProduto;
     private TelaInicialVendas principalVendas;
+    private RealizarVenda realizarVenda;
+    private VisualizarVendas visualizarVendas;
 
     public Farmacia() {
         setTitle("Farmácia");
@@ -61,8 +64,9 @@ public class Farmacia extends JFrame {
         estoqueProduto = new EstoqueProduto(conexão, principalEstoque, layoutCartao, painelCentral);
 
         principalVendas = new TelaInicialVendas(conexão, layoutCartao, painelCentral);
+        realizarVenda = new RealizarVenda(conexão, principalVendas, layoutCartao, painelCentral);
+        visualizarVendas = new VisualizarVendas(conexão, principalVendas, layoutCartao, painelCentral);
 
-        painelCentral.add(new RealizarVenda(), "Vendas");
         painelCentral.add(new CadastrarFornecedor(), "CadastrarFornecedor");
         painelCentral.add(new ListaDeFornecedores(conexão), "ListaDeFornecedores");
         painelCentral.add(new CadastrarFuncionario(), "CadastrarFuncionário");
@@ -74,12 +78,14 @@ public class Farmacia extends JFrame {
         painelCentral.add(estoqueMedicamento, "EstoqueMedicamento");
         painelCentral.add(estoqueProduto, "EstoqueProduto");
         painelCentral.add(principalVendas, "TelaInicialVendas");
+        painelCentral.add(realizarVenda, "RealizarVenda");
+        painelCentral.add(visualizarVendas, "VisualizarVendas");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
         add(painelSuperior, BorderLayout.NORTH);
         add(painelCentral, BorderLayout.CENTER);
 
-        layoutCartao.show(painelCentral, "Vendas");
+        layoutCartao.show(painelCentral, "TelaInicialVendas");
 
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
