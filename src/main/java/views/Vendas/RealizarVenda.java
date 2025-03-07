@@ -13,13 +13,13 @@ public class RealizarVenda extends JPanel {
     private TelaInicialVendas telaInicialVendas;
 
     public RealizarVenda(Connection conn, TelaInicialVendas telaInicialVendas, CardLayout layoutCartao,
-                         JPanel painelCentralParam) {
+            JPanel painelCentralParam) {
         this.conn = conn;
         this.telaInicialVendas = telaInicialVendas;
         this.layoutCartao = layoutCartao;
         this.painelCentralParam = painelCentralParam;
         setLayout(new BorderLayout());
-        add(criarTituloEBusca(), BorderLayout.NORTH);
+        // add(criarTituloEBusca(), BorderLayout.NORTH);
 
         JPanel localPainelCentral = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -44,43 +44,45 @@ public class RealizarVenda extends JPanel {
         add(localPainelCentral, BorderLayout.CENTER);
     }
 
-    private JPanel criarTituloEBusca() {
-        JPanel painelSuperior = new JPanel(new BorderLayout());
-        JPanel painelVoltar = new JPanel();
-        painelVoltar.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-        JButton voltar = new JButton("Voltar");
-        voltar.setFont(new Font("Arial", Font.PLAIN, 17));
-        voltar.setBorder(null);
-        voltar.setContentAreaFilled(false);
-        voltar.setFocusPainted(false);
-        voltar.setPreferredSize(new Dimension(90, 30));
-        voltar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        voltar.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                voltar.setForeground((new Color(50, 100, 150)));
-            }
-
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                voltar.setForeground(Color.BLACK);
-            }
-        });
-
-        voltar.addActionListener(e -> {
-            SwingUtilities.invokeLater(() -> {
-                layoutCartao.show(painelCentralParam, "TelaInicialVendas");
-            });
-        });
-
-        painelVoltar.add(voltar);
-        painelSuperior.add(painelVoltar, BorderLayout.WEST);
-
-        return painelSuperior;
-    }
-
+    /*
+     * private JPanel criarTituloEBusca() {
+     * JPanel painelSuperior = new JPanel(new BorderLayout());
+     * JPanel painelVoltar = new JPanel();
+     * painelVoltar.setLayout(new FlowLayout(FlowLayout.LEFT));
+     * 
+     * JButton voltar = new JButton("Voltar");
+     * voltar.setFont(new Font("Arial", Font.PLAIN, 17));
+     * voltar.setBorder(null);
+     * voltar.setContentAreaFilled(false);
+     * voltar.setFocusPainted(false);
+     * voltar.setPreferredSize(new Dimension(90, 30));
+     * voltar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+     * 
+     * voltar.addMouseListener(new java.awt.event.MouseAdapter() {
+     * 
+     * @Override
+     * public void mouseEntered(java.awt.event.MouseEvent evt) {
+     * voltar.setForeground((new Color(50, 100, 150)));
+     * }
+     * 
+     * @Override
+     * public void mouseExited(java.awt.event.MouseEvent evt) {
+     * voltar.setForeground(Color.BLACK);
+     * }
+     * });
+     * 
+     * voltar.addActionListener(e -> {
+     * SwingUtilities.invokeLater(() -> {
+     * layoutCartao.show(painelCentralParam, "TelaInicialVendas");
+     * });
+     * });
+     * 
+     * painelVoltar.add(voltar);
+     * painelSuperior.add(painelVoltar, BorderLayout.WEST);
+     * 
+     * return painelSuperior;
+     * }
+     */
     private JPanel createItemPanel() {
         JPanel painelItem = new JPanel();
         painelItem.setLayout(new GridBagLayout());

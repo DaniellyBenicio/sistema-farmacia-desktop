@@ -85,7 +85,7 @@ public class Farmacia extends JFrame {
         add(painelSuperior, BorderLayout.NORTH);
         add(painelCentral, BorderLayout.CENTER);
 
-        layoutCartao.show(painelCentral, "TelaInicialVendas");
+        layoutCartao.show(painelCentral, "RealizarVenda");
 
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
