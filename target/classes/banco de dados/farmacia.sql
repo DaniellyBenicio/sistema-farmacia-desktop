@@ -161,6 +161,17 @@ BEGIN
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = 'Erro: A venda precisa ter um produto, medicamento associado ou ambos.';
     END IF;
+    
+    IF NEW.produto_id IS NOT NULL THEN
+        SET NEW.subtotal = NEW.qnt * NEW.precoUnit - NEW.desconto;
+    ELSEIF NEW.medicamento_id IS NOT NULL THEN
+        SET NEW.subtotal = NEW.qnt * NEW.precoUnit - NEW.desconto;
+    END IF;
+
+    IF NEW.desconto > NEW.subtotal THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Erro: O desconto não pode ser maior que o subtotal.';
+    END IF;
 END $$
 
 DELIMITER ;
