@@ -20,11 +20,9 @@ public class VisualizarVendas extends JPanel {
     private JPanel painelCentral;
     private JPanel painelCentralParam;
 
-    public VisualizarVendas(Connection conn, TelaInicialVendas telaInicialVendas, CardLayout layoutCartao,
-            JPanel painelCentral) {
+    public VisualizarVendas(Connection conn) {
         this.conn = conn;
-        this.layoutCartao = layoutCartao;
-        this.painelCentral = painelCentral;
+        this.conn = conn;
         this.painelCentralParam = painelCentral;
 
         setLayout(new BorderLayout());

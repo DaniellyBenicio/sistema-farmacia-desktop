@@ -29,7 +29,7 @@ public class PainelSuperior extends JPanel {
         inicializarMenuSuperior();
         inicializarMenuOpcoes();
 
-       // SwingUtilities.invokeLater(this::abrirDialogoIdentificacaoFuncionario);
+        // SwingUtilities.invokeLater(this::abrirDialogoIdentificacaoFuncionario);
     }
 
     private void inicializarMenuSuperior() {
@@ -243,7 +243,7 @@ public class PainelSuperior extends JPanel {
         painel.setPreferredSize(new Dimension(getWidth(), 50));
 
         String[] itensMenu = { "Vendas", "Medicamentos", "Produtos", "Funcionários", "Fornecedores", "Clientes",
-                "Estoque", "Relatórios"};
+                "Estoque", "Relatórios" };
         botoesMenu = new JButton[itensMenu.length];
 
         for (int i = 0; i < itensMenu.length; i++) {
@@ -350,7 +350,7 @@ public class PainelSuperior extends JPanel {
 
         switch (itemMenu) {
             case "Vendas":
-                layoutAlternativo.show(painelDeVisualizacao, "RealizarVenda");
+                layoutAlternativo.show(painelDeVisualizacao, "Vendas");
                 break;
             case "Medicamentos":
                 layoutAlternativo.show(painelDeVisualizacao, "ListaDeMedicamentos");

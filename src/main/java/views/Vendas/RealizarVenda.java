@@ -1,254 +1,151 @@
 package views.Vendas;
 
-import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
 
+import javax.swing.*;
+
 public class RealizarVenda extends JPanel {
-    private JLabel lblItem, lblCodigoProduto, lblQuantidade, lblPrecoUnitario, lblDesconto, lblPrecoTotal;
-    private JTextField txtItem, txtCodigoProduto, txtQuantidade, txtPrecoUnitario, txtDesconto, txtPrecoTotal;
-    private CardLayout layoutCartao;
-    private JPanel painelCentralParam;
+
     private Connection conn;
-    private TelaInicialVendas telaInicialVendas;
+    private JLabel itemLabel, lblCodigoProduto, lblQuantidade, lblPrecoUnitario, lblDesconto, lblPrecoTotal;
+    private JTextField txtItem, txtCodigoProduto, txtQuantidade, txtPrecoUnitario, txtDesconto, txtPrecoTotal;
 
-    public RealizarVenda(Connection conn, TelaInicialVendas telaInicialVendas, CardLayout layoutCartao,
-            JPanel painelCentralParam) {
+    public RealizarVenda(Connection conn) {
         this.conn = conn;
-        this.telaInicialVendas = telaInicialVendas;
-        this.layoutCartao = layoutCartao;
-        this.painelCentralParam = painelCentralParam;
+
         setLayout(new BorderLayout());
-        // add(criarTituloEBusca(), BorderLayout.NORTH);
+        setBackground(Color.WHITE);
 
-        JPanel localPainelCentral = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
+        JPanel painelTopo = new JPanel(new BorderLayout());
+        painelTopo.setPreferredSize(new Dimension(0, 120));
+        painelTopo.setBorder(BorderFactory.createEmptyBorder(20, 150, 5, 150));
+        painelTopo.add(createItemPanel(), BorderLayout.CENTER);
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(0, 10, 5, 10);
-        localPainelCentral.add(createItemPanel(), gbc);
+        add(painelTopo, BorderLayout.NORTH);
 
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 10, 20, 10);
-        localPainelCentral.add(createOutrosCamposItensVendas(), gbc);
+        JPanel painelMeio = new JPanel(new GridLayout(1, 2));
 
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 10, 0, 10);
-        localPainelCentral.add(createBotoesVenda(), gbc);
-        add(localPainelCentral, BorderLayout.CENTER);
+        painelMeio.add(createPainelEsquerdo());
+        painelMeio.add(createPainelDireito());
+
+        add(painelMeio, BorderLayout.CENTER);
+
+        JPanel painelFooter = new JPanel();
+        painelFooter.setLayout(new GridLayout(1, 2));
+
+        painelFooter.add(ladoEsquerdoFooter());
+        painelFooter.add(ladoDireitoFooter());
+
+        add(painelFooter, BorderLayout.SOUTH);
     }
 
-    /*
-     * private JPanel criarTituloEBusca() {
-     * JPanel painelSuperior = new JPanel(new BorderLayout());
-     * JPanel painelVoltar = new JPanel();
-     * painelVoltar.setLayout(new FlowLayout(FlowLayout.LEFT));
-     * 
-     * JButton voltar = new JButton("Voltar");
-     * voltar.setFont(new Font("Arial", Font.PLAIN, 17));
-     * voltar.setBorder(null);
-     * voltar.setContentAreaFilled(false);
-     * voltar.setFocusPainted(false);
-     * voltar.setPreferredSize(new Dimension(90, 30));
-     * voltar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-     * 
-     * voltar.addMouseListener(new java.awt.event.MouseAdapter() {
-     * 
-     * @Override
-     * public void mouseEntered(java.awt.event.MouseEvent evt) {
-     * voltar.setForeground((new Color(50, 100, 150)));
-     * }
-     * 
-     * @Override
-     * public void mouseExited(java.awt.event.MouseEvent evt) {
-     * voltar.setForeground(Color.BLACK);
-     * }
-     * });
-     * 
-     * voltar.addActionListener(e -> {
-     * SwingUtilities.invokeLater(() -> {
-     * layoutCartao.show(painelCentralParam, "TelaInicialVendas");
-     * });
-     * });
-     * 
-     * painelVoltar.add(voltar);
-     * painelSuperior.add(painelVoltar, BorderLayout.WEST);
-     * 
-     * return painelSuperior;
-     * }
-     */
     private JPanel createItemPanel() {
-        JPanel painelItem = new JPanel();
-        painelItem.setLayout(new GridBagLayout());
+        JPanel painelItem = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 0, 0);
+        gbc.insets = new Insets(5, 20, 5, 10);
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        lblItem = new JLabel("Produto");
-        lblItem.setFont(new Font("Arial", Font.BOLD, 18));
+        itemLabel = new JLabel("Produto:");
+        itemLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        itemLabel.setForeground(Color.BLACK);
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        painelItem.add(lblItem, gbc);
+        gbc.weightx = 0;
+        painelItem.add(itemLabel, gbc);
 
-        txtItem = createTextFieldItem();
+        txtItem = new JTextField();
+        txtItem.setBackground(new Color(24, 39, 55));
+        txtItem.setForeground(Color.WHITE);
+        txtItem.setOpaque(true);
+        txtItem.setFont(new Font("Arial", Font.PLAIN, 20));
+        txtItem.setPreferredSize(new Dimension(0, 45));
+
         gbc.gridx = 0;
         gbc.gridy = 1;
+        gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 0, 0, 0);
+        gbc.insets = new Insets(0, 20, 5, 10);
+
         painelItem.add(txtItem, gbc);
 
         return painelItem;
     }
 
-    private JPanel createOutrosCamposItensVendas() {
-        JPanel painelPrincipal = new JPanel(new BorderLayout());
-        JPanel painelCampos = new JPanel();
-        painelCampos.setLayout(new GridBagLayout());
-        painelCampos.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 50));
+    private JPanel createPainelEsquerdo() {
+        JPanel painelEsquerdo = new JPanel();
+        painelEsquerdo.setPreferredSize(new Dimension(0, 140));
+
+        painelEsquerdo.setLayout(new BoxLayout(painelEsquerdo, BoxLayout.Y_AXIS));
+
+        JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
+        painelInternoEsquerdo.setPreferredSize(new Dimension(0, 270));
+
+        painelEsquerdo.add(painelInternoEsquerdo);
+
+        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(5, 168, 20, 50));
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 10, 0);
+        gbc.insets = new Insets(0, 0, 10, 350);
         gbc.anchor = GridBagConstraints.WEST;
 
         lblCodigoProduto = new JLabel("Código do Produto");
         lblCodigoProduto.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 0;
-        painelCampos.add(lblCodigoProduto, gbc);
+        painelInternoEsquerdo.add(lblCodigoProduto, gbc);
 
         txtCodigoProduto = createTextFieldOutrosCampos();
         gbc.gridx = 0;
         gbc.gridy = 1;
-        painelCampos.add(txtCodigoProduto, gbc);
+        painelInternoEsquerdo.add(txtCodigoProduto, gbc);
 
         lblQuantidade = new JLabel("Quantidade");
         lblQuantidade.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 2;
-        painelCampos.add(lblQuantidade, gbc);
+        painelInternoEsquerdo.add(lblQuantidade, gbc);
 
         txtQuantidade = createTextFieldOutrosCampos();
         gbc.gridx = 0;
         gbc.gridy = 3;
-        painelCampos.add(txtQuantidade, gbc);
+        painelInternoEsquerdo.add(txtQuantidade, gbc);
 
         lblPrecoUnitario = new JLabel("Preço Unitário");
         lblPrecoUnitario.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 4;
-        painelCampos.add(lblPrecoUnitario, gbc);
+        painelInternoEsquerdo.add(lblPrecoUnitario, gbc);
 
         txtPrecoUnitario = createTextFieldOutrosCampos();
         gbc.gridx = 0;
         gbc.gridy = 5;
-        painelCampos.add(txtPrecoUnitario, gbc);
+        painelInternoEsquerdo.add(txtPrecoUnitario, gbc);
 
         lblDesconto = new JLabel("Desconto");
         lblDesconto.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 6;
-        painelCampos.add(lblDesconto, gbc);
+        painelInternoEsquerdo.add(lblDesconto, gbc);
 
         txtDesconto = createTextFieldOutrosCampos();
         gbc.gridx = 0;
         gbc.gridy = 7;
-        painelCampos.add(txtDesconto, gbc);
+        painelInternoEsquerdo.add(txtDesconto, gbc);
 
         lblPrecoTotal = new JLabel("Preço Total");
         lblPrecoTotal.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 8;
-        painelCampos.add(lblPrecoTotal, gbc);
+        painelInternoEsquerdo.add(lblPrecoTotal, gbc);
 
         txtPrecoTotal = createTextFieldOutrosCampos();
         gbc.gridx = 0;
         gbc.gridy = 9;
-        painelCampos.add(txtPrecoTotal, gbc);
+        painelInternoEsquerdo.add(txtPrecoTotal, gbc);
 
-        painelPrincipal.add(painelCampos, BorderLayout.WEST);
-
-        JPanel painelResumo = new JPanel();
-        painelResumo.setBackground(Color.WHITE);
-        painelResumo.setLayout(new BorderLayout());
-        painelResumo.setPreferredSize(new Dimension(400, 440));
-        painelResumo.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-
-        JLabel lblResumo = new JLabel("Resumo da Venda", SwingConstants.CENTER);
-        lblResumo.setFont(new Font("Arial", Font.BOLD, 20));
-        lblResumo.setForeground(Color.BLACK);
-
-        painelResumo.add(lblResumo, BorderLayout.CENTER);
-        painelPrincipal.add(painelResumo, BorderLayout.CENTER);
-
-        return painelPrincipal;
-    }
-
-    private JPanel createBotoesVenda() {
-        JPanel botoesVenda = new JPanel();
-        botoesVenda.setLayout(new BoxLayout(botoesVenda, BoxLayout.X_AXIS));
-
-        JButton btnIdentificarCliente = new JButton("Identificar Cliente");
-        btnIdentificarCliente.setFont(new Font("Arial", Font.BOLD, 18));
-        btnIdentificarCliente.setBackground(new Color(24, 39, 55));
-        btnIdentificarCliente.setForeground(Color.WHITE);
-        btnIdentificarCliente.setFocusPainted(false);
-        btnIdentificarCliente.setPreferredSize(new Dimension(200, 45));
-        botoesVenda.add(btnIdentificarCliente);
-
-        botoesVenda.add(Box.createRigidArea(new Dimension(30, 0)));
-
-        JButton btnCancelarVenda = new JButton("Cancelar Venda");
-        btnCancelarVenda.setFont(new Font("Arial", Font.BOLD, 18));
-        btnCancelarVenda.setBackground(Color.RED);
-        btnCancelarVenda.setForeground(Color.WHITE);
-        btnCancelarVenda.setFocusPainted(false);
-        btnCancelarVenda.setPreferredSize(new Dimension(200, 40));
-        botoesVenda.add(btnCancelarVenda);
-
-        botoesVenda.add(Box.createRigidArea(new Dimension(30, 0)));
-
-        JButton btnConfirmarVenda = new JButton("Confirmar Venda");
-        btnConfirmarVenda.setFont(new Font("Arial", Font.BOLD, 18));
-        btnConfirmarVenda.setBackground(new Color(0, 133, 0));
-        btnConfirmarVenda.setForeground(Color.WHITE);
-        btnConfirmarVenda.setFocusPainted(false);
-        btnConfirmarVenda.setPreferredSize(new Dimension(200, 40));
-        botoesVenda.add(btnConfirmarVenda);
-
-        JPanel painelTotal = new JPanel();
-        painelTotal.setLayout(new FlowLayout(FlowLayout.RIGHT));
-
-        JLabel lblTotal = new JLabel("Total: ");
-        lblTotal.setFont(new Font("Arial", Font.PLAIN, 20));
-        painelTotal.add(lblTotal);
-
-        JTextField txtTotal = new JTextField(15);
-        txtTotal.setFont(new Font("Arial", Font.PLAIN, 20));
-        txtTotal.setBackground(new Color(24, 39, 55));
-        txtTotal.setForeground(Color.WHITE);
-        txtTotal.setOpaque(true);
-        txtTotal.setPreferredSize(new Dimension(20, 40));
-        painelTotal.add(txtTotal);
-
-        botoesVenda.add(painelTotal);
-
-        return botoesVenda;
-    }
-
-    private JTextField createTextFieldItem() {
-        JTextField textField = new JTextField();
-        textField.setBackground(new Color(24, 39, 55));
-        textField.setForeground(Color.WHITE);
-        textField.setOpaque(true);
-        textField.setFont(new Font("Arial", Font.PLAIN, 20));
-        textField.setPreferredSize(new Dimension(1440, 45));
-        return textField;
+        return painelEsquerdo;
     }
 
     private JTextField createTextFieldOutrosCampos() {
@@ -257,8 +154,84 @@ public class RealizarVenda extends JPanel {
         textField.setForeground(Color.BLACK);
         textField.setOpaque(true);
         textField.setFont(new Font("Arial", Font.PLAIN, 20));
-        textField.setPreferredSize(new Dimension(350, 45));
+        textField.setPreferredSize(new Dimension(200, 45));
         textField.setHorizontalAlignment(SwingConstants.LEFT);
         return textField;
+    }
+
+    private JPanel createPainelDireito() {
+        JPanel painelDireito = new JPanel();
+        painelDireito.setPreferredSize(new Dimension(0, 140));
+
+        painelDireito.setBorder(BorderFactory.createEmptyBorder(0, 0, 35, 160));
+
+        painelDireito.setLayout(new BoxLayout(painelDireito, BoxLayout.Y_AXIS));
+
+        JPanel painelInternoDireito = new JPanel();
+        painelInternoDireito.setPreferredSize(new Dimension(0, 100));
+
+        painelInternoDireito.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+
+        JLabel labelResumoVenda = new JLabel("Resumo da Venda");
+        labelResumoVenda.setHorizontalAlignment(SwingConstants.CENTER);
+        labelResumoVenda.setVerticalAlignment(SwingConstants.CENTER);
+        labelResumoVenda.setFont(new Font("Arial", Font.BOLD, 16));
+
+        painelInternoDireito.add(labelResumoVenda);
+
+        painelDireito.add(painelInternoDireito);
+
+        return painelDireito;
+    }
+
+    private JPanel ladoEsquerdoFooter() {
+        JPanel ladoEsquerdo = new JPanel();
+        JPanel botoesVenda = new JPanel();
+        botoesVenda.setLayout(new BoxLayout(botoesVenda, BoxLayout.X_AXIS));
+
+        botoesVenda.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 0));
+
+        JButton btnIdentificarCliente = new JButton("Identificar Cliente");
+        btnIdentificarCliente.setFont(new Font("Arial", Font.BOLD, 18));
+        btnIdentificarCliente.setBackground(new Color(24, 39, 55));
+        btnIdentificarCliente.setForeground(Color.WHITE);
+        btnIdentificarCliente.setFocusPainted(false);
+        btnIdentificarCliente.setPreferredSize(new Dimension(185, 45));
+        botoesVenda.add(btnIdentificarCliente);
+
+        botoesVenda.add(Box.createRigidArea(new Dimension(25, 0)));
+
+        JButton btnCancelarVenda = new JButton("Cancelar Venda");
+        btnCancelarVenda.setFont(new Font("Arial", Font.BOLD, 18));
+        btnCancelarVenda.setBackground(Color.RED);
+        btnCancelarVenda.setForeground(Color.WHITE);
+        btnCancelarVenda.setFocusPainted(false);
+        btnCancelarVenda.setPreferredSize(new Dimension(185, 40));
+        botoesVenda.add(btnCancelarVenda);
+
+        botoesVenda.add(Box.createRigidArea(new Dimension(25, 0)));
+
+        JButton btnConfirmarVenda = new JButton("Confirmar Venda");
+        btnConfirmarVenda.setFont(new Font("Arial", Font.BOLD, 18));
+        btnConfirmarVenda.setBackground(new Color(0, 133, 0));
+        btnConfirmarVenda.setForeground(Color.WHITE);
+        btnConfirmarVenda.setFocusPainted(false);
+        btnConfirmarVenda.setPreferredSize(new Dimension(185, 40));
+        botoesVenda.add(btnConfirmarVenda);
+
+        ladoEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 120, 0, 0));
+
+        ladoEsquerdo.add(botoesVenda);
+
+        return ladoEsquerdo;
+    }
+
+    private JPanel ladoDireitoFooter() {
+        JPanel ladoDireito = new JPanel();
+        ladoDireito.setBackground(Color.RED);
+        ladoDireito.setLayout(new BoxLayout(ladoDireito, BoxLayout.Y_AXIS));
+        ladoDireito.setBorder(BorderFactory.createEmptyBorder(50, 0, 0, 160));
+
+        return ladoDireito;
     }
 }

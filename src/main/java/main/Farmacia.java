@@ -27,7 +27,6 @@ import views.Funcionario.ListaDeFuncionarios;
 import views.Medicamentos.ListaDeMedicamentos;
 import views.Produtos.ListaDeProdutos;
 import views.Vendas.RealizarVenda;
-import views.Vendas.TelaInicialVendas;
 import views.Vendas.VisualizarVendas;
 
 public class Farmacia extends JFrame {
@@ -37,8 +36,6 @@ public class Farmacia extends JFrame {
     private PrincipalEstoque principalEstoque;
     private EstoqueMedicamento estoqueMedicamento;
     private EstoqueProduto estoqueProduto;
-    private TelaInicialVendas principalVendas;
-    private RealizarVenda realizarVenda;
     private VisualizarVendas visualizarVendas;
 
     public Farmacia() {
@@ -63,10 +60,7 @@ public class Farmacia extends JFrame {
         estoqueMedicamento = new EstoqueMedicamento(conexão, principalEstoque, layoutCartao, painelCentral);
         estoqueProduto = new EstoqueProduto(conexão, principalEstoque, layoutCartao, painelCentral);
 
-        principalVendas = new TelaInicialVendas(conexão, layoutCartao, painelCentral);
-        realizarVenda = new RealizarVenda(conexão, principalVendas, layoutCartao, painelCentral);
-        visualizarVendas = new VisualizarVendas(conexão, principalVendas, layoutCartao, painelCentral);
-
+        painelCentral.add(new RealizarVenda(conexão), "Vendas");
         painelCentral.add(new CadastrarFornecedor(), "CadastrarFornecedor");
         painelCentral.add(new ListaDeFornecedores(conexão), "ListaDeFornecedores");
         painelCentral.add(new CadastrarFuncionario(), "CadastrarFuncionário");
@@ -74,18 +68,16 @@ public class Farmacia extends JFrame {
         painelCentral.add(new ListaDeClientes(conexão), "ListaDeClientes");
         painelCentral.add(new ListaDeMedicamentos(conexão), "ListaDeMedicamentos");
         painelCentral.add(new ListaDeProdutos(conexão), "ListaDeProdutos");
+        painelCentral.add(new VisualizarVendas(conexão), "VisualizarVendas");
         painelCentral.add(principalEstoque, "GerenciamentoDeEstoque");
         painelCentral.add(estoqueMedicamento, "EstoqueMedicamento");
         painelCentral.add(estoqueProduto, "EstoqueProduto");
-        painelCentral.add(principalVendas, "TelaInicialVendas");
-        painelCentral.add(realizarVenda, "RealizarVenda");
-        painelCentral.add(visualizarVendas, "VisualizarVendas");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
         add(painelSuperior, BorderLayout.NORTH);
         add(painelCentral, BorderLayout.CENTER);
 
-        layoutCartao.show(painelCentral, "RealizarVenda");
+        layoutCartao.show(painelCentral, "Vendas");
 
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
