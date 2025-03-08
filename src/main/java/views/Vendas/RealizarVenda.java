@@ -2,7 +2,6 @@ package views.Vendas;
 
 import java.awt.*;
 import java.sql.Connection;
-
 import javax.swing.*;
 
 public class RealizarVenda extends JPanel {
@@ -46,6 +45,7 @@ public class RealizarVenda extends JPanel {
         gbc.insets = new Insets(5, 20, 5, 10);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        Color bordaAzulClaro = new Color(173, 216, 230);
 
         itemLabel = new JLabel("Produto:");
         itemLabel.setFont(new Font("Arial", Font.BOLD, 18));
@@ -61,6 +61,7 @@ public class RealizarVenda extends JPanel {
         txtItem.setOpaque(true);
         txtItem.setFont(new Font("Arial", Font.PLAIN, 20));
         txtItem.setPreferredSize(new Dimension(0, 45));
+        txtItem.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
 
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -80,15 +81,16 @@ public class RealizarVenda extends JPanel {
         painelEsquerdo.setLayout(new BoxLayout(painelEsquerdo, BoxLayout.Y_AXIS));
 
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
-        painelInternoEsquerdo.setPreferredSize(new Dimension(0, 270));
+        painelInternoEsquerdo.setPreferredSize(new Dimension(0, 300));
 
         painelEsquerdo.add(painelInternoEsquerdo);
 
-        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(5, 168, 20, 50));
+        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 168, 20, 50));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 10, 350);
+        gbc.insets = new Insets(0, 0, 15, 350);
         gbc.anchor = GridBagConstraints.WEST;
+        Color bordaAzulClaro = new Color(173, 216, 230);
 
         lblCodigoProduto = new JLabel("Código do Produto");
         lblCodigoProduto.setFont(new Font("Arial", Font.BOLD, 16));
@@ -99,6 +101,8 @@ public class RealizarVenda extends JPanel {
         txtCodigoProduto = createTextFieldOutrosCampos();
         gbc.gridx = 0;
         gbc.gridy = 1;
+        txtCodigoProduto.setEditable(false);
+        txtCodigoProduto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         painelInternoEsquerdo.add(txtCodigoProduto, gbc);
 
         lblQuantidade = new JLabel("Quantidade");
@@ -108,6 +112,7 @@ public class RealizarVenda extends JPanel {
         painelInternoEsquerdo.add(lblQuantidade, gbc);
 
         txtQuantidade = createTextFieldOutrosCampos();
+        txtQuantidade.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
         gbc.gridy = 3;
         painelInternoEsquerdo.add(txtQuantidade, gbc);
@@ -119,8 +124,12 @@ public class RealizarVenda extends JPanel {
         painelInternoEsquerdo.add(lblPrecoUnitario, gbc);
 
         txtPrecoUnitario = createTextFieldOutrosCampos();
+        txtPrecoUnitario.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
         gbc.gridy = 5;
+        txtPrecoUnitario.setText("0,00");
+        txtPrecoUnitario.setCaretPosition(0);
+        txtPrecoUnitario.setEditable(false);
         painelInternoEsquerdo.add(txtPrecoUnitario, gbc);
 
         lblDesconto = new JLabel("Desconto");
@@ -130,8 +139,11 @@ public class RealizarVenda extends JPanel {
         painelInternoEsquerdo.add(lblDesconto, gbc);
 
         txtDesconto = createTextFieldOutrosCampos();
+        txtDesconto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
         gbc.gridy = 7;
+        txtDesconto.setText("0,00");
+        txtDesconto.setCaretPosition(0);
         painelInternoEsquerdo.add(txtDesconto, gbc);
 
         lblPrecoTotal = new JLabel("Preço Total");
@@ -141,8 +153,12 @@ public class RealizarVenda extends JPanel {
         painelInternoEsquerdo.add(lblPrecoTotal, gbc);
 
         txtPrecoTotal = createTextFieldOutrosCampos();
+        txtPrecoTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
         gbc.gridy = 9;
+        txtPrecoTotal.setText("0,00");
+        txtPrecoTotal.setCaretPosition(0);
+        txtPrecoTotal.setEditable(false);
         painelInternoEsquerdo.add(txtPrecoTotal, gbc);
 
         return painelEsquerdo;
@@ -163,7 +179,7 @@ public class RealizarVenda extends JPanel {
         JPanel painelDireito = new JPanel();
         painelDireito.setPreferredSize(new Dimension(0, 140));
 
-        painelDireito.setBorder(BorderFactory.createEmptyBorder(0, 0, 35, 160));
+        painelDireito.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 160));
 
         painelDireito.setLayout(new BoxLayout(painelDireito, BoxLayout.Y_AXIS));
 
@@ -189,7 +205,7 @@ public class RealizarVenda extends JPanel {
         JPanel botoesVenda = new JPanel();
         botoesVenda.setLayout(new BoxLayout(botoesVenda, BoxLayout.X_AXIS));
 
-        botoesVenda.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 0));
+        botoesVenda.setBorder(BorderFactory.createEmptyBorder(0, 50, 10, 0));
 
         JButton btnIdentificarCliente = new JButton("Identificar Cliente");
         btnIdentificarCliente.setFont(new Font("Arial", Font.BOLD, 18));
@@ -228,9 +244,32 @@ public class RealizarVenda extends JPanel {
 
     private JPanel ladoDireitoFooter() {
         JPanel ladoDireito = new JPanel();
-        ladoDireito.setBackground(Color.RED);
-        ladoDireito.setLayout(new BoxLayout(ladoDireito, BoxLayout.Y_AXIS));
-        ladoDireito.setBorder(BorderFactory.createEmptyBorder(50, 0, 0, 160));
+        ladoDireito.setLayout(new BoxLayout(ladoDireito, BoxLayout.X_AXIS));
+
+        JPanel botoesVenda = new JPanel();
+        botoesVenda.setLayout(new BoxLayout(botoesVenda, BoxLayout.X_AXIS));
+        botoesVenda.setBorder(BorderFactory.createEmptyBorder(0, 430, 20, 158));
+
+        JLabel lblTotal = new JLabel("Total: ");
+        lblTotal.setFont(new Font("Arial", Font.BOLD, 18));
+        lblTotal.setForeground(Color.BLACK);
+        Color bordaAzulClaro = new Color(173, 216, 230);
+
+        JTextField txtTotal = new JTextField(10);
+        txtTotal.setFont(new Font("Arial", Font.PLAIN, 20));
+        txtTotal.setPreferredSize(new Dimension(100, 25));
+        txtTotal.setBackground(new Color(24, 39, 55));
+        txtTotal.setForeground(Color.WHITE);
+        txtTotal.setText("0,00");
+        txtTotal.setCaretPosition(0);
+        txtTotal.setEditable(false);
+        txtTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+
+        botoesVenda.add(lblTotal);
+        botoesVenda.add(txtTotal);
+
+        ladoDireito.add(Box.createHorizontalGlue());
+        ladoDireito.add(botoesVenda);
 
         return ladoDireito;
     }
