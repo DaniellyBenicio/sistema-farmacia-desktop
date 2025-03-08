@@ -250,7 +250,7 @@ public class RealizarVenda extends JPanel {
 
         JPanel botoesVenda = new JPanel();
         botoesVenda.setLayout(new BoxLayout(botoesVenda, BoxLayout.X_AXIS));
-        botoesVenda.setBorder(BorderFactory.createEmptyBorder(0, 430, 20, 158));
+        botoesVenda.setBorder(BorderFactory.createEmptyBorder(0, 400, 20, 158));
 
         JLabel lblTotal = new JLabel("Total: ");
         lblTotal.setFont(new Font("Arial", Font.BOLD, 18));
