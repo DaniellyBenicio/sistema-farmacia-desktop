@@ -18,7 +18,7 @@ public class RealizarVenda extends JPanel {
 
         JPanel painelTopo = new JPanel(new BorderLayout());
         painelTopo.setPreferredSize(new Dimension(0, 120));
-        painelTopo.setBorder(BorderFactory.createEmptyBorder(20, 150, 5, 150));
+        painelTopo.setBorder(BorderFactory.createEmptyBorder(20, 120, 5, 150));
         painelTopo.add(createItemPanel(), BorderLayout.CENTER);
 
         add(painelTopo, BorderLayout.NORTH);
@@ -82,13 +82,14 @@ public class RealizarVenda extends JPanel {
 
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
         painelInternoEsquerdo.setPreferredSize(new Dimension(0, 300));
+        //painelInternoEsquerdo.setBackground(Color.GREEN);
 
         painelEsquerdo.add(painelInternoEsquerdo);
 
-        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 168, 20, 50));
+        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 115, 20, 0));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 15, 350);
+        gbc.insets = new Insets(0, 0, 15, 400);
         gbc.anchor = GridBagConstraints.WEST;
         Color bordaAzulClaro = new Color(173, 216, 230);
 
@@ -160,6 +161,7 @@ public class RealizarVenda extends JPanel {
         txtPrecoTotal.setCaretPosition(0);
         txtPrecoTotal.setEditable(false);
         painelInternoEsquerdo.add(txtPrecoTotal, gbc);
+        
 
         return painelEsquerdo;
     }
@@ -235,7 +237,7 @@ public class RealizarVenda extends JPanel {
         btnConfirmarVenda.setPreferredSize(new Dimension(185, 40));
         botoesVenda.add(btnConfirmarVenda);
 
-        ladoEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 120, 0, 0));
+        ladoEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 70, 0, 0));
 
         ladoEsquerdo.add(botoesVenda);
 
