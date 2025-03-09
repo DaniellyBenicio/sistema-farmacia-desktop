@@ -1,8 +1,20 @@
 package views.Vendas;
 
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.Connection;
+import java.text.ParseException;
+
 import javax.swing.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.MaskFormatter;
+
+import views.Clientes.CadastrarCliente;
 
 public class RealizarVenda extends JPanel {
 
@@ -82,7 +94,7 @@ public class RealizarVenda extends JPanel {
 
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
         painelInternoEsquerdo.setPreferredSize(new Dimension(0, 300));
-        //painelInternoEsquerdo.setBackground(Color.GREEN);
+        // painelInternoEsquerdo.setBackground(Color.GREEN);
 
         painelEsquerdo.add(painelInternoEsquerdo);
 
@@ -161,7 +173,6 @@ public class RealizarVenda extends JPanel {
         txtPrecoTotal.setCaretPosition(0);
         txtPrecoTotal.setEditable(false);
         painelInternoEsquerdo.add(txtPrecoTotal, gbc);
-        
 
         return painelEsquerdo;
     }
@@ -216,6 +227,15 @@ public class RealizarVenda extends JPanel {
         btnIdentificarCliente.setFocusPainted(false);
         btnIdentificarCliente.setPreferredSize(new Dimension(185, 45));
         botoesVenda.add(btnIdentificarCliente);
+
+        btnIdentificarCliente.addActionListener(e -> {
+            try {
+                abrirDialogoIdentificacaoCliente();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao identificar cliente " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         botoesVenda.add(Box.createRigidArea(new Dimension(25, 0)));
 
@@ -274,5 +294,117 @@ public class RealizarVenda extends JPanel {
         ladoDireito.add(botoesVenda);
 
         return ladoDireito;
+    }
+
+    private void abrirDialogoIdentificacaoCliente() {
+        JDialog dialogo = new JDialog();
+        dialogo.setTitle("Identificar Cliente");
+        dialogo.setSize(400, 200);
+        dialogo.setLayout(new GridBagLayout());
+        dialogo.setModal(true);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 20, 5, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JLabel lblCpf = new JLabel("Digite o CPF:");
+        lblCpf.setFont(new Font("Arial", Font.BOLD, 16));
+        lblCpf.setHorizontalAlignment(SwingConstants.CENTER);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        dialogo.add(lblCpf, gbc);
+
+        JTextField txtCpf = new JTextField();
+        txtCpf.setFont(new Font("Arial", Font.PLAIN, 18));
+        txtCpf.setColumns(11);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        dialogo.add(txtCpf, gbc);
+
+        ((AbstractDocument) txtCpf.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                    throws BadLocationException {
+                String currentText = fb.getDocument().getText(0, fb.getDocument().getLength());
+                String newText = currentText.substring(0, offset) + text + currentText.substring(offset + length);
+
+                if (newText.matches("\\d{0,11}")) {
+                    super.replace(fb, offset, length, text, attrs);
+                }
+            }
+
+            @Override
+            public void insertString(FilterBypass fb, int offset, String text, AttributeSet attrs)
+                    throws BadLocationException {
+                replace(fb, offset, 0, text, attrs);
+            }
+        });
+
+        JButton btnIdentificar = new JButton("Identificar");
+        btnIdentificar.setFont(new Font("Arial", Font.BOLD, 16));
+        btnIdentificar.setBackground(new Color(24, 39, 55));
+        btnIdentificar.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        dialogo.add(btnIdentificar, gbc);
+        txtCpf.addActionListener(e -> btnIdentificar.doClick());
+
+        btnIdentificar.addActionListener(e -> {
+            String cpf = txtCpf.getText().trim();
+
+            if (cpf.isEmpty()) {
+                JOptionPane.showMessageDialog(dialogo, "Por favor, informe o CPF.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            cpf = cpf.replaceAll("[^0-9]", "");
+
+            if (cpf.length() != 11) {
+                JOptionPane.showMessageDialog(dialogo, "O CPF deve ter 11 dígitos.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (verificarCliente(cpf)) {
+                dialogo.dispose();
+                JOptionPane.showMessageDialog(dialogo, "Cliente identificado com sucesso!", "Sucesso",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                Object[] options = { "Sim", "Não" };
+                int opcao = JOptionPane.showOptionDialog(dialogo,
+                        "Cliente não cadastrado. Deseja cadastrar?",
+                        "Cadastrar Cliente",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null, options, options[0]);
+
+                if (opcao == 0) {
+                    JDialog cadastroDialog = new JDialog(dialogo, "Cadastrar Cliente", true);
+                    cadastroDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                    cadastroDialog.setSize(1200, 650);
+                    cadastroDialog.setLocationRelativeTo(dialogo);
+
+                    CadastrarCliente cadastrarCliente = new CadastrarCliente();
+                    cadastroDialog.add(cadastrarCliente);
+
+                    cadastroDialog.setVisible(true);
+                    dialogo.setVisible(false);
+                } else if (opcao == 1) {
+                    JOptionPane.showMessageDialog(dialogo, "Operação cancelada.", "Aviso",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    dialogo.setVisible(false);
+                }
+            }
+        });
+
+        dialogo.setLocationRelativeTo(null);
+        dialogo.setVisible(true);
+    }
+
+    // Teste
+    private boolean verificarCliente(String cpf) {
+        // Aqui será feito a consulta ao banco de dados para fins de verificação
+        // Para exemplo, vamos dizer que o cliente com CPF "12345678900" existe
+        return "12345678900".equals(cpf);
     }
 }

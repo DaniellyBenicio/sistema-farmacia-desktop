@@ -29,7 +29,7 @@ public class PainelSuperior extends JPanel {
         inicializarMenuSuperior();
         inicializarMenuOpcoes();
 
-        // SwingUtilities.invokeLater(this::abrirDialogoIdentificacaoFuncionario);
+        SwingUtilities.invokeLater(this::abrirDialogoIdentificacaoFuncionario);
     }
 
     private void inicializarMenuSuperior() {
