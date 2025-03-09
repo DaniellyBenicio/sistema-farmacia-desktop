@@ -1,18 +1,13 @@
 package views.Vendas;
 
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.sql.Connection;
-import java.text.ParseException;
 
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
-import javax.swing.text.MaskFormatter;
 
 import views.Clientes.CadastrarCliente;
 
@@ -94,8 +89,6 @@ public class RealizarVenda extends JPanel {
 
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
         painelInternoEsquerdo.setPreferredSize(new Dimension(0, 300));
-        // painelInternoEsquerdo.setBackground(Color.GREEN);
-
         painelEsquerdo.add(painelInternoEsquerdo);
 
         painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 115, 20, 0));
@@ -257,6 +250,30 @@ public class RealizarVenda extends JPanel {
         btnConfirmarVenda.setPreferredSize(new Dimension(185, 40));
         botoesVenda.add(btnConfirmarVenda);
 
+        btnConfirmarVenda.addActionListener(e -> {
+            Object[] options = { "Sim", "Não" };
+            int resposta = JOptionPane.showOptionDialog(this,
+                    "Deseja finalizar a venda?\nVocê será direcionado para a tela de pagamento.",
+                    "Confirmar Venda",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+
+            if (resposta == 0) {
+                try {
+                    abrirDialogoPagamentoVenda();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Erro ao confirmar venda: " + ex.getMessage(), "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } else if (resposta == 1) {
+                JOptionPane.showMessageDialog(this, "Operação cancelada.", "Cancelamento",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
         ladoEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 70, 0, 0));
 
         ladoEsquerdo.add(botoesVenda);
@@ -406,5 +423,17 @@ public class RealizarVenda extends JPanel {
         // Aqui será feito a consulta ao banco de dados para fins de verificação
         // Para exemplo, vamos dizer que o cliente com CPF "12345678900" existe
         return "12345678900".equals(cpf);
+    }
+
+    private void abrirDialogoPagamentoVenda() {
+        JDialog dialogoPagamento = new JDialog();
+        dialogoPagamento.setTitle("Pagamento da Venda");
+        dialogoPagamento.setSize(900, 650);
+        dialogoPagamento.setModal(true);
+        dialogoPagamento.setLocationRelativeTo(this);
+
+        PagamentoVenda painelPagamento = new PagamentoVenda();
+        dialogoPagamento.add(painelPagamento);
+        dialogoPagamento.setVisible(true);
     }
 }
