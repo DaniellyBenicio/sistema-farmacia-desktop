@@ -97,12 +97,15 @@ public class RealizarVenda extends JPanel {
         painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 115, 20, 0));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 15, 300);
+        gbc.insets = new Insets(0, 0, 15, 10); // Reduzi a margem direita para permitir expansão
         gbc.anchor = GridBagConstraints.WEST;
-        gbc.weightx = 1.0; // Permite crescimento na horizontal
+        gbc.weightx = 1.0; // Permite crescimento horizontal
         gbc.weighty = 0;    
+        gbc.fill = GridBagConstraints.HORIZONTAL; // Permite que o componente expanda horizontalmente
         gbc.gridwidth = GridBagConstraints.REMAINDER; 
+        
         Color bordaAzulClaro = new Color(173, 216, 230);
+        
 
         lblCodigoProduto = new JLabel("Código do Produto");
         lblCodigoProduto.setFont(new Font("Arial", Font.BOLD, 16));
