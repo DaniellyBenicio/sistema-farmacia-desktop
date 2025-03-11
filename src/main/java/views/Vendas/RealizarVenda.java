@@ -83,102 +83,91 @@ public class RealizarVenda extends JPanel {
 
     private JPanel createPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel();
-        painelEsquerdo.setPreferredSize(new Dimension(0, 140));
+        painelEsquerdo.setPreferredSize(new Dimension(300, 140)); // Defina um tamanho fixo
         painelEsquerdo.setBackground(Color.RED);
-
-        painelEsquerdo.setLayout(new BoxLayout(painelEsquerdo, BoxLayout.Y_AXIS));
-
+        painelEsquerdo.setLayout(new BorderLayout()); // Use BorderLayout
+    
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
-        painelInternoEsquerdo.setPreferredSize(new Dimension(0, 300));
-        painelEsquerdo.add(painelInternoEsquerdo);
+        painelInternoEsquerdo.setPreferredSize(new Dimension(300, 150));
+        painelInternoEsquerdo.setMaximumSize(new Dimension(300, 150)); // Impede o crescimento vertical
         painelInternoEsquerdo.setBackground(Color.CYAN);
-
-        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 115, 20, 0));
-
+    
+        painelEsquerdo.add(painelInternoEsquerdo, BorderLayout.CENTER); // Adicione ao topo
+    
+        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 135, 10, 0));
+    
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 15, 300);
+        gbc.insets = new Insets(5, 5, 5, 5); // Ajuste de espaçamento
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE; 
+        gbc.weightx = 1.0; // Permite crescimento na horizontal
+        gbc.weighty = 0;    
+        gbc.gridwidth = GridBagConstraints.REMAINDER; // Faz o campo ocupar toda a linha
+    
         Color bordaAzulClaro = new Color(173, 216, 230);
-
+    
+        // Adicione os componentes ao painelInternoEsquerdo como antes...
         lblCodigoProduto = new JLabel("Código do Produto");
         lblCodigoProduto.setFont(new Font("Arial", Font.BOLD, 16));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
         painelInternoEsquerdo.add(lblCodigoProduto, gbc);
-
+    
         txtCodigoProduto = createTextFieldOutrosCampos();
-        gbc.gridx = 0;
-        gbc.gridy = 1;
         txtCodigoProduto.setEditable(false);
         txtCodigoProduto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         painelInternoEsquerdo.add(txtCodigoProduto, gbc);
-
+    
         lblQuantidade = new JLabel("Quantidade");
         lblQuantidade.setFont(new Font("Arial", Font.BOLD, 16));
-        gbc.gridx = 0;
-        gbc.gridy = 2;
         painelInternoEsquerdo.add(lblQuantidade, gbc);
-
+    
         txtQuantidade = createTextFieldOutrosCampos();
         txtQuantidade.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
-        gbc.gridx = 0;
-        gbc.gridy = 3;
         painelInternoEsquerdo.add(txtQuantidade, gbc);
-
+    
         lblPrecoUnitario = new JLabel("Preço Unitário");
         lblPrecoUnitario.setFont(new Font("Arial", Font.BOLD, 16));
-        gbc.gridx = 0;
-        gbc.gridy = 4;
         painelInternoEsquerdo.add(lblPrecoUnitario, gbc);
-
+    
         txtPrecoUnitario = createTextFieldOutrosCampos();
         txtPrecoUnitario.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
-        gbc.gridx = 0;
-        gbc.gridy = 5;
         txtPrecoUnitario.setText("0,00");
         txtPrecoUnitario.setCaretPosition(0);
         txtPrecoUnitario.setEditable(false);
         painelInternoEsquerdo.add(txtPrecoUnitario, gbc);
-
+    
         lblDesconto = new JLabel("Desconto");
         lblDesconto.setFont(new Font("Arial", Font.BOLD, 16));
-        gbc.gridx = 0;
-        gbc.gridy = 6;
         painelInternoEsquerdo.add(lblDesconto, gbc);
-
+    
         txtDesconto = createTextFieldOutrosCampos();
         txtDesconto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
-        gbc.gridx = 0;
-        gbc.gridy = 7;
         txtDesconto.setText("0,00");
         txtDesconto.setCaretPosition(0);
         painelInternoEsquerdo.add(txtDesconto, gbc);
-
+    
         lblPrecoTotal = new JLabel("Preço Total");
         lblPrecoTotal.setFont(new Font("Arial", Font.BOLD, 16));
-        gbc.gridx = 0;
-        gbc.gridy = 8;
         painelInternoEsquerdo.add(lblPrecoTotal, gbc);
-
+    
         txtPrecoTotal = createTextFieldOutrosCampos();
         txtPrecoTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
-        gbc.gridx = 0;
-        gbc.gridy = 9;
         txtPrecoTotal.setText("0,00");
         txtPrecoTotal.setCaretPosition(0);
         txtPrecoTotal.setEditable(false);
         painelInternoEsquerdo.add(txtPrecoTotal, gbc);
-
+    
         return painelEsquerdo;
     }
-
+    
     private JTextField createTextFieldOutrosCampos() {
         JTextField textField = new JTextField();
         textField.setBackground(Color.WHITE);
         textField.setForeground(Color.BLACK);
         textField.setOpaque(true);
         textField.setFont(new Font("Arial", Font.PLAIN, 20));
-        textField.setPreferredSize(new Dimension(150, 45));
+        textField.setPreferredSize(new Dimension(300, 40)); // Ajuste do tamanho preferido
+        textField.setMinimumSize(new Dimension(300, 40));
+        textField.setMaximumSize(new Dimension(300, 40)); // Impede o crescimento vertical
         textField.setHorizontalAlignment(SwingConstants.LEFT);
         return textField;
     }
