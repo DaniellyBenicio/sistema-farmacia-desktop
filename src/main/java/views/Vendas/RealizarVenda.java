@@ -84,8 +84,6 @@ public class RealizarVenda extends JPanel {
     private JPanel createPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel();
         painelEsquerdo.setPreferredSize(new Dimension(0, 140));
-        painelEsquerdo.setBackground(Color.RED);
-
         painelEsquerdo.setLayout(new BoxLayout(painelEsquerdo, BoxLayout.Y_AXIS));
 
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
@@ -94,7 +92,7 @@ public class RealizarVenda extends JPanel {
         painelInternoEsquerdo.setBackground(Color.CYAN);
         
 
-        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 115, 20, 0));
+        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 140, 20, 0));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 15, 10); // Reduzi a margem direita para permitir expansão
@@ -185,10 +183,14 @@ public class RealizarVenda extends JPanel {
         textField.setForeground(Color.BLACK);
         textField.setOpaque(true);
         textField.setFont(new Font("Arial", Font.PLAIN, 20));
-        textField.setPreferredSize(new Dimension(150, 45));
+        
+        textField.setMinimumSize(new Dimension(150, 45)); // Garante um tamanho mínimo
+        textField.setPreferredSize(new Dimension(150, 45)); // Apenas se necessário
         textField.setHorizontalAlignment(SwingConstants.LEFT);
+    
         return textField;
     }
+    
 
     private JPanel createPainelDireito() {
         JPanel painelDireito = new JPanel();
