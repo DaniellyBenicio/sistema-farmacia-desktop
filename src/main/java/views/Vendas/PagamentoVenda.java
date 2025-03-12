@@ -47,6 +47,7 @@ public class PagamentoVenda extends JPanel {
         gbc.insets = new Insets(0, 10, 0, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
+        Color bordaAzulClaro = new Color(173, 216, 230);
 
         Font labelFont = new Font("Arial", Font.BOLD, 16);
         Font fieldFont = new Font("Arial", Font.PLAIN, 16);
@@ -63,6 +64,7 @@ public class PagamentoVenda extends JPanel {
         estilizarCampo(txtPrecoTotal, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
+        txtPrecoTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         camposPanel.add(txtPrecoTotal, gbc);
 
         JLabel descontoLabel = new JLabel("Desconto");
@@ -76,6 +78,7 @@ public class PagamentoVenda extends JPanel {
         estilizarCampo(txtDesconto, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 1;
+        txtDesconto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         camposPanel.add(txtDesconto, gbc);
 
         JLabel pagamentoLabel = new JLabel("Pagamento");
@@ -166,6 +169,7 @@ public class PagamentoVenda extends JPanel {
         gbc.insets = new Insets(0, 10, 0, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
+        Color bordaAzulClaro = new Color(173, 216, 230);
 
         Font labelFont = new Font("Arial", Font.BOLD, 18);
         Font fieldFont = new Font("Arial", Font.PLAIN, 18);
@@ -182,6 +186,7 @@ public class PagamentoVenda extends JPanel {
         estilizarCampo(txtTotal, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
+        txtTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         totalPanel.add(txtTotal, gbc);
 
         JLabel valorPagoLabel = new JLabel("Valor Pago");
@@ -195,6 +200,7 @@ public class PagamentoVenda extends JPanel {
         estilizarCampo(txtValorPago, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 1;
+        txtValorPago.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         totalPanel.add(txtValorPago, gbc);
 
         JLabel valorRestanteLabel = new JLabel("Restante");
@@ -208,6 +214,7 @@ public class PagamentoVenda extends JPanel {
         estilizarCampo(txtValorRestante, fieldFont);
         gbc.gridx = 4;
         gbc.gridy = 1;
+        txtValorRestante.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         totalPanel.add(txtValorRestante, gbc);
 
         JLabel trocoLabel = new JLabel("Troco");
@@ -221,6 +228,7 @@ public class PagamentoVenda extends JPanel {
         estilizarCampo(txtTroco, fieldFont);
         gbc.gridx = 6;
         gbc.gridy = 1;
+        txtTroco.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         totalPanel.add(txtTroco, gbc);
 
         return totalPanel;
