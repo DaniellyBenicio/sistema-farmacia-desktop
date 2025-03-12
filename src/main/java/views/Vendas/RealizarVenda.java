@@ -118,11 +118,9 @@ public class RealizarVenda extends JPanel {
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(5, 5, 0, 5);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.weightx = 1.0;
-        gbc.weighty = 0;
-        //gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
 
         Color bordaAzulClaro = new Color(173, 216, 230);
