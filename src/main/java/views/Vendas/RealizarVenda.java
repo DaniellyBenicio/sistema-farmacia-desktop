@@ -113,88 +113,105 @@ public class RealizarVenda extends JPanel {
     private JPanel createPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel();
         painelEsquerdo.setLayout(new BoxLayout(painelEsquerdo, BoxLayout.Y_AXIS));
-        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(10, 10, 35, 10));
-    
+        painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
+
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
-        painelInternoEsquerdo.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-    
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
         gbc.weightx = 1.0;
-    
+        gbc.weighty = 0;
+        //gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+
         Color bordaAzulClaro = new Color(173, 216, 230);
-    
-        int y = 0;
+
         lblCodigoProduto = new JLabel("Código do Produto");
         lblCodigoProduto.setFont(new Font("Arial", Font.BOLD, 16));
-        gbc.gridx = 0; gbc.gridy = y++;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         painelInternoEsquerdo.add(lblCodigoProduto, gbc);
-    
+
         txtCodigoProduto = createTextFieldOutrosCampos();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         txtCodigoProduto.setEditable(false);
         txtCodigoProduto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
-        gbc.gridy = y++;
         painelInternoEsquerdo.add(txtCodigoProduto, gbc);
-    
+
         lblQuantidade = new JLabel("Quantidade");
         lblQuantidade.setFont(new Font("Arial", Font.BOLD, 16));
-        gbc.gridy = y++;
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         painelInternoEsquerdo.add(lblQuantidade, gbc);
-    
+
         txtQuantidade = createTextFieldOutrosCampos();
         txtQuantidade.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
-        gbc.gridy = y++;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
         painelInternoEsquerdo.add(txtQuantidade, gbc);
-    
+
         lblPrecoUnitario = new JLabel("Preço Unitário");
         lblPrecoUnitario.setFont(new Font("Arial", Font.BOLD, 16));
-        gbc.gridy = y++;
+        gbc.gridx = 0;
+        gbc.gridy = 4;
         painelInternoEsquerdo.add(lblPrecoUnitario, gbc);
-    
+
         txtPrecoUnitario = createTextFieldOutrosCampos();
         txtPrecoUnitario.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        gbc.gridx = 0;
+        gbc.gridy = 5;
         txtPrecoUnitario.setText("0,00");
+        txtPrecoUnitario.setCaretPosition(0);
         txtPrecoUnitario.setEditable(false);
-        gbc.gridy = y++;
         painelInternoEsquerdo.add(txtPrecoUnitario, gbc);
-    
+
         lblDesconto = new JLabel("Desconto");
         lblDesconto.setFont(new Font("Arial", Font.BOLD, 16));
-        gbc.gridy = y++;
+        gbc.gridx = 0;
+        gbc.gridy = 6;
         painelInternoEsquerdo.add(lblDesconto, gbc);
-    
+
         txtDesconto = createTextFieldOutrosCampos();
         txtDesconto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        gbc.gridx = 0;
+        gbc.gridy = 7;
         txtDesconto.setText("0,00");
-        gbc.gridy = y++;
+        txtDesconto.setCaretPosition(0);
         painelInternoEsquerdo.add(txtDesconto, gbc);
-    
+
         lblPrecoTotal = new JLabel("Preço Total");
         lblPrecoTotal.setFont(new Font("Arial", Font.BOLD, 16));
-        gbc.gridy = y++;
+        gbc.gridx = 0;
+        gbc.gridy = 8;
         painelInternoEsquerdo.add(lblPrecoTotal, gbc);
-    
+
         txtPrecoTotal = createTextFieldOutrosCampos();
         txtPrecoTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        gbc.gridx = 0;
+        gbc.gridy = 9;
         txtPrecoTotal.setText("0,00");
+        txtPrecoTotal.setCaretPosition(0);
         txtPrecoTotal.setEditable(false);
-        gbc.gridy = y++;
         painelInternoEsquerdo.add(txtPrecoTotal, gbc);
-    
+
+        gbc.weighty = 1.0;
+        gbc.gridy = 10;
+        painelInternoEsquerdo.add(Box.createVerticalGlue(), gbc);
+
         painelEsquerdo.add(painelInternoEsquerdo);
         return painelEsquerdo;
     }
-    
-    
+
     private JTextField createTextFieldOutrosCampos() {
         JTextField textField = new JTextField();
         textField.setBackground(Color.WHITE);
         textField.setForeground(Color.BLACK);
         textField.setOpaque(true);
         textField.setFont(new Font("Arial", Font.PLAIN, 20));
-        textField.setMinimumSize(new Dimension(450, 40));
-        textField.setPreferredSize(new Dimension(450, 40));
+        textField.setMinimumSize(new Dimension(450, 45));
+        textField.setPreferredSize(new Dimension(450, 45));
         textField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         textField.setHorizontalAlignment(SwingConstants.LEFT);
         return textField;
