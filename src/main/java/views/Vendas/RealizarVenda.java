@@ -116,6 +116,7 @@ public class RealizarVenda extends JPanel {
         painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
 
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
+        painelInternoEsquerdo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
