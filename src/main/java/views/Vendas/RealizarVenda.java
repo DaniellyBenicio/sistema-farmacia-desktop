@@ -1,6 +1,7 @@
 package views.Vendas;
 
 import java.awt.*;
+import java.awt.event.ComponentListener;
 import java.sql.Connection;
 
 import javax.swing.*;
@@ -83,59 +84,63 @@ public class RealizarVenda extends JPanel {
 
     private JPanel createPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel();
-        painelEsquerdo.setPreferredSize(new Dimension(0, 140));
+        //painelEsquerdo.setPreferredSize(new Dimension(0, 140));
         painelEsquerdo.setLayout(new BoxLayout(painelEsquerdo, BoxLayout.Y_AXIS));
-
+    
+        // Remover altura fixa e permitir ajuste dinâmico
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
-        painelInternoEsquerdo.setPreferredSize(new Dimension(0, 300));
-        painelEsquerdo.add(painelInternoEsquerdo);
+        // Remover: painelInternoEsquerdo.setPreferredSize(new Dimension(0, 300));
         painelInternoEsquerdo.setBackground(Color.CYAN);
+        //painelInternoEsquerdo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45)); // Limitar altura
         
-
+        // Definir tamanho máximo para não ultrapassar o painelEsquerdo
+        painelInternoEsquerdo.setMaximumSize(new Dimension(Integer.MAX_VALUE, painelEsquerdo.getPreferredSize().height));
+        
+        painelEsquerdo.add(painelInternoEsquerdo);
         painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(0, 140, 20, 0));
-
+    
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 15, 10); // Reduzi a margem direita para permitir expansão
+        gbc.insets = new Insets(0, 0, 15, 10);
         gbc.anchor = GridBagConstraints.WEST;
-        gbc.weightx = 1.0; // Permite crescimento horizontal
-        gbc.weighty = 0;    
-        gbc.fill = GridBagConstraints.HORIZONTAL; // Permite que o componente expanda horizontalmente
-        gbc.gridwidth = GridBagConstraints.REMAINDER; 
+        gbc.weightx = 1.0;
+        gbc.weighty = 0; // Permitir crescimento vertical
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
         
         Color bordaAzulClaro = new Color(173, 216, 230);
-        
-
+    
+        // Adicionar os componentes (lblCodigoProduto, txtCodigoProduto, etc.)
         lblCodigoProduto = new JLabel("Código do Produto");
         lblCodigoProduto.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 0;
         painelInternoEsquerdo.add(lblCodigoProduto, gbc);
-
+    
         txtCodigoProduto = createTextFieldOutrosCampos();
         gbc.gridx = 0;
         gbc.gridy = 1;
         txtCodigoProduto.setEditable(false);
         txtCodigoProduto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         painelInternoEsquerdo.add(txtCodigoProduto, gbc);
-
+    
         lblQuantidade = new JLabel("Quantidade");
         lblQuantidade.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 2;
         painelInternoEsquerdo.add(lblQuantidade, gbc);
-
+    
         txtQuantidade = createTextFieldOutrosCampos();
         txtQuantidade.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
         gbc.gridy = 3;
         painelInternoEsquerdo.add(txtQuantidade, gbc);
-
+    
         lblPrecoUnitario = new JLabel("Preço Unitário");
         lblPrecoUnitario.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 4;
         painelInternoEsquerdo.add(lblPrecoUnitario, gbc);
-
+    
         txtPrecoUnitario = createTextFieldOutrosCampos();
         txtPrecoUnitario.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
@@ -144,13 +149,13 @@ public class RealizarVenda extends JPanel {
         txtPrecoUnitario.setCaretPosition(0);
         txtPrecoUnitario.setEditable(false);
         painelInternoEsquerdo.add(txtPrecoUnitario, gbc);
-
+    
         lblDesconto = new JLabel("Desconto");
         lblDesconto.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 6;
         painelInternoEsquerdo.add(lblDesconto, gbc);
-
+    
         txtDesconto = createTextFieldOutrosCampos();
         txtDesconto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
@@ -158,13 +163,13 @@ public class RealizarVenda extends JPanel {
         txtDesconto.setText("0,00");
         txtDesconto.setCaretPosition(0);
         painelInternoEsquerdo.add(txtDesconto, gbc);
-
+    
         lblPrecoTotal = new JLabel("Preço Total");
         lblPrecoTotal.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 8;
         painelInternoEsquerdo.add(lblPrecoTotal, gbc);
-
+    
         txtPrecoTotal = createTextFieldOutrosCampos();
         txtPrecoTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
@@ -173,7 +178,12 @@ public class RealizarVenda extends JPanel {
         txtPrecoTotal.setCaretPosition(0);
         txtPrecoTotal.setEditable(false);
         painelInternoEsquerdo.add(txtPrecoTotal, gbc);
-
+    
+        // Adicionar um filler para ocupar espaço extra, se necessário
+        gbc.weighty = 1.0;
+        gbc.gridy = 10;
+        painelInternoEsquerdo.add(new JPanel(), gbc);
+    
         return painelEsquerdo;
     }
 
@@ -184,12 +194,15 @@ public class RealizarVenda extends JPanel {
         textField.setOpaque(true);
         textField.setFont(new Font("Arial", Font.PLAIN, 20));
         
-        textField.setMinimumSize(new Dimension(150, 45)); // Garante um tamanho mínimo
-        textField.setPreferredSize(new Dimension(150, 45)); // Apenas se necessário
+        textField.setMinimumSize(new Dimension(150, 45));
+        textField.setPreferredSize(new Dimension(150, 45));
+        textField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45)); // Limitar altura
         textField.setHorizontalAlignment(SwingConstants.LEFT);
-    
+        
         return textField;
     }
+
+    
     
 
     private JPanel createPainelDireito() {
