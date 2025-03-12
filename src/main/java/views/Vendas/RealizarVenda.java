@@ -114,93 +114,87 @@ public class RealizarVenda extends JPanel {
         JPanel painelEsquerdo = new JPanel();
         painelEsquerdo.setLayout(new BoxLayout(painelEsquerdo, BoxLayout.Y_AXIS));
         painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
-
+    
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
-        painelInternoEsquerdo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
-
+        // Define uma altura máxima específica para este painel
+        painelInternoEsquerdo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 500));
+        painelInternoEsquerdo.setPreferredSize(new Dimension(450, 500)); // Altura fixa sugerida
+    
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.weightx = 1.0;
-        gbc.weighty = 0;
-        //gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+    
         Color bordaAzulClaro = new Color(173, 216, 230);
-
+    
         lblCodigoProduto = new JLabel("Código do Produto");
         lblCodigoProduto.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 0;
         painelInternoEsquerdo.add(lblCodigoProduto, gbc);
-
+    
         txtCodigoProduto = createTextFieldOutrosCampos();
         gbc.gridx = 0;
         gbc.gridy = 1;
         txtCodigoProduto.setEditable(false);
         txtCodigoProduto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         painelInternoEsquerdo.add(txtCodigoProduto, gbc);
-
+    
         lblQuantidade = new JLabel("Quantidade");
         lblQuantidade.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 2;
         painelInternoEsquerdo.add(lblQuantidade, gbc);
-
+    
         txtQuantidade = createTextFieldOutrosCampos();
         txtQuantidade.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
         gbc.gridy = 3;
         painelInternoEsquerdo.add(txtQuantidade, gbc);
-
+    
         lblPrecoUnitario = new JLabel("Preço Unitário");
         lblPrecoUnitario.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 4;
         painelInternoEsquerdo.add(lblPrecoUnitario, gbc);
-
+    
         txtPrecoUnitario = createTextFieldOutrosCampos();
         txtPrecoUnitario.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
         gbc.gridy = 5;
         txtPrecoUnitario.setText("0,00");
-        txtPrecoUnitario.setCaretPosition(0);
         txtPrecoUnitario.setEditable(false);
         painelInternoEsquerdo.add(txtPrecoUnitario, gbc);
-
+    
         lblDesconto = new JLabel("Desconto");
         lblDesconto.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 6;
         painelInternoEsquerdo.add(lblDesconto, gbc);
-
+    
         txtDesconto = createTextFieldOutrosCampos();
         txtDesconto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
         gbc.gridy = 7;
         txtDesconto.setText("0,00");
-        txtDesconto.setCaretPosition(0);
         painelInternoEsquerdo.add(txtDesconto, gbc);
-
+    
         lblPrecoTotal = new JLabel("Preço Total");
         lblPrecoTotal.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 8;
         painelInternoEsquerdo.add(lblPrecoTotal, gbc);
-
+    
         txtPrecoTotal = createTextFieldOutrosCampos();
         txtPrecoTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         gbc.gridx = 0;
         gbc.gridy = 9;
         txtPrecoTotal.setText("0,00");
-        txtPrecoTotal.setCaretPosition(0);
         txtPrecoTotal.setEditable(false);
         painelInternoEsquerdo.add(txtPrecoTotal, gbc);
-
-        gbc.weighty = 1.0;
-        gbc.gridy = 10;
-        painelInternoEsquerdo.add(Box.createVerticalGlue(), gbc);
-
+    
+        // Adiciona o painel interno ao painel esquerdo
         painelEsquerdo.add(painelInternoEsquerdo);
         return painelEsquerdo;
     }
