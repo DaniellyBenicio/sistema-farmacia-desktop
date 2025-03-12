@@ -24,7 +24,7 @@ public class RealizarVenda extends JPanel {
         setLayout(new BorderLayout());
         setBackground(new Color(240, 236, 236));
 
-        setBorder(BorderFactory.createEmptyBorder(10, 250, 20, 250));
+        setBorder(BorderFactory.createEmptyBorder(10, 50, 0, 50));
 
         JPanel painelTopo = new JPanel(new BorderLayout());
         painelTopo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -48,7 +48,7 @@ public class RealizarVenda extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(painelMeio);
         scrollPane.setBorder(null);
-        add(scrollPane, BorderLayout.CENTER);
+        add(painelMeio, BorderLayout.CENTER);
 
         JPanel painelFooter = new JPanel(new GridBagLayout());
         GridBagConstraints gbcFooter = new GridBagConstraints();
@@ -122,7 +122,7 @@ public class RealizarVenda extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.weightx = 1.0;
         gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        //gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
 
         Color bordaAzulClaro = new Color(173, 216, 230);
@@ -210,8 +210,8 @@ public class RealizarVenda extends JPanel {
         textField.setForeground(Color.BLACK);
         textField.setOpaque(true);
         textField.setFont(new Font("Arial", Font.PLAIN, 20));
-        textField.setMinimumSize(new Dimension(150, 45));
-        textField.setPreferredSize(new Dimension(150, 45));
+        textField.setMinimumSize(new Dimension(450, 45));
+        textField.setPreferredSize(new Dimension(450, 45));
         textField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         textField.setHorizontalAlignment(SwingConstants.LEFT);
         return textField;
