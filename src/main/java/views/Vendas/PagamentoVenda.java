@@ -5,6 +5,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 
 public class PagamentoVenda extends JPanel {
 
@@ -230,6 +231,16 @@ public class PagamentoVenda extends JPanel {
         gbc.gridy = 1;
         txtTroco.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         totalPanel.add(txtTroco, gbc);
+
+        comboPagamento.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                String formaSelecionada = (String) comboPagamento.getSelectedItem();
+                comboParcelas.setEnabled("Cartão de Crédito".equals(formaSelecionada));
+                if (!comboParcelas.isEnabled()) {
+                    comboParcelas.setSelectedIndex(0); 
+                }
+            }
+        });
 
         return totalPanel;
     }
