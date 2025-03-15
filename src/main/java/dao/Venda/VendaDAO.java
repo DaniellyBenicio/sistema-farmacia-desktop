@@ -6,8 +6,6 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
-
 import dao.Cliente.ClienteDAO;
 import dao.Funcionario.FuncionarioDAO;
 
@@ -20,9 +18,15 @@ public class VendaDAO {
     public static boolean verificarVendaExistente(Connection conn, Venda v) throws SQLException {
         String sqlVerificar = "select id from venda where cliente_id = ? and funcionario_id = ? and data = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sqlVerificar)) {
-            pstmt.setObject(1, v.getCliente());
+            if (v.getCliente() != null) {
+                pstmt.setInt(1, v.getCliente().getId());
+            } else {
+                pstmt.setNull(1, Types.INTEGER);
+            }
+            
             pstmt.setInt(2, v.getFuncionario().getId());
             pstmt.setTimestamp(3, Timestamp.valueOf(v.getData()));
+    
             try (ResultSet rs = pstmt.executeQuery()) {
                 return rs.next(); 
             }
