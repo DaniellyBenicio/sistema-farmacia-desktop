@@ -270,4 +270,22 @@ public class FuncionarioDAO {
 
         return funcionario;
     }
+
+    public static Integer verificarFuncionarioPorId(Connection conn, int id) throws SQLException {
+        String query = "SELECT id FROM funcionario WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                } else {
+                    return null; 
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar funcionário por ID: " + e.getMessage());
+            throw e;
+        }
+    }
+
 }

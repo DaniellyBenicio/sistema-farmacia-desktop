@@ -1,6 +1,5 @@
 create database farmacia;
 use farmacia;
-
 create table cargo(
 	id int primary key auto_increment not null,
     nome varchar(50) not null COLLATE utf8mb4_general_ci,

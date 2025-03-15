@@ -2,11 +2,13 @@ package models.Venda;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import models.Cliente.Cliente;
+import models.Funcionario.Funcionario;
 
     public class Venda {
     private int id;
-    private Integer cliente_id;
-    private int funcionario_id; 
+    private Cliente cliente;
+    private Funcionario funcionario; 
     private BigDecimal valorTotal;
     private BigDecimal desconto;
     private FormaPagamento formaPagamento;
@@ -14,9 +16,9 @@ import java.time.LocalDateTime;
 
     public Venda(){};
 
-    public Venda(Integer cliente_id, int funcionario_id, BigDecimal valorTotal, BigDecimal desconto, FormaPagamento formaPagamento, LocalDateTime data) {
-        this.cliente_id = cliente_id;
-        this.funcionario_id = funcionario_id;
+    public Venda(Cliente cliente, Funcionario funcionario, BigDecimal valorTotal, BigDecimal desconto, FormaPagamento formaPagamento, LocalDateTime data) {
+        this.cliente = cliente;
+        this.funcionario = funcionario;
         this.valorTotal = valorTotal;
         this.desconto = desconto;
         this.formaPagamento = formaPagamento;
@@ -38,26 +40,30 @@ import java.time.LocalDateTime;
         this.id = id;
     }
 
-    public int getCliente_id() {
-        return cliente_id;
+    public Cliente getCliente() {
+        return cliente;
     }
     
-    public void setClienteId(Integer cliente_id) {
-        if (cliente_id != null && cliente_id <= 0) {
-            throw new IllegalArgumentException("O id do cliente deve ser um valor positivo ou nulo.");
+    public void setCliente(Cliente cliente) {
+        if (cliente != null) {
+            if (cliente.getId() <= 0) {
+                throw new IllegalArgumentException("Se o cliente não for nulo, o ID deve ser um valor positivo.");
+            }
         }
-        this.cliente_id = cliente_id;
+        this.cliente = cliente;
     }
 
-    public int getFuncionario_id() {
-        return funcionario_id;
+    public Funcionario getFuncionario() {
+        return funcionario;
     }
 
-    public void setFuncionarioId(int funcionario_id) {
-        if (funcionario_id <= 0) {
-            throw new IllegalArgumentException("ID do funcionário deve ser um valor positivo.");
+    public void setFuncionario(Funcionario funcionario) {
+        if (funcionario != null) {
+            if(funcionario.getId() <=0){
+                throw new IllegalArgumentException("ID do funcionário deve ser um valor positivo.");
+            }
         }
-        this.funcionario_id = funcionario_id;
+        this.funcionario = funcionario;
     }
     
     public BigDecimal getValorTotal() {

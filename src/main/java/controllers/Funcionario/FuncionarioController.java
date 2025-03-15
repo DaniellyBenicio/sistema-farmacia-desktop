@@ -100,4 +100,22 @@ public class FuncionarioController {
         }
     }
 
+    public static void verificarFuncionario(Connection conn, int id) throws SQLException {
+        if (id <= 0) {
+            throw new IllegalArgumentException("O ID do funcionário deve ser um número positivo.");
+        }
+
+        try {
+            Integer funcionarioId = FuncionarioDAO.verificarFuncionarioPorId(conn, id);
+            if (funcionarioId != null) {
+                System.out.println("Funcionário encontrado com ID: " + funcionarioId);
+            } else {
+                System.out.println("Funcionário não encontrado.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar funcionário: " + e.getMessage());
+            throw e; 
+        }
+    }
+
 } 
