@@ -270,4 +270,30 @@ public class ClienteDAO {
         }
         return false;
     }
+
+    public static Integer buscarClientePorCpfRetornaId(Connection conn, String cpf) throws SQLException {
+        String cpfCriptografado;
+        try {
+            cpfCriptografado = Criptografia.criptografar(cpf.replaceAll("[^0-9]", ""));
+        } catch (Exception e) {
+            System.err.println("Erro ao criptografar CPF: " + e.getMessage());
+            throw new SQLException("Erro ao criptografar CPF para busca de cliente", e);
+        }
+    
+        String sql = "select id from cliente where cpf = ?";
+    
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, cpfCriptografado);
+    
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar cliente por CPF: " + e.getMessage());
+            throw e;
+        }
+        return null;
+    }
 }

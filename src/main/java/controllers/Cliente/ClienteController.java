@@ -74,4 +74,24 @@ public class ClienteController {
             System.err.println("Erro ao excluir cliente: " + e.getMessage());
         }
     }
+
+    public static Integer buscarClienteRetorneId(Connection conn, Cliente c) {
+        if (c == null || c.getCpf() == null || c.getCpf().isEmpty()) {
+            throw new IllegalArgumentException("CPF inválido.");
+        }
+
+        try {
+            Integer idCliente = ClienteDAO.buscarClientePorCpfRetornaId(conn, c.getCpf());
+            if (idCliente != null) {
+                c.setId(idCliente); 
+                return idCliente;
+            } else {
+                System.out.println("Cliente não encontrado.");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar cliente: " + e.getMessage());
+            return null;
+        }
+    }
 }
