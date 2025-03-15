@@ -16,7 +16,7 @@ public class ItemVenda {
 
     public ItemVenda() {}
 
-    public ItemVenda(int id, int venda_id, Produto produto, Medicamento medicamento, int qnt, BigDecimal precoUnit, BigDecimal desconto) {
+    public ItemVenda(int venda_id, Produto produto, Medicamento medicamento, int qnt, BigDecimal precoUnit, BigDecimal desconto) {
         this.id = id;
         this.venda_id = venda_id;
         this.produto = produto;

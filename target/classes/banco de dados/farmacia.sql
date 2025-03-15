@@ -128,7 +128,7 @@ create table venda(
     funcionario_id int not null,
     valorTotal decimal(10,2) not null,
     desconto decimal(10,2) default 0,
-    formaPagamento enum('DINHEIRO', 'CARTÃO', 'PIX') not null,
+	formaPagamento enum('DINHEIRO', 'CARTAO_CREDITO', 'CARTAO_DEBITO', 'PIX') not null,
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     foreign key (cliente_id) references Cliente(id),
     foreign key (funcionario_id) references Funcionario(id),

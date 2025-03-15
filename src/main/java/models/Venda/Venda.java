@@ -14,8 +14,7 @@ import java.time.LocalDateTime;
 
     public Venda(){};
 
-    public Venda(int id, Integer cliente_id, int funcionario_id, BigDecimal valorTotal, BigDecimal desconto, FormaPagamento formaPagamento, LocalDateTime data) {
-        this.id = id;
+    public Venda(Integer cliente_id, int funcionario_id, BigDecimal valorTotal, BigDecimal desconto, FormaPagamento formaPagamento, LocalDateTime data) {
         this.cliente_id = cliente_id;
         this.funcionario_id = funcionario_id;
         this.valorTotal = valorTotal;
@@ -25,9 +24,9 @@ import java.time.LocalDateTime;
     }
 
     public enum FormaPagamento {
-        DINHEIRO, CARTÃO, PIX
-    }    
-
+        DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX
+    }
+   
     public int getId() {
         return id;
     }
