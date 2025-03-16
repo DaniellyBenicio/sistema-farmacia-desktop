@@ -13,7 +13,7 @@ import models.Medicamento.Medicamento;
 import models.Produto.Produto;
 
 public class ItemVendaDAO {
-    public void inserirItemVenda(Connection conn, ItemVenda iv) throws SQLException {
+    public static void inserirItemVenda(Connection conn, ItemVenda iv) throws SQLException {
         String sql = "insert into itemVenda (venda_id, produto_id, medicamento_id, qnt, precoUnit, subtotal, desconto) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -32,7 +32,7 @@ public class ItemVendaDAO {
         }
     }
     
-    public void atualizarItemVenda(Connection conn, ItemVenda iv) throws SQLException {
+    public static void atualizarItemVenda(Connection conn, ItemVenda iv) throws SQLException {
         String sql = "update itemVenda set venda_id = ?, produto_id = ?, medicamento_id = ?, qnt = ?, precoUnit = ?, subtotal = ?, desconto = ? WHERE id = ?";
         
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -51,7 +51,7 @@ public class ItemVendaDAO {
         }
     }
 
-    public void excluirItemVenda(Connection conn, int id) throws SQLException {
+    public static void excluirItemVenda(Connection conn, int id) throws SQLException {
         String sql = "delete from itemVenda where id = ?";
         
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -62,18 +62,18 @@ public class ItemVendaDAO {
         }
     }
 
-    public ItemVenda buscarItemVendaPorId(Connection conn, int id) throws SQLException {
-        String sql = "SELECT iv.qnt, iv.precoUnit, iv.subtotal, iv.desconto, " +
-                    "COALESCE(p.nome, m.nome) AS nome, " +
-                    "COALESCE(p.valor, m.valorUnit) AS preco " +
-                    "FROM itemVenda iv " +
-                    "LEFT JOIN produto p ON iv.produto_id = p.id " +
-                    "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
-                    "WHERE iv.id = ?";
-
+    public static ItemVenda buscarItemVendaPorId(Connection conn, int id) throws SQLException {
+        String sql = "SELECT iv.id, iv.qnt, iv.precoUnit, iv.subtotal, iv.desconto, " +
+                     "p.nome AS produto_nome, p.valor AS produto_preco, " +
+                     "m.nome AS medicamento_nome, m.valorUnit AS medicamento_preco " +
+                     "FROM itemVenda iv " +
+                     "LEFT JOIN produto p ON iv.produto_id = p.id " +
+                     "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
+                     "WHERE iv.id = ?";
+    
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
-            
+    
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     ItemVenda iv = new ItemVenda();
@@ -83,23 +83,27 @@ public class ItemVendaDAO {
                     iv.setSubtotal(rs.getBigDecimal("subtotal"));
                     iv.setDesconto(rs.getBigDecimal("desconto"));
     
-                    String nome = rs.getString("nome");
-                    BigDecimal preco = rs.getBigDecimal("preco");     
-                    if (rs.getObject("produto_id") != null) {
+                    String produtoNome = rs.getString("produto_nome");
+                    BigDecimal produtoPreco = rs.getBigDecimal("produto_preco");
+    
+                    String medicamentoNome = rs.getString("medicamento_nome");
+                    BigDecimal medicamentoPreco = rs.getBigDecimal("medicamento_preco");
+    
+                    if (produtoNome != null) {
                         Produto produto = new Produto();
-                        produto.setNome(nome);
-                        produto.setValor(preco);
+                        produto.setNome(produtoNome);
+                        produto.setValor(produtoPreco);
                         iv.setProduto(produto);
                     }
-                    
-                    if (rs.getObject("medicamento_id") != null) {
+    
+                    if (medicamentoNome != null) {
                         Medicamento medicamento = new Medicamento();
-                        medicamento.setNome(nome);
-                        medicamento.setValorUnit(preco);
+                        medicamento.setNome(medicamentoNome);
+                        medicamento.setValorUnit(medicamentoPreco);
                         iv.setMedicamento(medicamento);
                     }
     
-                    return iv;  
+                    return iv;
                 }
             }
         } catch (SQLException e) {
@@ -108,52 +112,55 @@ public class ItemVendaDAO {
     
         return null; 
     }
-
-    public List<ItemVenda> buscarTodosItemVendas(Connection conn) throws SQLException {
+    
+    public static List<ItemVenda> buscarTodosItemVendas(Connection conn) throws SQLException {
         List<ItemVenda> itens = new ArrayList<>();
         String sql = "SELECT iv.qnt, iv.precoUnit, iv.subtotal, iv.desconto, " +
-                    "COALESCE(p.nome, m.nome) AS nome, " +
-                    "COALESCE(p.valor, m.valorUnit) AS preco " +
-                    "FROM itemVenda iv " +
-                    "LEFT JOIN produto p ON iv.produto_id = p.id " +
-                    "LEFT JOIN medicamento m ON iv.medicamento_id = m.id";
-
+                     "p.nome AS produto_nome, p.valor AS produto_preco, " +
+                     "m.nome AS medicamento_nome, m.valorUnit AS medicamento_preco " +
+                     "FROM itemVenda iv " +
+                     "LEFT JOIN produto p ON iv.produto_id = p.id " +
+                     "LEFT JOIN medicamento m ON iv.medicamento_id = m.id";
+    
         try (PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery()) {
+             ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 ItemVenda iv = new ItemVenda();
                 iv.setQnt(rs.getInt("qnt"));
                 iv.setPrecoUnit(rs.getBigDecimal("precoUnit"));
                 iv.setSubtotal(rs.getBigDecimal("subtotal"));
                 iv.setDesconto(rs.getBigDecimal("desconto"));
-
-                String nome = rs.getString("nome");
-                BigDecimal preco = rs.getBigDecimal("preco");
-
-                if (nome != null) {
+    
+                String produtoNome = rs.getString("produto_nome");
+                BigDecimal produtoPreco = rs.getBigDecimal("produto_preco");
+    
+                String medicamentoNome = rs.getString("medicamento_nome");
+                BigDecimal medicamentoPreco = rs.getBigDecimal("medicamento_preco");
+    
+                if (produtoNome != null) {
                     Produto produto = new Produto();
-                    produto.setNome(nome);
-                    produto.setValor(preco);
+                    produto.setNome(produtoNome);
+                    produto.setValor(produtoPreco);
                     iv.setProduto(produto);
                 }
-
-                if (nome != null) {
+    
+                if (medicamentoNome != null) {
                     Medicamento medicamento = new Medicamento();
-                    medicamento.setNome(nome);
-                    medicamento.setValorUnit(preco);
+                    medicamento.setNome(medicamentoNome);
+                    medicamento.setValorUnit(medicamentoPreco);
                     iv.setMedicamento(medicamento);
                 }
-
+    
                 itens.add(iv);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao buscar todos os itens de venda.", e);
         }
-
+    
         return itens;
     }
-
-    public List<ItemVenda> buscarItensPorVenda(Connection conn, int vendaId) throws SQLException {
+    
+    public static List<ItemVenda> buscarItensPorVenda(Connection conn, int vendaId) throws SQLException {
         List<ItemVenda> itens = new ArrayList<>();
         String sql = "SELECT iv.qnt, iv.precoUnit, iv.subtotal, iv.desconto, " +
                      "COALESCE(p.nome, m.nome) AS nome, " +
@@ -200,7 +207,7 @@ public class ItemVendaDAO {
         return itens;
     } 
 
-    public BigDecimal calcularTotalVenda(Connection conn, int vendaId) throws SQLException {
+    public static BigDecimal calcularTotalVenda(Connection conn, int vendaId) throws SQLException {
         String sql = "select sum(subtotal) as total from itemVenda WHERE venda_id = ?";
         
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
