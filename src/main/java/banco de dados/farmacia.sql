@@ -1,5 +1,6 @@
 create database farmacia;
 use farmacia;
+
 create table cargo(
 	id int primary key auto_increment not null,
     nome varchar(50) not null COLLATE utf8mb4_general_ci,
@@ -142,7 +143,7 @@ create table itemVenda (
     medicamento_id int null,
     qnt int not null check (qnt > 0),
     precoUnit decimal(10,2) not null check (precoUnit >= 0),
-    subtotal decimal(10,2) generated always as (qnt * precoUnit) stored,
+	subtotal decimal(10,2) generated always as (qnt * precoUnit - desconto) stored,
     desconto decimal(10,2) default 0 check (desconto >= 0),
     created_at timestamp default current_timestamp,
     updated_at timestamp default current_timestamp on update current_timestamp,
@@ -153,47 +154,56 @@ create table itemVenda (
 
 DELIMITER $$
 
-CREATE TRIGGER checarItem BEFORE INSERT ON itemvenda
+CREATE TRIGGER atualizarEstoque AFTER INSERT ON itemVenda
 FOR EACH ROW
 BEGIN
-    IF NEW.produto_id IS NULL AND NEW.medicamento_id IS NULL THEN
-        SIGNAL SQLSTATE '45000' 
-        SET MESSAGE_TEXT = 'Erro: A venda precisa ter um produto, medicamento associado ou ambos.';
-    END IF;
-    
+    DECLARE estoque_produto INT;
+    DECLARE estoque_medicamento INT;
     IF NEW.produto_id IS NOT NULL THEN
-        SET NEW.subtotal = NEW.qnt * NEW.precoUnit - NEW.desconto;
-    ELSEIF NEW.medicamento_id IS NOT NULL THEN
-        SET NEW.subtotal = NEW.qnt * NEW.precoUnit - NEW.desconto;
+        SELECT qntEstoque INTO estoque_produto
+        FROM produto
+        WHERE id = NEW.produto_id;
+        IF estoque_produto < NEW.qnt THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro: Estoque insuficiente para o produto.';
+        ELSE
+            UPDATE produto
+            SET qntEstoque = GREATEST(qntEstoque - NEW.qnt, 0)
+            WHERE id = NEW.produto_id;
+        END IF;
     END IF;
 
-    IF NEW.desconto > NEW.subtotal THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Erro: O desconto não pode ser maior que o subtotal.';
+    IF NEW.medicamento_id IS NOT NULL THEN
+        SELECT qnt INTO estoque_medicamento
+        FROM medicamento
+        WHERE id = NEW.medicamento_id;
+
+        IF estoque_medicamento < NEW.qnt THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro: Estoque insuficiente para o medicamento.';
+        ELSE
+            UPDATE medicamento
+            SET qnt = GREATEST(qnt - NEW.qnt, 0)
+            WHERE id = NEW.medicamento_id;
+        END IF;
     END IF;
 END $$
 
 DELIMITER ;
 
+
 DELIMITER $$
-
-CREATE TRIGGER atualizarEstoque 
-AFTER INSERT ON itemVenda 
-FOR EACH ROW
-BEGIN 
-    IF NEW.produto_id IS NOT NULL THEN
-        UPDATE produto
-        SET qntEstoque = GREATEST(qntEstoque - NEW.qnt, 0)
-        WHERE id = NEW.produto_id;
+CREATE TRIGGER checarItem BEFORE INSERT ON itemVenda FOR EACH ROW
+BEGIN
+    IF NEW.produto_id IS NULL AND NEW.medicamento_id IS NULL THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Erro: A venda precisa ter um produto ou medicamento associado.';
     END IF;
 
-    IF NEW.medicamento_id IS NOT NULL THEN
-        UPDATE medicamento
-        SET qnt = GREATEST(qnt - NEW.qnt, 0) 
-        WHERE id = NEW.medicamento_id;
+    IF NEW.desconto > (NEW.qnt * NEW.precoUnit) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Erro: O desconto não pode ser maior que o subtotal.';
     END IF;
+    SET NEW.subtotal = NEW.qnt * NEW.precoUnit - NEW.desconto;
 END $$
-
 DELIMITER ;
 
 
@@ -201,3 +211,4 @@ insert into cargo (nome) values ('Gerente');
 insert into funcionario (nome, telefone, email, cargo_id, status) values ('Danielly', '88998045537', 'd@gmail.com', 1, true);
 
 SHOW TRIGGERS;
+

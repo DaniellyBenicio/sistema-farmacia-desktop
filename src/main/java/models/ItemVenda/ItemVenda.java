@@ -17,7 +17,6 @@ public class ItemVenda {
     public ItemVenda() {}
 
     public ItemVenda(int venda_id, Produto produto, Medicamento medicamento, int qnt, BigDecimal precoUnit, BigDecimal desconto) {
-        this.id = id;
         this.venda_id = venda_id;
         this.produto = produto;
         this.medicamento = medicamento;
@@ -59,6 +58,9 @@ public class ItemVenda {
             throw new IllegalArgumentException("Pelo menos um dos campos (produto ou medicamento) deve ser preenchido.");
         }
         this.produto = produto;
+        if(produto != null) {
+            this.medicamento = null; 
+        }
     }
 
     public Medicamento getMedicamento() {
@@ -70,6 +72,9 @@ public class ItemVenda {
             throw new IllegalArgumentException("Pelo menos um dos campos (produto ou medicamento) deve ser preenchido.");
         }
         this.medicamento = medicamento;
+        if(medicamento != null) {
+            this.produto = null; 
+        }
     }
     
     public int getQnt() {
@@ -100,6 +105,13 @@ public class ItemVenda {
         return subtotal;
     }
 
+    public void setSubtotal(BigDecimal subtotal) {
+        if (subtotal != null && subtotal.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("O subtotal não pode ser negativo.");
+        }
+        this.subtotal = subtotal;
+    }
+    
     public BigDecimal getDesconto() {
         return desconto;
     }
@@ -116,5 +128,10 @@ public class ItemVenda {
         BigDecimal precoComDesconto = precoUnit.multiply(BigDecimal.valueOf(qnt)).subtract(desconto);
         this.subtotal = precoComDesconto.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : precoComDesconto;
     }
-
+    
+    public void validarDesconto() {
+        if (desconto.compareTo(subtotal) > 0) {
+            throw new IllegalArgumentException("O desconto não pode ser maior que o subtotal.");
+        }
+    }
 }
