@@ -14,7 +14,7 @@ import models.Produto.Produto;
 
 public class ItemVendaDAO {
     public static void inserirItemVenda(Connection conn, ItemVenda iv) throws SQLException {
-        String sql = "insert into itemVenda (venda_id, produto_id, medicamento_id, qnt, precoUnit, subtotal, desconto) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "insert into itemVenda (venda_id, produto_id, medicamento_id, qnt, precoUnit, desconto) VALUES (?, ?, ?, ?, ?, ?)";
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, iv.getVendaId());
@@ -22,8 +22,7 @@ public class ItemVendaDAO {
             pstmt.setObject(3, (iv.getMedicamento() != null) ? iv.getMedicamento().getId() : null);
             pstmt.setInt(4, iv.getQnt());
             pstmt.setBigDecimal(5, iv.getPrecoUnit());
-            pstmt.setBigDecimal(6, iv.getSubtotal());
-            pstmt.setBigDecimal(7, iv.getDesconto());
+            pstmt.setBigDecimal(6, iv.getDesconto());
             
     
             pstmt.executeUpdate();
@@ -33,7 +32,7 @@ public class ItemVendaDAO {
     }
     
     public static void atualizarItemVenda(Connection conn, ItemVenda iv) throws SQLException {
-        String sql = "update itemVenda set venda_id = ?, produto_id = ?, medicamento_id = ?, qnt = ?, precoUnit = ?, subtotal = ?, desconto = ? WHERE id = ?";
+        String sql = "update itemVenda set venda_id = ?, produto_id = ?, medicamento_id = ?, qnt = ?, precoUnit = ?, desconto = ? WHERE id = ?";
         
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, iv.getVendaId());
@@ -41,9 +40,8 @@ public class ItemVendaDAO {
             pstmt.setObject(3, (iv.getMedicamento() != null) ? iv.getMedicamento().getId() : null);
             pstmt.setInt(4, iv.getQnt());
             pstmt.setBigDecimal(5, iv.getPrecoUnit());
-            pstmt.setBigDecimal(6, iv.getSubtotal());
-            pstmt.setBigDecimal(7, iv.getDesconto());
-            pstmt.setInt(8, iv.getId());
+            pstmt.setBigDecimal(6, iv.getDesconto());
+            pstmt.setInt(7, iv.getId());
             
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -63,149 +61,141 @@ public class ItemVendaDAO {
     }
 
     public static ItemVenda buscarItemVendaPorId(Connection conn, int id) throws SQLException {
-        String sql = "SELECT iv.id, iv.qnt, iv.precoUnit, iv.subtotal, iv.desconto, " +
-                     "p.nome AS produto_nome, p.valor AS produto_preco, " +
-                     "m.nome AS medicamento_nome, m.valorUnit AS medicamento_preco " +
-                     "FROM itemVenda iv " +
-                     "LEFT JOIN produto p ON iv.produto_id = p.id " +
-                     "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
-                     "WHERE iv.id = ?";
+        String sql = "SELECT iv.*, p.nome AS produto_nome, p.valor AS produto_preco, " +
+                    "m.nome AS medicamento_nome, m.valorUnit AS medicamento_preco " +
+                    "FROM itemVenda iv " +
+                    "LEFT JOIN produto p ON iv.produto_id = p.id " +
+                    "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
+                    "WHERE iv.id = ?";
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
-    
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     ItemVenda iv = new ItemVenda();
                     iv.setId(rs.getInt("id"));
+                    iv.setVendaId(rs.getInt("venda_id"));
                     iv.setQnt(rs.getInt("qnt"));
                     iv.setPrecoUnit(rs.getBigDecimal("precoUnit"));
                     iv.setSubtotal(rs.getBigDecimal("subtotal"));
                     iv.setDesconto(rs.getBigDecimal("desconto"));
     
-                    String produtoNome = rs.getString("produto_nome");
-                    BigDecimal produtoPreco = rs.getBigDecimal("produto_preco");
-    
-                    String medicamentoNome = rs.getString("medicamento_nome");
-                    BigDecimal medicamentoPreco = rs.getBigDecimal("medicamento_preco");
-    
-                    if (produtoNome != null) {
+                    Integer produtoId = rs.getObject("produto_id", Integer.class);
+                    if (produtoId != null) {
                         Produto produto = new Produto();
-                        produto.setNome(produtoNome);
-                        produto.setValor(produtoPreco);
+                        produto.setId(produtoId);
+                        produto.setNome(rs.getString("produto_nome"));
+                        produto.setValor(rs.getBigDecimal("produto_preco"));
                         iv.setProduto(produto);
+                    } else {
+                        Integer medicamentoId = rs.getObject("medicamento_id", Integer.class);
+                        if (medicamentoId != null) {
+                            Medicamento medicamento = new Medicamento();
+                            medicamento.setId(medicamentoId);
+                            medicamento.setNome(rs.getString("medicamento_nome"));
+                            medicamento.setValorUnit(rs.getBigDecimal("medicamento_preco"));
+                            iv.setMedicamento(medicamento);
+                        }
                     }
-    
-                    if (medicamentoNome != null) {
-                        Medicamento medicamento = new Medicamento();
-                        medicamento.setNome(medicamentoNome);
-                        medicamento.setValorUnit(medicamentoPreco);
-                        iv.setMedicamento(medicamento);
-                    }
-    
                     return iv;
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao buscar ItemVenda por ID no banco de dados.", e);
+            throw new SQLException("Erro ao buscar ItemVenda por ID: " + e.getMessage(), e);
         }
-    
-        return null; 
+        return null;
     }
     
     public static List<ItemVenda> buscarTodosItemVendas(Connection conn) throws SQLException {
         List<ItemVenda> itens = new ArrayList<>();
-        String sql = "SELECT iv.qnt, iv.precoUnit, iv.subtotal, iv.desconto, " +
-                     "p.nome AS produto_nome, p.valor AS produto_preco, " +
-                     "m.nome AS medicamento_nome, m.valorUnit AS medicamento_preco " +
-                     "FROM itemVenda iv " +
-                     "LEFT JOIN produto p ON iv.produto_id = p.id " +
-                     "LEFT JOIN medicamento m ON iv.medicamento_id = m.id";
+        String sql = "SELECT iv.*, p.nome AS produto_nome, p.valor AS produto_preco, " +
+                    "m.nome AS medicamento_nome, m.valorUnit AS medicamento_preco " +
+                    "FROM itemVenda iv " +
+                    "LEFT JOIN produto p ON iv.produto_id = p.id " +
+                    "LEFT JOIN medicamento m ON iv.medicamento_id = m.id";
     
         try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 ItemVenda iv = new ItemVenda();
+                iv.setId(rs.getInt("id"));
+                iv.setVendaId(rs.getInt("venda_id"));
                 iv.setQnt(rs.getInt("qnt"));
                 iv.setPrecoUnit(rs.getBigDecimal("precoUnit"));
                 iv.setSubtotal(rs.getBigDecimal("subtotal"));
                 iv.setDesconto(rs.getBigDecimal("desconto"));
     
-                String produtoNome = rs.getString("produto_nome");
-                BigDecimal produtoPreco = rs.getBigDecimal("produto_preco");
-    
-                String medicamentoNome = rs.getString("medicamento_nome");
-                BigDecimal medicamentoPreco = rs.getBigDecimal("medicamento_preco");
-    
-                if (produtoNome != null) {
+                Integer produtoId = rs.getObject("produto_id", Integer.class);
+                if (produtoId != null) {
                     Produto produto = new Produto();
-                    produto.setNome(produtoNome);
-                    produto.setValor(produtoPreco);
+                    produto.setId(produtoId);
+                    produto.setNome(rs.getString("produto_nome"));
+                    produto.setValor(rs.getBigDecimal("produto_preco"));
                     iv.setProduto(produto);
+                } else {
+                    Integer medicamentoId = rs.getObject("medicamento_id", Integer.class);
+                    if (medicamentoId != null) {
+                        Medicamento medicamento = new Medicamento();
+                        medicamento.setId(medicamentoId);
+                        medicamento.setNome(rs.getString("medicamento_nome"));
+                        medicamento.setValorUnit(rs.getBigDecimal("medicamento_preco"));
+                        iv.setMedicamento(medicamento);
+                    }
                 }
-    
-                if (medicamentoNome != null) {
-                    Medicamento medicamento = new Medicamento();
-                    medicamento.setNome(medicamentoNome);
-                    medicamento.setValorUnit(medicamentoPreco);
-                    iv.setMedicamento(medicamento);
-                }
-    
                 itens.add(iv);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao buscar todos os itens de venda.", e);
+            throw new SQLException("Erro ao buscar todos os itens de venda: " + e.getMessage(), e);
         }
-    
         return itens;
     }
     
     public static List<ItemVenda> buscarItensPorVenda(Connection conn, int vendaId) throws SQLException {
         List<ItemVenda> itens = new ArrayList<>();
-        String sql = "SELECT iv.qnt, iv.precoUnit, iv.subtotal, iv.desconto, " +
-                     "COALESCE(p.nome, m.nome) AS nome, " +
-                     "COALESCE(p.valor, m.valorUnit) AS preco " +
-                     "FROM itemVenda iv " +
-                     "LEFT JOIN produto p ON iv.produto_id = p.id " +
-                     "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
-                     "WHERE iv.venda_id = ?";
+        String sql = "SELECT iv.*, p.nome AS produto_nome, p.valor AS produto_preco, " +
+                    "m.nome AS medicamento_nome, m.valorUnit AS medicamento_preco " +
+                    "FROM itemVenda iv " +
+                    "LEFT JOIN produto p ON iv.produto_id = p.id " +
+                    "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
+                    "WHERE iv.venda_id = ?";
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, vendaId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     ItemVenda iv = new ItemVenda();
+                    iv.setId(rs.getInt("id"));
+                    iv.setVendaId(rs.getInt("venda_id"));
                     iv.setQnt(rs.getInt("qnt"));
                     iv.setPrecoUnit(rs.getBigDecimal("precoUnit"));
                     iv.setSubtotal(rs.getBigDecimal("subtotal"));
                     iv.setDesconto(rs.getBigDecimal("desconto"));
     
-                    String nome = rs.getString("nome");
-                    BigDecimal preco = rs.getBigDecimal("preco");
-    
-                    if (nome != null) {
+                    Integer produtoId = rs.getObject("produto_id", Integer.class);
+                    if (produtoId != null) {
                         Produto produto = new Produto();
-                        produto.setNome(nome);
-                        produto.setValor(preco);
+                        produto.setId(produtoId);
+                        produto.setNome(rs.getString("produto_nome"));
+                        produto.setValor(rs.getBigDecimal("produto_preco"));
                         iv.setProduto(produto);
+                    } else {
+                        Integer medicamentoId = rs.getObject("medicamento_id", Integer.class);
+                        if (medicamentoId != null) {
+                            Medicamento medicamento = new Medicamento();
+                            medicamento.setId(medicamentoId);
+                            medicamento.setNome(rs.getString("medicamento_nome"));
+                            medicamento.setValorUnit(rs.getBigDecimal("medicamento_preco"));
+                            iv.setMedicamento(medicamento);
+                        }
                     }
-    
-                    if (nome != null) {
-                        Medicamento medicamento = new Medicamento();
-                        medicamento.setNome(nome);
-                        medicamento.setValorUnit(preco);
-                        iv.setMedicamento(medicamento);
-                    }
-    
                     itens.add(iv);
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao buscar itens de venda por ID de venda.", e);
+            throw new SQLException("Erro ao buscar itens por venda: " + e.getMessage(), e);
         }
-    
         return itens;
-    } 
+    }
 
     public static BigDecimal calcularTotalVenda(Connection conn, int vendaId) throws SQLException {
         String sql = "select sum(subtotal) as total from itemVenda WHERE venda_id = ?";
@@ -223,4 +213,53 @@ public class ItemVendaDAO {
         
         return BigDecimal.ZERO; 
     }
-}    
+
+    public static List<Object> buscarTodosItensDisponiveis(Connection conn, String termoBusca) throws SQLException {
+        List<Object> itens = new ArrayList<>();
+        String termoBuscaLike = "%" + (termoBusca != null ? termoBusca.toLowerCase() : "") + "%";
+
+
+        String sqlProdutos = "SELECT id, nome, valor, embalagem, qntEmbalagem, qntMedida " +
+                            "FROM produto " +
+                            "WHERE qntEstoque > 0 AND LOWER(nome) LIKE ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlProdutos)) {
+            pstmt.setString(1, termoBuscaLike);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Produto produto = new Produto();
+                    produto.setId(rs.getInt("id"));
+                    produto.setNome(rs.getString("nome"));
+                    produto.setValor(rs.getBigDecimal("valor"));
+                    produto.setEmbalagem(rs.getString("embalagem"));
+                    produto.setQntEmbalagem(rs.getInt("qntEmbalagem"));
+                    produto.setQntMedida(rs.getString("qntMedida"));
+                    itens.add(produto);
+                }
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao buscar produtos disponíveis: " + e.getMessage(), e);
+        }
+
+        String sqlMedicamentos = "SELECT id, nome, dosagem, formaFarmaceutica, valorUnit, " +
+                                "FROM medicamento " +
+                                "WHERE qnt > 0 AND LOWER(nome) LIKE ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlMedicamentos)) {
+            pstmt.setString(1, termoBuscaLike);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Medicamento medicamento = new Medicamento();
+                    medicamento.setId(rs.getInt("id"));
+                    medicamento.setNome(rs.getString("nome"));
+                    medicamento.setDosagem(rs.getString("dosagem"));
+                    medicamento.setFormaFarmaceutica(rs.getString("formaFarmaceutica"));
+                    medicamento.setValorUnit(rs.getBigDecimal("valorUnit"));
+                    itens.add(medicamento);
+                }
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Erro ao buscar medicamentos disponíveis: " + e.getMessage(), e);
+        }
+
+        return itens;
+    }
+}

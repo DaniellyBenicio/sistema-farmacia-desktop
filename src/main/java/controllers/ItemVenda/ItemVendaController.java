@@ -74,4 +74,18 @@ public class ItemVendaController {
             throw e;
         }
     }
+
+    public void buscarTodosItensDisponiveis(Connection conn, String termoBusca) throws SQLException {
+        try {
+            List<Object> itens = ItemVendaDAO.buscarTodosItensDisponiveis(conn, termoBusca);
+            System.out.println("Itens disponíveis encontrados com sucesso.");
+            for (Object item : itens) {
+                System.out.println(item.toString());
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar itens disponíveis: " + e.getMessage());
+            throw e;
+        }
+    }
+
 }
