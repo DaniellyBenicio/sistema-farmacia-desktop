@@ -120,18 +120,23 @@ public class ItemVenda {
         if (desconto == null || desconto.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("O desconto não pode ser nulo ou negativo.");
         }
+        if (precoUnit != null && qnt > 0) {
+            BigDecimal subtotalTemp = precoUnit.multiply(BigDecimal.valueOf(qnt));
+            if (desconto.compareTo(subtotalTemp) > 0) {
+                throw new IllegalArgumentException("O desconto não pode ser maior que o subtotal.");
+            }
+        }
         this.desconto = desconto;
         atualizarSubtotal();
-    }   
-
-    private void atualizarSubtotal() {
-        BigDecimal precoComDesconto = precoUnit.multiply(BigDecimal.valueOf(qnt)).subtract(desconto);
-        this.subtotal = precoComDesconto.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : precoComDesconto;
     }
     
-    public void validarDesconto() {
-        if (desconto.compareTo(subtotal) > 0) {
-            throw new IllegalArgumentException("O desconto não pode ser maior que o subtotal.");
+    private void atualizarSubtotal() {
+        if (precoUnit != null && qnt > 0) {
+            BigDecimal precoComDesconto = precoUnit.multiply(BigDecimal.valueOf(qnt)).subtract(desconto);
+            this.subtotal = precoComDesconto.max(BigDecimal.ZERO);
+        } else {
+            this.subtotal = BigDecimal.ZERO;
         }
     }
+    
 }

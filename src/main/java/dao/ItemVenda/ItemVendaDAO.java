@@ -17,6 +17,7 @@ public class ItemVendaDAO {
         String sql = "insert into itemVenda (venda_id, produto_id, medicamento_id, qnt, precoUnit, desconto) VALUES (?, ?, ?, ?, ?, ?)";
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            calcularDescontoAutomatico(conn, iv);
             pstmt.setInt(1, iv.getVendaId());
             pstmt.setObject(2, (iv.getProduto() != null) ? iv.getProduto().getId() : null);
             pstmt.setObject(3, (iv.getMedicamento() != null) ? iv.getMedicamento().getId() : null);
@@ -30,6 +31,46 @@ public class ItemVendaDAO {
             throw new RuntimeException("Erro ao inserir ItemVenda no banco de dados.", e);
         }
     }
+    public static void calcularDescontoAutomatico(Connection conn, ItemVenda iv) throws SQLException {
+        if (iv.getDesconto() == null || iv.getDesconto().compareTo(BigDecimal.ZERO) == 0) {
+            BigDecimal descontoCalculado = BigDecimal.ZERO;
+    
+            if (iv.getMedicamento() != null && iv.getMedicamento().getId() > 0) {
+                String sql = "SELECT tipo FROM medicamento WHERE id = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.setInt(1, iv.getMedicamento().getId());
+                    try (ResultSet rs = pstmt.executeQuery()) {
+                        if (rs.next()) {
+                            String tipo = rs.getString("tipo");
+                            switch (tipo) {
+                                case "GENÉRICO":
+                                case "SIMILAR":
+                                    descontoCalculado = iv.getPrecoUnit()
+                                            .multiply(BigDecimal.valueOf(iv.getQnt()))
+                                            .multiply(new BigDecimal("0.20")); 
+                                    break;
+                                case "ÉTICO":
+                                    descontoCalculado = new BigDecimal("5.00"); 
+                                    break;
+                                default:
+                                    descontoCalculado = BigDecimal.ZERO;
+                            }
+                        }
+                    }
+                } catch (SQLException e) {
+                    System.err.println("Erro ao calcular desconto: " + e.getMessage());
+                    throw e;
+                }
+            }
+    
+            if (descontoCalculado.compareTo(iv.getSubtotal()) > 0) {
+                descontoCalculado = iv.getSubtotal(); 
+            }
+    
+            iv.setDesconto(descontoCalculado);
+            System.out.println("Desconto aplicado com sucesso. Novo subtotal: " + iv.getSubtotal());
+        }
+    }        
     
     public static void atualizarItemVenda(Connection conn, ItemVenda iv) throws SQLException {
         String sql = "update itemVenda set venda_id = ?, produto_id = ?, medicamento_id = ?, qnt = ?, precoUnit = ?, desconto = ? WHERE id = ?";

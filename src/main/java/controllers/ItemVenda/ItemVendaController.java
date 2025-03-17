@@ -88,4 +88,15 @@ public class ItemVendaController {
         }
     }
 
+    public void calcularDescontoAutomatico(Connection conn, ItemVenda iv) throws SQLException {
+        try {
+            ItemVendaDAO.calcularDescontoAutomatico(conn, iv);
+            System.out.println("Desconto calculado com sucesso.");
+            System.out.println("Novo valor do desconto: " + iv.getDesconto());
+        } catch (SQLException e) {
+            System.err.println("Erro ao calcular desconto automático: " + e.getMessage());
+            throw e;
+        }
+    }    
+
 }
