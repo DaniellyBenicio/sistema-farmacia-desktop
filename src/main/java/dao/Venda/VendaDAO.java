@@ -1,5 +1,6 @@
 package dao.Venda;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -60,6 +61,23 @@ public class VendaDAO {
             System.out.println("Venda já existente para este cliente, funcionário e data!");
             return;
         }
+
+        if (v.getCliente() != null) { 
+            BigDecimal descontoCalculado = BigDecimal.ZERO;
+            
+            if (v.getValorTotal().compareTo(new BigDecimal("60")) <= 0) {
+                descontoCalculado = v.getValorTotal().multiply(new BigDecimal("0.05"));
+            } else if (v.getValorTotal().compareTo(new BigDecimal("60")) > 0 && v.getValorTotal().compareTo(new BigDecimal("150")) <= 0) {
+                descontoCalculado = v.getValorTotal().multiply(new BigDecimal("0.10"));
+            } else if (v.getValorTotal().compareTo(new BigDecimal("150")) > 0) {
+                descontoCalculado = v.getValorTotal().multiply(new BigDecimal("0.15"));
+            }
+            if (v.getDesconto() == null || v.getDesconto().compareTo(descontoCalculado) < 0) {
+                v.setDesconto(descontoCalculado);
+            }
+        } else {
+            v.setDesconto(BigDecimal.ZERO);
+        }        
 
         String sqlInserir = "insert into venda (cliente_id, funcionario_id, valorTotal, desconto, formaPagamento, data) VALUES (?, ?, ?, ?, ?, ?)";
 
