@@ -5,9 +5,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
@@ -21,18 +18,48 @@ import views.Clientes.CadastrarCliente;
 
 public class RealizarVenda extends JPanel {
 
-    private Connection conn;
-    private JLabel itemLabel, lblCodigoProduto, lblQuantidade, lblPrecoUnitario, lblDesconto, lblPrecoTotal,
-            lblNomeCliente, lblCpfCliente;
-    private JTextField txtItem, txtCodigoProduto, txtQuantidade, txtPrecoUnitario, txtDesconto, txtPrecoTotal;
+    private final Connection conn;
+
+    private JLabel itemLabel;
+    private JLabel lblCodigoProduto;
+    private JLabel lblQuantidade;
+    private JLabel lblPrecoUnitario;
+    private JLabel lblDesconto;
+    private JLabel lblPrecoTotal;
+    private JLabel lblNomeCliente;
+    private JLabel lblCpfCliente;
+
+    private JTextField txtItem;
+    private JTextField txtCodigoProduto;
+    private JTextField txtQuantidade;
+    private JTextField txtPrecoUnitario;
+    private JTextField txtDesconto;
+    private JTextField txtPrecoTotal;
 
     private JPanel painelDireito;
+
+    private static final Color BACKGROUND_COLOR = new Color(240, 236, 236);
+    private static final Color BORDER_COLOR = new Color(173, 216, 230);
+    private static final Color INPUT_BG_COLOR = new Color(24, 39, 55);
+    private static final Color INPUT_FG_COLOR = Color.WHITE;
+    private static final Color BUTTON_CONFIRM_COLOR = new Color(0, 133, 0);
 
     public RealizarVenda(Connection conn) {
         this.conn = conn;
 
+        initializeComponents();
+        setupLayout();
+        addResizeListener();
+    }
+
+    private void initializeComponents() {
+        lblNomeCliente = new JLabel("Nome do Consumidor: Não Identificado");
+        lblCpfCliente = new JLabel("CPF do Consumidor: Não Identificado");
+    }
+
+    private void setupLayout() {
         setLayout(new BorderLayout());
-        setBackground(new Color(240, 236, 236));
+        setBackground(BACKGROUND_COLOR);
         setBorder(BorderFactory.createEmptyBorder(10, 50, 0, 50));
 
         JPanel painelTopo = new JPanel(new BorderLayout());
@@ -51,7 +78,6 @@ public class RealizarVenda extends JPanel {
         painelMeio.add(createPainelEsquerdo(), gbcMeio);
 
         gbcMeio.gridx = 1;
-        gbcMeio.gridy = 0;
         gbcMeio.weightx = 0.9;
         painelDireito = createPainelDireito();
         painelMeio.add(painelDireito, gbcMeio);
@@ -75,7 +101,9 @@ public class RealizarVenda extends JPanel {
         painelFooter.add(ladoDireitoFooter(), gbcFooter);
 
         add(painelFooter, BorderLayout.SOUTH);
+    }
 
+    private void addResizeListener() {
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -91,7 +119,6 @@ public class RealizarVenda extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        Color bordaAzulClaro = new Color(173, 216, 230);
 
         itemLabel = new JLabel("Produto:");
         itemLabel.setFont(new Font("Arial", Font.BOLD, 18));
@@ -102,19 +129,18 @@ public class RealizarVenda extends JPanel {
         painelItem.add(itemLabel, gbc);
 
         txtItem = new JTextField();
-        txtItem.setBackground(new Color(24, 39, 55));
-        txtItem.setForeground(Color.WHITE);
+        txtItem.setBackground(INPUT_BG_COLOR);
+        txtItem.setForeground(INPUT_FG_COLOR);
         txtItem.setOpaque(true);
         txtItem.setFont(new Font("Arial", Font.PLAIN, 20));
         txtItem.setMinimumSize(new Dimension(150, 45));
         txtItem.setPreferredSize(new Dimension(150, 45));
         txtItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
-        txtItem.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        txtItem.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
 
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
         painelItem.add(txtItem, gbc);
 
         return painelItem;
@@ -126,14 +152,11 @@ public class RealizarVenda extends JPanel {
         painelEsquerdo.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
 
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
-
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 0, 5);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.weightx = 1.0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-
-        Color bordaAzulClaro = new Color(173, 216, 230);
 
         lblCodigoProduto = new JLabel("Código do Produto");
         lblCodigoProduto.setFont(new Font("Arial", Font.BOLD, 16));
@@ -142,10 +165,10 @@ public class RealizarVenda extends JPanel {
         painelInternoEsquerdo.add(lblCodigoProduto, gbc);
 
         txtCodigoProduto = createTextFieldOutrosCampos();
+        txtCodigoProduto.setEditable(false);
+        txtCodigoProduto.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
         gbc.gridx = 0;
         gbc.gridy = 1;
-        txtCodigoProduto.setEditable(false);
-        txtCodigoProduto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
         painelInternoEsquerdo.add(txtCodigoProduto, gbc);
 
         lblQuantidade = new JLabel("Quantidade");
@@ -155,7 +178,7 @@ public class RealizarVenda extends JPanel {
         painelInternoEsquerdo.add(lblQuantidade, gbc);
 
         txtQuantidade = createTextFieldOutrosCampos();
-        txtQuantidade.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        txtQuantidade.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
         gbc.gridx = 0;
         gbc.gridy = 3;
         painelInternoEsquerdo.add(txtQuantidade, gbc);
@@ -167,12 +190,12 @@ public class RealizarVenda extends JPanel {
         painelInternoEsquerdo.add(lblPrecoUnitario, gbc);
 
         txtPrecoUnitario = createTextFieldOutrosCampos();
-        txtPrecoUnitario.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
-        gbc.gridx = 0;
-        gbc.gridy = 5;
+        txtPrecoUnitario.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
         txtPrecoUnitario.setText("0,00");
         txtPrecoUnitario.setCaretPosition(0);
         txtPrecoUnitario.setEditable(false);
+        gbc.gridx = 0;
+        gbc.gridy = 5;
         painelInternoEsquerdo.add(txtPrecoUnitario, gbc);
 
         lblDesconto = new JLabel("Desconto");
@@ -182,11 +205,11 @@ public class RealizarVenda extends JPanel {
         painelInternoEsquerdo.add(lblDesconto, gbc);
 
         txtDesconto = createTextFieldOutrosCampos();
-        txtDesconto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
-        gbc.gridx = 0;
-        gbc.gridy = 7;
+        txtDesconto.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
         txtDesconto.setText("0,00");
         txtDesconto.setCaretPosition(0);
+        gbc.gridx = 0;
+        gbc.gridy = 7;
         painelInternoEsquerdo.add(txtDesconto, gbc);
 
         lblPrecoTotal = new JLabel("Preço Total");
@@ -196,12 +219,12 @@ public class RealizarVenda extends JPanel {
         painelInternoEsquerdo.add(lblPrecoTotal, gbc);
 
         txtPrecoTotal = createTextFieldOutrosCampos();
-        txtPrecoTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
-        gbc.gridx = 0;
-        gbc.gridy = 9;
+        txtPrecoTotal.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
         txtPrecoTotal.setText("0,00");
         txtPrecoTotal.setCaretPosition(0);
         txtPrecoTotal.setEditable(false);
+        gbc.gridx = 0;
+        gbc.gridy = 9;
         painelInternoEsquerdo.add(txtPrecoTotal, gbc);
 
         gbc.weighty = 1.0;
@@ -210,6 +233,10 @@ public class RealizarVenda extends JPanel {
 
         painelEsquerdo.add(painelInternoEsquerdo);
         return painelEsquerdo;
+    }
+
+    private JPanel createPainelDireito() {
+        return new ResumoDaVenda(lblNomeCliente, lblCpfCliente);
     }
 
     private JTextField createTextFieldOutrosCampos() {
@@ -225,89 +252,6 @@ public class RealizarVenda extends JPanel {
         return textField;
     }
 
-    private JPanel createPainelDireito() {
-        JPanel painelDireito = new JPanel();
-        painelDireito.setLayout(new BoxLayout(painelDireito, BoxLayout.Y_AXIS));
-        painelDireito.setBorder(BorderFactory.createEmptyBorder(10, 5, 5, 5));
-
-        JPanel painelInternoDireito = new JPanel(new BorderLayout());
-        painelInternoDireito.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-
-        JPanel painelClienteInfo = new JPanel(new GridBagLayout());
-        painelClienteInfo.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
-        GridBagConstraints gbc = new GridBagConstraints();
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.insets = new Insets(5, 0, 0, 0);
-
-        JLabel lblFarmacia = new JLabel("Farmácia", SwingConstants.CENTER);
-        lblFarmacia.setFont(new Font("Arial", Font.BOLD, 16));
-        lblFarmacia.setForeground(Color.BLACK);
-        painelClienteInfo.add(lblFarmacia, gbc);
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        JLabel lblData = new JLabel("Data: " + LocalDate.now().format(formatter));
-
-        gbc.gridy++;
-        painelClienteInfo.add(lblData, gbc);
-
-        gbc.gridy++;
-        lblCpfCliente = new JLabel("CPF do Consumidor: Não Identificado");
-        painelClienteInfo.add(lblCpfCliente, gbc);
-
-        gbc.gridy++;
-        lblNomeCliente = new JLabel("Nome do Consumidor: Não Identificado");
-        painelClienteInfo.add(lblNomeCliente, gbc);
-
-        gbc.gridy++;
-        JLabel lblAtendente = new JLabel("Atendente: Não Identificado");
-        painelClienteInfo.add(lblAtendente, gbc);
-
-        gbc.gridy++;
-        JLabel lblEspaco = new JLabel("");
-        painelClienteInfo.add(lblEspaco, gbc);
-
-        JPanel painelItens = new JPanel(new GridBagLayout());
-        painelItens.setBorder(BorderFactory.createTitledBorder("Itens"));
-        GridBagConstraints gbcItens = new GridBagConstraints();
-        gbcItens.gridx = 0;
-        gbcItens.gridy = 0;
-        gbcItens.anchor = GridBagConstraints.WEST;
-        gbcItens.fill = GridBagConstraints.HORIZONTAL;
-        gbcItens.insets = new Insets(5, 55, 10, 55);
-
-        // Cabeçalho da tabela de itens
-        JLabel lblItem = new JLabel("Item");
-        JLabel lblCodigo = new JLabel("Código");
-        JLabel lblDescricao = new JLabel("Descrição");
-        JLabel lblQnt = new JLabel("Qnt");
-        JLabel lblValorUni = new JLabel("Valor Uni");
-        JLabel lblSubtotal = new JLabel("Subtotal");
-
-        // Adicionar cabeçalho no painel
-        painelItens.add(lblItem, gbcItens);
-        gbcItens.gridx++;
-        painelItens.add(lblCodigo, gbcItens);
-        gbcItens.gridx++;
-        painelItens.add(lblDescricao, gbcItens);
-        gbcItens.gridx++;
-        painelItens.add(lblQnt, gbcItens);
-        gbcItens.gridx++;
-        painelItens.add(lblValorUni, gbcItens);
-        gbcItens.gridx++;
-        painelItens.add(lblSubtotal, gbcItens);
-
-        painelInternoDireito.add(painelClienteInfo, BorderLayout.NORTH);
-        painelInternoDireito.add(painelItens, BorderLayout.CENTER);
-        painelDireito.add(painelInternoDireito);
-
-        return painelDireito;
-    }
-
     private JPanel ladoEsquerdoFooter() {
         JPanel ladoEsquerdo = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JPanel botoesVenda = new JPanel();
@@ -316,13 +260,11 @@ public class RealizarVenda extends JPanel {
 
         JButton btnIdentificarCliente = new JButton("Identificar Cliente");
         btnIdentificarCliente.setFont(new Font("Arial", Font.BOLD, 18));
-        btnIdentificarCliente.setBackground(new Color(24, 39, 55));
+        btnIdentificarCliente.setBackground(INPUT_BG_COLOR);
         btnIdentificarCliente.setForeground(Color.WHITE);
         btnIdentificarCliente.setFocusPainted(false);
         btnIdentificarCliente.setMinimumSize(new Dimension(185, 45));
         btnIdentificarCliente.setPreferredSize(new Dimension(185, 45));
-        botoesVenda.add(btnIdentificarCliente);
-
         btnIdentificarCliente.addActionListener(e -> {
             try {
                 abrirDialogoIdentificacaoCliente();
@@ -331,7 +273,7 @@ public class RealizarVenda extends JPanel {
                         JOptionPane.ERROR_MESSAGE);
             }
         });
-
+        botoesVenda.add(btnIdentificarCliente);
         botoesVenda.add(Box.createRigidArea(new Dimension(25, 0)));
 
         JButton btnCancelarVenda = new JButton("Cancelar Venda");
@@ -342,18 +284,15 @@ public class RealizarVenda extends JPanel {
         btnCancelarVenda.setMinimumSize(new Dimension(185, 40));
         btnCancelarVenda.setPreferredSize(new Dimension(185, 40));
         botoesVenda.add(btnCancelarVenda);
-
         botoesVenda.add(Box.createRigidArea(new Dimension(25, 0)));
 
         JButton btnConfirmarVenda = new JButton("Confirmar Venda");
         btnConfirmarVenda.setFont(new Font("Arial", Font.BOLD, 18));
-        btnConfirmarVenda.setBackground(new Color(0, 133, 0));
+        btnConfirmarVenda.setBackground(BUTTON_CONFIRM_COLOR);
         btnConfirmarVenda.setForeground(Color.WHITE);
         btnConfirmarVenda.setFocusPainted(false);
         btnConfirmarVenda.setMinimumSize(new Dimension(185, 40));
         btnConfirmarVenda.setPreferredSize(new Dimension(185, 40));
-        botoesVenda.add(btnConfirmarVenda);
-
         btnConfirmarVenda.addActionListener(e -> {
             Object[] options = { "Sim", "Não" };
             int resposta = JOptionPane.showOptionDialog(this,
@@ -377,6 +316,7 @@ public class RealizarVenda extends JPanel {
                         JOptionPane.INFORMATION_MESSAGE);
             }
         });
+        botoesVenda.add(btnConfirmarVenda);
 
         ladoEsquerdo.add(botoesVenda);
         return ladoEsquerdo;
@@ -390,16 +330,15 @@ public class RealizarVenda extends JPanel {
         lblTotal.setFont(new Font("Arial", Font.BOLD, 18));
         lblTotal.setForeground(Color.BLACK);
 
-        Color bordaAzulClaro = new Color(173, 216, 230);
         JTextField txtTotal = new JTextField("0,00", 7);
         txtTotal.setFont(new Font("Arial", Font.PLAIN, 20));
         txtTotal.setPreferredSize(new Dimension(70, 35));
         txtTotal.setMinimumSize(new Dimension(70, 35));
         txtTotal.setMaximumSize(new Dimension(70, 35));
-        txtTotal.setBackground(new Color(24, 39, 55));
+        txtTotal.setBackground(INPUT_BG_COLOR);
         txtTotal.setForeground(Color.WHITE);
         txtTotal.setEditable(false);
-        txtTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        txtTotal.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
 
         ladoDireito.add(lblTotal);
         ladoDireito.add(txtTotal);
@@ -434,7 +373,7 @@ public class RealizarVenda extends JPanel {
 
         ((AbstractDocument) txtCpf.getDocument()).setDocumentFilter(new DocumentFilter() {
             @Override
-            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+            public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
                     throws BadLocationException {
                 String currentText = fb.getDocument().getText(0, fb.getDocument().getLength());
                 String newText = currentText.substring(0, offset) + text + currentText.substring(offset + length);
@@ -445,7 +384,7 @@ public class RealizarVenda extends JPanel {
             }
 
             @Override
-            public void insertString(FilterBypass fb, int offset, String text, AttributeSet attrs)
+            public void insertString(DocumentFilter.FilterBypass fb, int offset, String text, AttributeSet attrs)
                     throws BadLocationException {
                 replace(fb, offset, 0, text, attrs);
             }
@@ -453,7 +392,7 @@ public class RealizarVenda extends JPanel {
 
         JButton btnIdentificar = new JButton("Identificar");
         btnIdentificar.setFont(new Font("Arial", Font.BOLD, 16));
-        btnIdentificar.setBackground(new Color(24, 39, 55));
+        btnIdentificar.setBackground(INPUT_BG_COLOR);
         btnIdentificar.setForeground(Color.WHITE);
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -484,7 +423,6 @@ public class RealizarVenda extends JPanel {
                             "Nome: " + cliente.getNome() + "\n" +
                             "CPF: " + cliente.getCpf() + "\n" +
                             "Telefone: " + cliente.getTelefone();
-
                     JOptionPane.showMessageDialog(dialogo, mensagem, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
 
                     lblNomeCliente.setText("Nome do Cliente: " + cliente.getNome());
@@ -507,10 +445,9 @@ public class RealizarVenda extends JPanel {
 
                         CadastrarCliente cadastrarCliente = new CadastrarCliente();
                         cadastroDialog.add(cadastrarCliente);
-
                         cadastroDialog.setVisible(true);
                         dialogo.setVisible(false);
-                    } else if (opcao == 1) {
+                    } else {
                         JOptionPane.showMessageDialog(dialogo, "Operação cancelada.", "Aviso",
                                 JOptionPane.INFORMATION_MESSAGE);
                         dialogo.setVisible(false);
@@ -526,11 +463,6 @@ public class RealizarVenda extends JPanel {
         dialogo.setVisible(true);
     }
 
-    private void atualizaPainelDireito() {
-        painelDireito.revalidate();
-        painelDireito.repaint();
-    }
-
     private void abrirDialogoPagamentoVenda() {
         JDialog dialogoPagamento = new JDialog();
         dialogoPagamento.setTitle("Pagamento da Venda");
@@ -541,5 +473,10 @@ public class RealizarVenda extends JPanel {
         PagamentoVenda painelPagamento = new PagamentoVenda();
         dialogoPagamento.add(painelPagamento);
         dialogoPagamento.setVisible(true);
+    }
+
+    private void atualizaPainelDireito() {
+        painelDireito.revalidate();
+        painelDireito.repaint();
     }
 }
