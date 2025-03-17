@@ -257,9 +257,8 @@ public class ItemVendaDAO {
 
     public static List<Object> buscarTodosItensDisponiveis(Connection conn, String termoBusca) throws SQLException {
         List<Object> itens = new ArrayList<>();
-        String termoBuscaLike = "%" + (termoBusca != null ? termoBusca.toLowerCase() : "") + "%";
-
-
+        String termoBuscaLike = (termoBusca != null ? termoBusca.toLowerCase() : "") + "%"; // Mudança aqui: sem % no início
+    
         String sqlProdutos = "SELECT id, nome, valor, embalagem, qntEmbalagem, qntMedida " +
                             "FROM produto " +
                             "WHERE qntEstoque > 0 AND LOWER(nome) LIKE ?";
@@ -280,8 +279,8 @@ public class ItemVendaDAO {
         } catch (SQLException e) {
             throw new SQLException("Erro ao buscar produtos disponíveis: " + e.getMessage(), e);
         }
-
-        String sqlMedicamentos = "SELECT id, nome, dosagem, formaFarmaceutica, valorUnit, " +
+    
+        String sqlMedicamentos = "SELECT id, nome, dosagem, formaFarmaceutica, embalagem, qntEmbalagem, valorUnit " +
                                 "FROM medicamento " +
                                 "WHERE qnt > 0 AND LOWER(nome) LIKE ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sqlMedicamentos)) {
@@ -293,6 +292,8 @@ public class ItemVendaDAO {
                     medicamento.setNome(rs.getString("nome"));
                     medicamento.setDosagem(rs.getString("dosagem"));
                     medicamento.setFormaFarmaceutica(rs.getString("formaFarmaceutica"));
+                    medicamento.setEmbalagem(rs.getString("embalagem"));
+                    medicamento.setQntEmbalagem(rs.getInt("qntEmbalagem"));
                     medicamento.setValorUnit(rs.getBigDecimal("valorUnit"));
                     itens.add(medicamento);
                 }
@@ -300,7 +301,7 @@ public class ItemVendaDAO {
         } catch (SQLException e) {
             throw new SQLException("Erro ao buscar medicamentos disponíveis: " + e.getMessage(), e);
         }
-
+    
         return itens;
     }
 }

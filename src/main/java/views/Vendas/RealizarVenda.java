@@ -3,17 +3,25 @@ package views.Vendas;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.swing.*;
+import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 
 import controllers.Cliente.ClienteController;
+import dao.ItemVenda.ItemVendaDAO;
 import main.ConexaoBD;
 import models.Cliente.Cliente;
+import models.Medicamento.Medicamento;
+import models.Produto.Produto;
 import views.Clientes.CadastrarCliente;
 
 public class RealizarVenda extends JPanel {
@@ -35,6 +43,9 @@ public class RealizarVenda extends JPanel {
     private JTextField txtPrecoUnitario;
     private JTextField txtDesconto;
     private JTextField txtPrecoTotal;
+    private JPanel painelItem;
+    private JPopupMenu popupMenu;
+    private Timer searchTimer;
 
     private JPanel painelDireito;
 
@@ -43,6 +54,7 @@ public class RealizarVenda extends JPanel {
     private static final Color INPUT_BG_COLOR = new Color(24, 39, 55);
     private static final Color INPUT_FG_COLOR = Color.WHITE;
     private static final Color BUTTON_CONFIRM_COLOR = new Color(0, 133, 0);
+    private static final int ITEM_HEIGHT = 40;
 
     public RealizarVenda(Connection conn) {
         this.conn = conn;
@@ -114,7 +126,7 @@ public class RealizarVenda extends JPanel {
     }
 
     private JPanel createItemPanel() {
-        JPanel painelItem = new JPanel(new GridBagLayout());
+        painelItem = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
@@ -143,7 +155,132 @@ public class RealizarVenda extends JPanel {
         gbc.weightx = 1.0;
         painelItem.add(txtItem, gbc);
 
+        popupMenu = new JPopupMenu();
+
+        // Timer para evitar chamadas excessivas ao banco de dados
+        searchTimer = new Timer(300, e -> atualizarResultadosBusca(txtItem.getText().trim()));
+        searchTimer.setRepeats(false);
+
+        txtItem.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String termo = txtItem.getText().trim();
+                if (termo.isEmpty()) {
+                    popupMenu.setVisible(false);
+                } else {
+                    searchTimer.restart();
+                }
+            }
+        });
+
+        txtItem.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                SwingUtilities.invokeLater(() -> {
+                    if (!popupMenu.isShowing()) {
+                        popupMenu.setVisible(false);
+                    }
+                });
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (popupMenu.getComponentCount() > 0) {
+                    SwingUtilities.invokeLater(() -> {
+                        popupMenu.show(txtItem, 0, txtItem.getHeight());
+                    });
+                }
+            }
+        });
+
+        painelItem.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                popupMenu.setPreferredSize(new Dimension(painelItem.getWidth(), 200));
+            }
+        });
+
         return painelItem;
+    }
+
+    private void atualizarResultadosBusca(String termo) {
+        popupMenu.removeAll();
+
+        SwingWorker<List<Object>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Object> doInBackground() throws Exception {
+                try (Connection conn = ConexaoBD.getConnection()) {
+                    return ItemVendaDAO.buscarTodosItensDisponiveis(conn, termo);
+                }
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    List<Object> itens = get();
+                    if (itens == null || itens.isEmpty()) {
+                        popupMenu.setVisible(false);
+                        return;
+                    }
+
+                    int itemCount = 0;
+                    for (Object item : itens) {
+                        if (itemCount >= 10) {
+                            break;
+                        }
+                        String texto;
+                        if (item instanceof Produto) {
+                            Produto p = (Produto) item;
+                            texto = String.format("%s %s %s %s UN",
+                                    p.getNome(),
+                                    p.getEmbalagem(),
+                                    p.getQntMedida(),
+                                    p.getQntEmbalagem());
+                        } else if (item instanceof Medicamento) {
+                            Medicamento m = (Medicamento) item;
+                            texto = String.format("%s %s %s %s %s UN",
+                                    m.getNome(),
+                                    m.getFormaFarmaceutica(),
+                                    m.getDosagem(),
+                                    m.getEmbalagem(),
+                                    m.getQntEmbalagem());
+                        } else {
+                            continue;
+                        }
+
+                        JMenuItem menuItem = new JMenuItem(texto);
+                        menuItem.setPreferredSize(new Dimension(painelItem.getWidth(), ITEM_HEIGHT));
+                        menuItem.addActionListener(e -> {
+                            txtItem.setText(texto.toUpperCase());
+                            popupMenu.setVisible(false);
+                            txtItem.requestFocusInWindow();
+                        });
+
+                        popupMenu.add(menuItem);
+                        itemCount++;
+                    }
+
+                    int totalHeight = itemCount * ITEM_HEIGHT;
+                    if (totalHeight < ITEM_HEIGHT) {
+                        totalHeight = ITEM_HEIGHT;
+                    }
+
+                    popupMenu.setPreferredSize(new Dimension(painelItem.getWidth(), totalHeight));
+                    SwingUtilities.invokeLater(() -> {
+                        popupMenu.show(txtItem, 0, txtItem.getHeight());
+                        txtItem.requestFocusInWindow();
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Erro ao buscar itens: " + e.getMessage(), "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    popupMenu.setVisible(false);
+                }
+            }
+        };
+
+        worker.execute();
     }
 
     private JPanel createPainelEsquerdo() {
