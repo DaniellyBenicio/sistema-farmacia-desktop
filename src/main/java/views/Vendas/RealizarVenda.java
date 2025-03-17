@@ -4,26 +4,35 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 
+import controllers.Cliente.ClienteController;
+import main.ConexaoBD;
+import models.Cliente.Cliente;
 import views.Clientes.CadastrarCliente;
 
 public class RealizarVenda extends JPanel {
 
     private Connection conn;
-    private JLabel itemLabel, lblCodigoProduto, lblQuantidade, lblPrecoUnitario, lblDesconto, lblPrecoTotal;
+    private JLabel itemLabel, lblCodigoProduto, lblQuantidade, lblPrecoUnitario, lblDesconto, lblPrecoTotal,
+            lblNomeCliente, lblCpfCliente;
     private JTextField txtItem, txtCodigoProduto, txtQuantidade, txtPrecoUnitario, txtDesconto, txtPrecoTotal;
+
+    private JPanel painelDireito;
 
     public RealizarVenda(Connection conn) {
         this.conn = conn;
 
         setLayout(new BorderLayout());
         setBackground(new Color(240, 236, 236));
-
         setBorder(BorderFactory.createEmptyBorder(10, 50, 0, 50));
 
         JPanel painelTopo = new JPanel(new BorderLayout());
@@ -44,11 +53,12 @@ public class RealizarVenda extends JPanel {
         gbcMeio.gridx = 1;
         gbcMeio.gridy = 0;
         gbcMeio.weightx = 0.9;
-        painelMeio.add(createPainelDireito(), gbcMeio);
+        painelDireito = createPainelDireito();
+        painelMeio.add(painelDireito, gbcMeio);
 
         JScrollPane scrollPane = new JScrollPane(painelMeio);
         scrollPane.setBorder(null);
-        add(painelMeio, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
 
         JPanel painelFooter = new JPanel(new GridBagLayout());
         GridBagConstraints gbcFooter = new GridBagConstraints();
@@ -218,19 +228,83 @@ public class RealizarVenda extends JPanel {
     private JPanel createPainelDireito() {
         JPanel painelDireito = new JPanel();
         painelDireito.setLayout(new BoxLayout(painelDireito, BoxLayout.Y_AXIS));
-        painelDireito.setBorder(BorderFactory.createEmptyBorder(10, 10, 35, 10));
+        painelDireito.setBorder(BorderFactory.createEmptyBorder(10, 5, 5, 5));
 
         JPanel painelInternoDireito = new JPanel(new BorderLayout());
         painelInternoDireito.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
 
-        JLabel labelResumoVenda = new JLabel("Resumo da Venda");
-        labelResumoVenda.setHorizontalAlignment(SwingConstants.CENTER);
-        labelResumoVenda.setVerticalAlignment(SwingConstants.CENTER);
-        labelResumoVenda.setFont(new Font("Arial", Font.BOLD, 16));
-        painelInternoDireito.add(labelResumoVenda, BorderLayout.CENTER);
+        JPanel painelClienteInfo = new JPanel(new GridBagLayout());
+        painelClienteInfo.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        GridBagConstraints gbc = new GridBagConstraints();
 
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(5, 0, 0, 0);
+
+        JLabel lblFarmacia = new JLabel("Farmácia", SwingConstants.CENTER);
+        lblFarmacia.setFont(new Font("Arial", Font.BOLD, 16));
+        lblFarmacia.setForeground(Color.BLACK);
+        painelClienteInfo.add(lblFarmacia, gbc);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        JLabel lblData = new JLabel("Data: " + LocalDate.now().format(formatter));
+
+        gbc.gridy++;
+        painelClienteInfo.add(lblData, gbc);
+
+        gbc.gridy++;
+        lblCpfCliente = new JLabel("CPF do Consumidor: Não Identificado");
+        painelClienteInfo.add(lblCpfCliente, gbc);
+
+        gbc.gridy++;
+        lblNomeCliente = new JLabel("Nome do Consumidor: Não Identificado");
+        painelClienteInfo.add(lblNomeCliente, gbc);
+
+        gbc.gridy++;
+        JLabel lblAtendente = new JLabel("Atendente: Não Identificado");
+        painelClienteInfo.add(lblAtendente, gbc);
+
+        gbc.gridy++;
+        JLabel lblEspaco = new JLabel("");
+        painelClienteInfo.add(lblEspaco, gbc);
+
+        JPanel painelItens = new JPanel(new GridBagLayout());
+        painelItens.setBorder(BorderFactory.createTitledBorder("Itens"));
+        GridBagConstraints gbcItens = new GridBagConstraints();
+        gbcItens.gridx = 0;
+        gbcItens.gridy = 0;
+        gbcItens.anchor = GridBagConstraints.WEST;
+        gbcItens.fill = GridBagConstraints.HORIZONTAL;
+        gbcItens.insets = new Insets(5, 55, 10, 55);
+
+        // Cabeçalho da tabela de itens
+        JLabel lblItem = new JLabel("Item");
+        JLabel lblCodigo = new JLabel("Código");
+        JLabel lblDescricao = new JLabel("Descrição");
+        JLabel lblQnt = new JLabel("Qnt");
+        JLabel lblValorUni = new JLabel("Valor Uni");
+        JLabel lblSubtotal = new JLabel("Subtotal");
+
+        // Adicionar cabeçalho no painel
+        painelItens.add(lblItem, gbcItens);
+        gbcItens.gridx++;
+        painelItens.add(lblCodigo, gbcItens);
+        gbcItens.gridx++;
+        painelItens.add(lblDescricao, gbcItens);
+        gbcItens.gridx++;
+        painelItens.add(lblQnt, gbcItens);
+        gbcItens.gridx++;
+        painelItens.add(lblValorUni, gbcItens);
+        gbcItens.gridx++;
+        painelItens.add(lblSubtotal, gbcItens);
+
+        painelInternoDireito.add(painelClienteInfo, BorderLayout.NORTH);
+        painelInternoDireito.add(painelItens, BorderLayout.CENTER);
         painelDireito.add(painelInternoDireito);
-        painelDireito.add(Box.createVerticalGlue());
+
         return painelDireito;
     }
 
@@ -401,35 +475,50 @@ public class RealizarVenda extends JPanel {
                 return;
             }
 
-            if (verificarCliente(cpf)) {
-                dialogo.dispose();
-                JOptionPane.showMessageDialog(dialogo, "Cliente identificada com sucesso!", "Sucesso",
-                        JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                Object[] options = { "Sim", "Não" };
-                int opcao = JOptionPane.showOptionDialog(dialogo,
-                        "Cliente não cadastrado. Deseja cadastrar?",
-                        "Cadastrar Cliente",
-                        JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null, options, options[0]);
+            try (Connection conn = ConexaoBD.getConnection()) {
+                Cliente cliente = ClienteController.buscarClientePorCpf(conn, cpf);
 
-                if (opcao == 0) {
-                    JDialog cadastroDialog = new JDialog(dialogo, "Cadastrar Cliente", true);
-                    cadastroDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                    cadastroDialog.setSize(1200, 650);
-                    cadastroDialog.setLocationRelativeTo(dialogo);
+                if (cliente != null) {
+                    dialogo.dispose();
+                    String mensagem = "Cliente identificado com sucesso!\n" +
+                            "Nome: " + cliente.getNome() + "\n" +
+                            "CPF: " + cliente.getCpf() + "\n" +
+                            "Telefone: " + cliente.getTelefone();
 
-                    CadastrarCliente cadastrarCliente = new CadastrarCliente();
-                    cadastroDialog.add(cadastrarCliente);
+                    JOptionPane.showMessageDialog(dialogo, mensagem, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
 
-                    cadastroDialog.setVisible(true);
-                    dialogo.setVisible(false);
-                } else if (opcao == 1) {
-                    JOptionPane.showMessageDialog(dialogo, "Operação cancelada.", "Aviso",
-                            JOptionPane.INFORMATION_MESSAGE);
-                    dialogo.setVisible(false);
+                    lblNomeCliente.setText("Nome do Cliente: " + cliente.getNome());
+                    lblCpfCliente.setText("CPF do Cliente: " + cliente.getCpf());
+                    atualizaPainelDireito();
+                } else {
+                    Object[] options = { "Sim", "Não" };
+                    int opcao = JOptionPane.showOptionDialog(dialogo,
+                            "Cliente não cadastrado. Deseja cadastrar?",
+                            "Cadastrar Cliente",
+                            JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.INFORMATION_MESSAGE,
+                            null, options, options[0]);
+
+                    if (opcao == 0) {
+                        JDialog cadastroDialog = new JDialog(dialogo, "Cadastrar Cliente", true);
+                        cadastroDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                        cadastroDialog.setSize(1200, 650);
+                        cadastroDialog.setLocationRelativeTo(dialogo);
+
+                        CadastrarCliente cadastrarCliente = new CadastrarCliente();
+                        cadastroDialog.add(cadastrarCliente);
+
+                        cadastroDialog.setVisible(true);
+                        dialogo.setVisible(false);
+                    } else if (opcao == 1) {
+                        JOptionPane.showMessageDialog(dialogo, "Operação cancelada.", "Aviso",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        dialogo.setVisible(false);
+                    }
                 }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(dialogo, "Erro ao buscar cliente: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -437,8 +526,9 @@ public class RealizarVenda extends JPanel {
         dialogo.setVisible(true);
     }
 
-    private boolean verificarCliente(String cpf) {
-        return "12345678900".equals(cpf);
+    private void atualizaPainelDireito() {
+        painelDireito.revalidate();
+        painelDireito.repaint();
     }
 
     private void abrirDialogoPagamentoVenda() {
