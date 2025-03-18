@@ -7,6 +7,8 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.swing.*;
@@ -157,7 +159,6 @@ public class RealizarVenda extends JPanel {
 
         popupMenu = new JPopupMenu();
 
-        // Timer para evitar chamadas excessivas ao banco de dados
         searchTimer = new Timer(300, e -> atualizarResultadosBusca(txtItem.getText().trim()));
         searchTimer.setRepeats(false);
 
@@ -165,10 +166,23 @@ public class RealizarVenda extends JPanel {
             @Override
             public void keyReleased(KeyEvent e) {
                 String termo = txtItem.getText().trim();
+
                 if (termo.isEmpty()) {
-                    popupMenu.setVisible(false);
-                } else {
+                    txtCodigoProduto.setText("");
+                    txtPrecoUnitario.setText("");
+                }
+
+                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
+                    if (txtItem.getText().isEmpty()) {
+                        txtCodigoProduto.setText("");
+                        txtPrecoUnitario.setText("");
+                    }
+                }
+
+                if (!termo.isEmpty()) {
                     searchTimer.restart();
+                } else {
+                    popupMenu.setVisible(false);
                 }
             }
         });
@@ -252,6 +266,19 @@ public class RealizarVenda extends JPanel {
                         menuItem.setPreferredSize(new Dimension(painelItem.getWidth(), ITEM_HEIGHT));
                         menuItem.addActionListener(e -> {
                             txtItem.setText(texto.toUpperCase());
+
+                            if (item instanceof Produto) {
+                                Produto p = (Produto) item;
+                                txtCodigoProduto.setText(String.valueOf(p.getId()));
+                                txtPrecoUnitario.setText(String.format("%.2f", p.getValor()));
+                            }
+
+                            else if (item instanceof Medicamento) {
+                                Medicamento m = (Medicamento) item;
+                                txtCodigoProduto.setText(String.valueOf(m.getId()));
+                                txtPrecoUnitario.setText(String.format("%.2f", m.getValorUnit()));
+                            }
+
                             popupMenu.setVisible(false);
                             txtItem.requestFocusInWindow();
                         });
@@ -264,6 +291,20 @@ public class RealizarVenda extends JPanel {
                     if (totalHeight < ITEM_HEIGHT) {
                         totalHeight = ITEM_HEIGHT;
                     }
+
+                    txtQuantidade.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            atualizarPrecoTotal();
+                        }
+                    });
+
+                    txtDesconto.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            atualizarPrecoTotal();
+                        }
+                    });
 
                     popupMenu.setPreferredSize(new Dimension(painelItem.getWidth(), totalHeight));
                     SwingUtilities.invokeLater(() -> {
@@ -370,6 +411,29 @@ public class RealizarVenda extends JPanel {
 
         painelEsquerdo.add(painelInternoEsquerdo);
         return painelEsquerdo;
+    }
+
+    private void atualizarPrecoTotal() {
+        try {
+            String quantidadeText = txtQuantidade.getText().replace(",", ".");
+            int quantidade = Integer.parseInt(quantidadeText.trim());
+
+            String precoUnitarioText = txtPrecoUnitario.getText().replace(",", ".");
+            BigDecimal precoUnitario = new BigDecimal(precoUnitarioText.trim());
+
+            String descontoText = txtDesconto.getText().replace(",", ".");
+            BigDecimal desconto = new BigDecimal(descontoText.trim());
+
+            BigDecimal precoTotal = (precoUnitario.multiply(new BigDecimal(quantidade))).subtract(desconto);
+
+            String precoTotalFormatado = precoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",");
+
+            txtPrecoTotal.setText(precoTotalFormatado);
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private JPanel createPainelDireito() {
