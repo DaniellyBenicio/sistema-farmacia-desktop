@@ -1,6 +1,8 @@
 package views.Vendas;
 
 import java.awt.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import javax.swing.*;
@@ -8,6 +10,12 @@ import javax.swing.*;
 public class ResumoDaVenda extends JPanel {
 
     private JLabel lblNomeCliente, lblCpfCliente;
+    private JPanel painelDetalhesItens;
+    private JLabel lblSubtotalValor, lblDescontoValor, lblTotalValor;
+    private int linhaAtual = 1;
+    private BigDecimal subtotalTotal = BigDecimal.ZERO;
+    private BigDecimal descontoTotal = BigDecimal.ZERO;
+    private BigDecimal totalGeral = BigDecimal.ZERO;
 
     public ResumoDaVenda(JLabel lblNomeCliente, JLabel lblCpfCliente) {
         this.lblNomeCliente = lblNomeCliente;
@@ -37,7 +45,6 @@ public class ResumoDaVenda extends JPanel {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         JLabel lblData = new JLabel("Data: " + LocalDate.now().format(formatter));
-
         gbc.gridy++;
         painelClienteInfo.add(lblData, gbc);
 
@@ -99,12 +106,9 @@ public class ResumoDaVenda extends JPanel {
 
         painelItens.add(painelConteudoItens, BorderLayout.NORTH);
 
-        // Painel de detalhes dos itens
-        JPanel painelDetalhesItens = new JPanel(new GridBagLayout());
+        painelDetalhesItens = new JPanel(new GridBagLayout());
         painelDetalhesItens.setBackground(Color.LIGHT_GRAY);
         painelDetalhesItens.setPreferredSize(new Dimension(painelItens.getWidth(), 150));
-
-        addItemDetailsToPanel(painelDetalhesItens);
 
         JScrollPane scrollPane = new JScrollPane(painelDetalhesItens);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -124,9 +128,9 @@ public class ResumoDaVenda extends JPanel {
         JLabel lblDescontoTexto = new JLabel("Desconto R$");
         JLabel lblTotalTexto = new JLabel("Total R$");
 
-        JLabel lblSubtotalValor = new JLabel("65.00");
-        JLabel lblDescontoValor = new JLabel("5.00");
-        JLabel lblTotalValor = new JLabel("60.00");
+        lblSubtotalValor = new JLabel("0,00");
+        lblDescontoValor = new JLabel("0,00");
+        lblTotalValor = new JLabel("0,00");
 
         gbcFooter.gridx = 0;
         gbcFooter.gridy = 0;
@@ -158,7 +162,6 @@ public class ResumoDaVenda extends JPanel {
         add(painelInternoDireito);
     }
 
-    // Método auxiliar para criar GridBagConstraints com weightx configurado
     private GridBagConstraints createGridBagConstraints(double weightx) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
@@ -168,44 +171,56 @@ public class ResumoDaVenda extends JPanel {
         return gbc;
     }
 
-    private void addItemDetailsToPanel(JPanel painelDetalhesItens) {
-        String[][] itens = {
-                { "1", "123", "Descrição do Item 1", "1", "10.00", "10.00" },
-                { "2", "124", "Descrição do Item 2", "2", "20.00", "40.00" },
-                { "3", "125", "Descrição do Item 3", "1", "15.00", "15.00" }
-        };
+    public void adicionarItem(String item, String codigo, String descricao, String quantidade, String valorUnitario,
+            String subtotal, String desconto) {
+        GridBagConstraints gbcItemDetalhe = createGridBagConstraints(0.55);
+        GridBagConstraints gbcCodigoDetalhe = createGridBagConstraints(0.6);
+        GridBagConstraints gbcDescricaoDetalhe = createGridBagConstraints(2.3);
+        GridBagConstraints gbcQntDetalhe = createGridBagConstraints(1.3);
+        GridBagConstraints gbcValorUniDetalhe = createGridBagConstraints(1.0);
+        GridBagConstraints gbcSubtotalDetalhe = createGridBagConstraints(0.5);
 
-        for (int i = 0; i < itens.length; i++) {
-            GridBagConstraints gbcItemDetalhe = createGridBagConstraints(0.55);
-            GridBagConstraints gbcCodigoDetalhe = createGridBagConstraints(0.6);
-            GridBagConstraints gbcDescricaoDetalhe = createGridBagConstraints(2.3);
-            GridBagConstraints gbcQntDetalhe = createGridBagConstraints(1.3);
-            GridBagConstraints gbcValorUniDetalhe = createGridBagConstraints(1.0);
-            GridBagConstraints gbcSubtotalDetalhe = createGridBagConstraints(0.5);
+        gbcItemDetalhe.gridy = linhaAtual;
+        gbcItemDetalhe.gridx = 0;
+        painelDetalhesItens.add(new JLabel(item), gbcItemDetalhe);
 
-            gbcItemDetalhe.gridy = i + 1;
-            gbcItemDetalhe.gridx = 0;
-            painelDetalhesItens.add(new JLabel(itens[i][0]), gbcItemDetalhe);
+        gbcCodigoDetalhe.gridy = linhaAtual;
+        gbcCodigoDetalhe.gridx = 1;
+        painelDetalhesItens.add(new JLabel(codigo), gbcCodigoDetalhe);
 
-            gbcCodigoDetalhe.gridy = i + 1;
-            gbcCodigoDetalhe.gridx = 1;
-            painelDetalhesItens.add(new JLabel(itens[i][1]), gbcCodigoDetalhe);
+        gbcDescricaoDetalhe.gridy = linhaAtual;
+        gbcDescricaoDetalhe.gridx = 2;
+        painelDetalhesItens.add(new JLabel(descricao), gbcDescricaoDetalhe);
 
-            gbcDescricaoDetalhe.gridy = i + 1;
-            gbcDescricaoDetalhe.gridx = 2;
-            painelDetalhesItens.add(new JLabel(itens[i][2]), gbcDescricaoDetalhe);
+        gbcQntDetalhe.gridy = linhaAtual;
+        gbcQntDetalhe.gridx = 3;
+        painelDetalhesItens.add(new JLabel(quantidade), gbcQntDetalhe);
 
-            gbcQntDetalhe.gridy = i + 1;
-            gbcQntDetalhe.gridx = 3;
-            painelDetalhesItens.add(new JLabel(itens[i][3]), gbcQntDetalhe);
+        gbcValorUniDetalhe.gridy = linhaAtual;
+        gbcValorUniDetalhe.gridx = 4;
+        painelDetalhesItens.add(new JLabel(valorUnitario), gbcValorUniDetalhe);
 
-            gbcValorUniDetalhe.gridy = i + 1;
-            gbcValorUniDetalhe.gridx = 4;
-            painelDetalhesItens.add(new JLabel(itens[i][4]), gbcValorUniDetalhe);
+        gbcSubtotalDetalhe.gridy = linhaAtual;
+        gbcSubtotalDetalhe.gridx = 5;
+        painelDetalhesItens.add(new JLabel(subtotal), gbcSubtotalDetalhe);
 
-            gbcSubtotalDetalhe.gridy = i + 1;
-            gbcSubtotalDetalhe.gridx = 5;
-            painelDetalhesItens.add(new JLabel(itens[i][5]), gbcSubtotalDetalhe);
-        }
+        linhaAtual++;
+
+        BigDecimal subtotalItem = new BigDecimal(subtotal.replace(",", "."));
+        BigDecimal descontoItem = new BigDecimal(desconto.replace(",", "."));
+        subtotalTotal = subtotalTotal.add(subtotalItem);
+        descontoTotal = descontoTotal.add(descontoItem);
+        totalGeral = subtotalTotal.subtract(descontoTotal);
+
+        lblSubtotalValor.setText(subtotalTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+        lblDescontoValor.setText(descontoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+        lblTotalValor.setText(totalGeral.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+
+        revalidate();
+        repaint();
+    }
+
+    public BigDecimal getTotalGeral() {
+        return totalGeral;
     }
 }

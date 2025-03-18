@@ -49,7 +49,9 @@ public class RealizarVenda extends JPanel {
     private JPopupMenu popupMenu;
     private Timer searchTimer;
 
-    private JPanel painelDireito;
+    private ResumoDaVenda painelDireito;
+    private int ordemItem = 1;
+    private JTextField txtTotal;
 
     private static final Color BACKGROUND_COLOR = new Color(240, 236, 236);
     private static final Color BORDER_COLOR = new Color(173, 216, 230);
@@ -170,19 +172,10 @@ public class RealizarVenda extends JPanel {
                 if (termo.isEmpty()) {
                     txtCodigoProduto.setText("");
                     txtPrecoUnitario.setText("");
-                }
-
-                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
-                    if (txtItem.getText().isEmpty()) {
-                        txtCodigoProduto.setText("");
-                        txtPrecoUnitario.setText("");
-                    }
-                }
-
-                if (!termo.isEmpty()) {
-                    searchTimer.restart();
-                } else {
                     popupMenu.setVisible(false);
+                    popupMenu.removeAll();
+                } else {
+                    searchTimer.restart();
                 }
             }
         });
@@ -199,7 +192,7 @@ public class RealizarVenda extends JPanel {
 
             @Override
             public void focusGained(FocusEvent e) {
-                if (popupMenu.getComponentCount() > 0) {
+                if (!txtItem.getText().trim().isEmpty() && popupMenu.getComponentCount() > 0) {
                     SwingUtilities.invokeLater(() -> {
                         popupMenu.show(txtItem, 0, txtItem.getHeight());
                     });
@@ -275,9 +268,7 @@ public class RealizarVenda extends JPanel {
                                 Produto p = (Produto) item;
                                 txtCodigoProduto.setText(String.valueOf(p.getId()));
                                 txtPrecoUnitario.setText(String.format("%.2f", p.getValor()));
-                            }
-
-                            else if (item instanceof Medicamento) {
+                            } else if (item instanceof Medicamento) {
                                 Medicamento m = (Medicamento) item;
                                 txtCodigoProduto.setText(String.valueOf(m.getId()));
                                 txtPrecoUnitario.setText(String.format("%.2f", m.getValorUnit()));
@@ -295,20 +286,6 @@ public class RealizarVenda extends JPanel {
                     if (totalHeight < ITEM_HEIGHT) {
                         totalHeight = ITEM_HEIGHT;
                     }
-
-                    txtQuantidade.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            atualizarPrecoTotal();
-                        }
-                    });
-
-                    txtDesconto.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            atualizarPrecoTotal();
-                        }
-                    });
 
                     popupMenu.setPreferredSize(new Dimension(painelItem.getWidth(), totalHeight));
                     SwingUtilities.invokeLater(() -> {
@@ -335,7 +312,7 @@ public class RealizarVenda extends JPanel {
 
         JPanel painelInternoEsquerdo = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 0, 5);
+        gbc.insets = new Insets(5, 5, 8, 5);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.weightx = 1.0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -409,9 +386,22 @@ public class RealizarVenda extends JPanel {
         gbc.gridy = 9;
         painelInternoEsquerdo.add(txtPrecoTotal, gbc);
 
-        gbc.weighty = 1.0;
         gbc.gridy = 10;
-        painelInternoEsquerdo.add(Box.createVerticalGlue(), gbc);
+        painelInternoEsquerdo.add(Box.createVerticalStrut(10), gbc);
+
+        txtQuantidade.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                atualizarPrecoTotal();
+            }
+        });
+
+        txtDesconto.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                atualizarPrecoTotal();
+            }
+        });
 
         painelEsquerdo.add(painelInternoEsquerdo);
         return painelEsquerdo;
@@ -419,20 +409,46 @@ public class RealizarVenda extends JPanel {
 
     private void atualizarPrecoTotal() {
         try {
-            String quantidadeText = txtQuantidade.getText().replace(",", ".");
-            int quantidade = Integer.parseInt(quantidadeText.trim());
+            String quantidadeText = txtQuantidade.getText().replace(",", ".").trim();
+            if (quantidadeText.isEmpty())
+                return;
+            int quantidade = Integer.parseInt(quantidadeText);
 
-            String precoUnitarioText = txtPrecoUnitario.getText().replace(",", ".");
-            BigDecimal precoUnitario = new BigDecimal(precoUnitarioText.trim());
+            String precoUnitarioText = txtPrecoUnitario.getText().replace(",", ".").trim();
+            BigDecimal precoUnitario = new BigDecimal(precoUnitarioText);
 
-            String descontoText = txtDesconto.getText().replace(",", ".");
-            BigDecimal desconto = new BigDecimal(descontoText.trim());
+            String descontoText = txtDesconto.getText().replace(",", ".").trim();
+            BigDecimal desconto = new BigDecimal(descontoText);
 
             BigDecimal precoTotal = (precoUnitario.multiply(new BigDecimal(quantidade))).subtract(desconto);
-
             String precoTotalFormatado = precoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",");
 
             txtPrecoTotal.setText(precoTotalFormatado);
+
+            int resposta = JOptionPane.showConfirmDialog(this,
+                    "Confirmar item?\n" +
+                            "Produto: " + txtItem.getText() + "\n" +
+                            "Quantidade: " + quantidadeText + "\n" +
+                            "Preço Total: " + precoTotalFormatado,
+                    "Confirmação de Item",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (resposta == JOptionPane.YES_OPTION) {
+                painelDireito.adicionarItem(
+                        String.valueOf(ordemItem++),
+                        txtCodigoProduto.getText(),
+                        txtItem.getText(),
+                        txtQuantidade.getText(),
+                        txtPrecoUnitario.getText(),
+                        txtPrecoTotal.getText(),
+                        txtDesconto.getText());
+
+                atualizarTotalFooter();
+
+                limparCampos();
+                popupMenu.setVisible(false);
+                popupMenu.removeAll();
+            }
 
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro",
@@ -440,7 +456,17 @@ public class RealizarVenda extends JPanel {
         }
     }
 
-    private JPanel createPainelDireito() {
+    private void limparCampos() {
+        txtItem.setText("");
+        txtCodigoProduto.setText("");
+        txtQuantidade.setText("");
+        txtPrecoUnitario.setText("0,00");
+        txtDesconto.setText("0,00");
+        txtPrecoTotal.setText("0,00");
+        txtItem.requestFocusInWindow();
+    }
+
+    private ResumoDaVenda createPainelDireito() {
         return new ResumoDaVenda(lblNomeCliente, lblCpfCliente);
     }
 
@@ -450,8 +476,8 @@ public class RealizarVenda extends JPanel {
         textField.setForeground(Color.BLACK);
         textField.setOpaque(true);
         textField.setFont(new Font("Arial", Font.PLAIN, 20));
-        textField.setMinimumSize(new Dimension(450, 45));
-        textField.setPreferredSize(new Dimension(450, 45));
+        textField.setMinimumSize(new Dimension(400, 35));
+        textField.setPreferredSize(new Dimension(400, 40));
         textField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         textField.setHorizontalAlignment(SwingConstants.LEFT);
         return textField;
@@ -488,6 +514,14 @@ public class RealizarVenda extends JPanel {
         btnCancelarVenda.setFocusPainted(false);
         btnCancelarVenda.setMinimumSize(new Dimension(185, 40));
         btnCancelarVenda.setPreferredSize(new Dimension(185, 40));
+        btnCancelarVenda.addActionListener(e -> {
+            limparCampos();
+            ordemItem = 1;
+            painelDireito = createPainelDireito();
+            atualizarTotalFooter();
+            revalidate();
+            repaint();
+        });
         botoesVenda.add(btnCancelarVenda);
         botoesVenda.add(Box.createRigidArea(new Dimension(25, 0)));
 
@@ -535,7 +569,7 @@ public class RealizarVenda extends JPanel {
         lblTotal.setFont(new Font("Arial", Font.BOLD, 18));
         lblTotal.setForeground(Color.BLACK);
 
-        JTextField txtTotal = new JTextField("0,00", 7);
+        txtTotal = new JTextField("0,00", 7);
         txtTotal.setFont(new Font("Arial", Font.PLAIN, 20));
         txtTotal.setPreferredSize(new Dimension(70, 35));
         txtTotal.setMinimumSize(new Dimension(70, 35));
@@ -548,6 +582,11 @@ public class RealizarVenda extends JPanel {
         ladoDireito.add(lblTotal);
         ladoDireito.add(txtTotal);
         return ladoDireito;
+    }
+
+    private void atualizarTotalFooter() {
+        BigDecimal total = painelDireito.getTotalGeral();
+        txtTotal.setText(total.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
     }
 
     private void abrirDialogoIdentificacaoCliente() {
@@ -675,7 +714,7 @@ public class RealizarVenda extends JPanel {
         dialogoPagamento.setModal(true);
         dialogoPagamento.setLocationRelativeTo(this);
 
-        PagamentoVenda painelPagamento = new PagamentoVenda();
+        PagamentoVenda painelPagamento = new PagamentoVenda(painelDireito.getTotalGeral());
         dialogoPagamento.add(painelPagamento);
         dialogoPagamento.setVisible(true);
     }

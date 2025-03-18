@@ -6,6 +6,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class PagamentoVenda extends JPanel {
 
@@ -14,8 +16,9 @@ public class PagamentoVenda extends JPanel {
     private JPanel camposPanel;
     private Connection conn;
     private JComboBox<String> comboPagamento, comboParcelas;
+    private JTextField txtPrecoTotal;
 
-    public PagamentoVenda() {
+    public PagamentoVenda(BigDecimal totalGeral) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(new Color(0, 0, 0, 0));
 
@@ -23,7 +26,7 @@ public class PagamentoVenda extends JPanel {
         add(Box.createRigidArea(new Dimension(0, 40)));
         add(titulo);
 
-        JPanel camposPanel = criarCamposPanel();
+        JPanel camposPanel = criarCamposPanel(totalGeral);
         add(camposPanel);
 
         JPanel tabelaPanel = createTabelaPagamento();
@@ -41,7 +44,7 @@ public class PagamentoVenda extends JPanel {
         return titulo;
     }
 
-    private JPanel criarCamposPanel() {
+    private JPanel criarCamposPanel(BigDecimal totalGeral) {
         camposPanel = new JPanel();
         camposPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -60,12 +63,14 @@ public class PagamentoVenda extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(subtotalLabel, gbc);
 
-        JTextField txtPrecoTotal = new JTextField();
+        txtPrecoTotal = new JTextField();
         txtPrecoTotal.setPreferredSize(fieldSize);
         estilizarCampo(txtPrecoTotal, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
         txtPrecoTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        txtPrecoTotal.setText(totalGeral.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+        txtPrecoTotal.setEditable(false);
         camposPanel.add(txtPrecoTotal, gbc);
 
         JLabel descontoLabel = new JLabel("Desconto");
@@ -150,14 +155,12 @@ public class PagamentoVenda extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(tabela);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 55, 30, 55));
-
         scrollPane.setPreferredSize(new Dimension(750, 200));
 
         JPanel painelTabela = new JPanel(new BorderLayout());
         painelTabela.add(scrollPane, BorderLayout.CENTER);
 
         JPanel totalPanel = createDemaisCampos();
-
         painelTabela.add(totalPanel, BorderLayout.SOUTH);
 
         return painelTabela;
@@ -237,7 +240,7 @@ public class PagamentoVenda extends JPanel {
                 String formaSelecionada = (String) comboPagamento.getSelectedItem();
                 comboParcelas.setEnabled("Cartão de Crédito".equals(formaSelecionada));
                 if (!comboParcelas.isEnabled()) {
-                    comboParcelas.setSelectedIndex(0); 
+                    comboParcelas.setSelectedIndex(0);
                 }
             }
         });
