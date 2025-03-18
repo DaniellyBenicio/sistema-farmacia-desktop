@@ -99,4 +99,17 @@ public class ItemVendaController {
         }
     }    
 
+    public void verificarEstoque(Connection conn, ItemVenda iv) throws SQLException {
+        try {
+            boolean estoqueSuficiente = ItemVendaDAO.verificarEstoque(conn, iv);
+            if (estoqueSuficiente) {
+                System.out.println("Estoque suficiente para o item.");
+            } else {
+                throw new SQLException("Estoque insuficiente para o produto/medicamento.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar estoque: " + e.getMessage());
+            throw e;
+        }
+    }
 }

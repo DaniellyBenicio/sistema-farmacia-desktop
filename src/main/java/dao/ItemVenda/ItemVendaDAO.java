@@ -14,6 +14,10 @@ import models.Produto.Produto;
 
 public class ItemVendaDAO {
     public static void inserirItemVenda(Connection conn, ItemVenda iv) throws SQLException {
+        if (!verificarEstoque(conn, iv)) {
+            throw new SQLException("Estoque insuficiente para realizar a venda do item: " + 
+                (iv.getProduto() != null ? iv.getProduto().getNome() : iv.getMedicamento().getNome()));
+        }
         String sql = "insert into itemVenda (venda_id, produto_id, medicamento_id, qnt, precoUnit, desconto) VALUES (?, ?, ?, ?, ?, ?)";
     
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -73,6 +77,10 @@ public class ItemVendaDAO {
     }        
     
     public static void atualizarItemVenda(Connection conn, ItemVenda iv) throws SQLException {
+        if (!verificarEstoque(conn, iv)) {
+            throw new SQLException("Estoque insuficiente para realizar a venda do item: " + 
+                (iv.getProduto() != null ? iv.getProduto().getNome() : iv.getMedicamento().getNome()));
+        }
         String sql = "update itemVenda set venda_id = ?, produto_id = ?, medicamento_id = ?, qnt = ?, precoUnit = ?, desconto = ? WHERE id = ?";
         
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -303,5 +311,32 @@ public class ItemVendaDAO {
         }
     
         return itens;
+    }
+
+    public static boolean verificarEstoque(Connection conn, ItemVenda iv) throws SQLException {
+        if (iv.getProduto() != null && iv.getProduto().getId() > 0) {
+            String sql = "SELECT qntEstoque FROM produto WHERE id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, iv.getProduto().getId());
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        int qntEstoque = rs.getInt("qntEstoque");
+                        return qntEstoque >= iv.getQnt(); 
+                    }
+                }
+            }
+        } else if (iv.getMedicamento() != null && iv.getMedicamento().getId() > 0) {
+            String sql = "SELECT qnt FROM medicamento WHERE id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, iv.getMedicamento().getId());
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        int qntEstoque = rs.getInt("qnt");
+                        return qntEstoque >= iv.getQnt(); 
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
