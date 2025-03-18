@@ -315,28 +315,43 @@ public class ItemVendaDAO {
 
     public static boolean verificarEstoque(Connection conn, ItemVenda iv) throws SQLException {
         if (iv.getProduto() != null && iv.getProduto().getId() > 0) {
+            System.out.println("Verificando estoque para Produto. ID: " + iv.getProduto().getId());
+    
             String sql = "SELECT qntEstoque FROM produto WHERE id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setInt(1, iv.getProduto().getId());
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
                         int qntEstoque = rs.getInt("qntEstoque");
-                        return qntEstoque >= iv.getQnt(); 
+                        System.out.println("Quantidade em estoque (Produto): " + qntEstoque);
+                        System.out.println("Quantidade solicitada: " + iv.getQnt());
+    
+                        return qntEstoque >= iv.getQnt();
+                    } else {
+                        System.out.println("Nenhum resultado encontrado para o produto com ID: " + iv.getProduto().getId());
                     }
                 }
             }
         } else if (iv.getMedicamento() != null && iv.getMedicamento().getId() > 0) {
+            System.out.println("Verificando estoque para Medicamento. ID: " + iv.getMedicamento().getId());
+    
             String sql = "SELECT qnt FROM medicamento WHERE id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setInt(1, iv.getMedicamento().getId());
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
                         int qntEstoque = rs.getInt("qnt");
-                        return qntEstoque >= iv.getQnt(); 
+                        System.out.println("Quantidade em estoque (Medicamento): " + qntEstoque);
+                        System.out.println("Quantidade solicitada: " + iv.getQnt());
+    
+                        return qntEstoque >= iv.getQnt();
+                    } else {
+                        System.out.println("Nenhum resultado encontrado para o medicamento com ID: " + iv.getMedicamento().getId());
                     }
                 }
             }
         }
+        System.out.println("Produto ou Medicamento não definido corretamente no ItemVenda.");
         return false;
-    }
+    }    
 }

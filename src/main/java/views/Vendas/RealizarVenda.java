@@ -77,47 +77,46 @@ public class RealizarVenda extends JPanel {
         setLayout(new BorderLayout());
         setBackground(BACKGROUND_COLOR);
         setBorder(BorderFactory.createEmptyBorder(10, 50, 0, 50));
-    
+
         JPanel painelTopo = new JPanel(new BorderLayout());
         painelTopo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         painelTopo.add(createItemPanel(), BorderLayout.CENTER);
         add(painelTopo, BorderLayout.NORTH);
-    
+
         JPanel painelMeio = new JPanel(new GridBagLayout());
         GridBagConstraints gbcMeio = new GridBagConstraints();
         gbcMeio.fill = GridBagConstraints.BOTH;
         gbcMeio.weighty = 1.0;
-    
+
         gbcMeio.gridx = 0;
         gbcMeio.gridy = 0;
         gbcMeio.weightx = 0.1;
         JPanel painelEsquerdo = createPainelEsquerdo();
-        painelEsquerdo.setPreferredSize(new Dimension(400, 500)); // Define um tamanho fixo ajustável
+        painelEsquerdo.setPreferredSize(new Dimension(400, 500));
         painelMeio.add(painelEsquerdo, gbcMeio);
-    
+
         gbcMeio.gridx = 1;
         gbcMeio.weightx = 0.9;
         painelDireito = createPainelDireito();
-        painelDireito.setPreferredSize(new Dimension(600, 500)); // Ajuste conforme necessário
+        painelDireito.setPreferredSize(new Dimension(600, 500));
         painelMeio.add(painelDireito, gbcMeio);
-    
-        // Adiciona diretamente ao BorderLayout.CENTER sem JScrollPane
+
         add(painelMeio, BorderLayout.CENTER);
-    
+
         JPanel painelFooter = new JPanel(new GridBagLayout());
         GridBagConstraints gbcFooter = new GridBagConstraints();
         gbcFooter.fill = GridBagConstraints.BOTH;
         gbcFooter.gridy = 0;
         gbcFooter.weighty = 1.0;
-    
+
         gbcFooter.gridx = 0;
         gbcFooter.weightx = 0.9;
         painelFooter.add(ladoEsquerdoFooter(), gbcFooter);
-    
+
         gbcFooter.gridx = 1;
         gbcFooter.weightx = 0.1;
         painelFooter.add(ladoDireitoFooter(), gbcFooter);
-    
+
         add(painelFooter, BorderLayout.SOUTH);
     }
 
@@ -470,7 +469,7 @@ public class RealizarVenda extends JPanel {
 
     private ResumoDaVenda createPainelDireito() {
         ResumoDaVenda resumo = new ResumoDaVenda(lblNomeCliente, lblCpfCliente);
-        resumo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300)); // Limita a altura
+        resumo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
         return resumo;
     }
 
