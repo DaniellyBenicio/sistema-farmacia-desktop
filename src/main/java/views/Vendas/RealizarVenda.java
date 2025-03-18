@@ -246,23 +246,27 @@ public class RealizarVenda extends JPanel {
                         if (item instanceof Produto) {
                             Produto p = (Produto) item;
                             texto = String.format("%s %s %s %s UN",
-                                    p.getNome(),
-                                    p.getEmbalagem(),
-                                    p.getQntMedida(),
+                                    p.getNome().toUpperCase(),
+                                    p.getEmbalagem().toUpperCase(),
+                                    p.getQntMedida().toUpperCase(),
                                     p.getQntEmbalagem());
                         } else if (item instanceof Medicamento) {
                             Medicamento m = (Medicamento) item;
                             texto = String.format("%s %s %s %s %s UN",
-                                    m.getNome(),
-                                    m.getFormaFarmaceutica(),
-                                    m.getDosagem(),
-                                    m.getEmbalagem(),
+                                    m.getNome().toUpperCase(),
+                                    m.getFormaFarmaceutica().toUpperCase(),
+                                    m.getDosagem().toUpperCase(),
+                                    m.getEmbalagem().toUpperCase(),
                                     m.getQntEmbalagem());
                         } else {
                             continue;
                         }
 
                         JMenuItem menuItem = new JMenuItem(texto);
+                        menuItem.setBackground(new Color(24, 39, 55));
+                        menuItem.setForeground(Color.WHITE);
+                        menuItem.setOpaque(true);
+                        menuItem.setFont(new Font("Arial", Font.PLAIN, 16));
                         menuItem.setPreferredSize(new Dimension(painelItem.getWidth(), ITEM_HEIGHT));
                         menuItem.addActionListener(e -> {
                             txtItem.setText(texto.toUpperCase());

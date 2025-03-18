@@ -257,7 +257,7 @@ public class ItemVendaDAO {
 
     public static List<Object> buscarTodosItensDisponiveis(Connection conn, String termoBusca) throws SQLException {
         List<Object> itens = new ArrayList<>();
-        String termoBuscaLike = (termoBusca != null ? termoBusca.toLowerCase() : "") + "%"; // Mudança aqui: sem % no início
+        String termoBuscaLike = (termoBusca != null ? termoBusca.toLowerCase() : "") + "%"; 
     
         String sqlProdutos = "SELECT id, nome, valor, embalagem, qntEmbalagem, qntMedida " +
                             "FROM produto " +
