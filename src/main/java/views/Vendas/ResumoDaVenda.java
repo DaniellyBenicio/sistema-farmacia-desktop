@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
 
 public class ResumoDaVenda extends JPanel {
@@ -12,10 +14,11 @@ public class ResumoDaVenda extends JPanel {
     private JLabel lblNomeCliente, lblCpfCliente;
     private JPanel painelDetalhesItens;
     private JLabel lblSubtotalValor, lblDescontoValor, lblTotalValor;
-    private int linhaAtual = 1;
+    private int linhaAtual = 0;
     private BigDecimal subtotalTotal = BigDecimal.ZERO;
     private BigDecimal descontoTotal = BigDecimal.ZERO;
     private BigDecimal totalGeral = BigDecimal.ZERO;
+    private Map<String, Component[]> itensMap = new HashMap<>();
 
     public ResumoDaVenda(JLabel lblNomeCliente, JLabel lblCpfCliente) {
         this.lblNomeCliente = lblNomeCliente;
@@ -68,22 +71,24 @@ public class ResumoDaVenda extends JPanel {
         GridBagConstraints gbcItens = new GridBagConstraints();
 
         gbcItens.gridy = 0;
-        gbcItens.anchor = GridBagConstraints.WEST;
+        gbcItens.anchor = GridBagConstraints.LINE_START;
         gbcItens.fill = GridBagConstraints.HORIZONTAL;
-        gbcItens.insets = new Insets(5, 0, 5, 0);
+        gbcItens.insets = new Insets(5, 5, 5, 5);
 
-        JLabel lblItem = new JLabel("Item");
-        JLabel lblCodigo = new JLabel("Código");
-        JLabel lblDescricao = new JLabel("Descrição");
-        JLabel lblQnt = new JLabel("Quantidade");
-        JLabel lblValorUni = new JLabel("Valor Unitário");
-        JLabel lblSubtotal = new JLabel("Subtotal");
+        JLabel lblItem = new JLabel("Item", SwingConstants.LEFT);
+        JLabel lblCodigo = new JLabel("Código", SwingConstants.LEFT);
+        JLabel lblDescricao = new JLabel("Descrição", SwingConstants.LEFT);
+        JLabel lblQnt = new JLabel("Quantidade", SwingConstants.LEFT);
+        JLabel lblValorUni = new JLabel("Valor Unitário", SwingConstants.LEFT);
+        JLabel lblDesconto = new JLabel("Desconto", SwingConstants.LEFT);
+        JLabel lblSubtotal = new JLabel("Subtotal", SwingConstants.LEFT);
 
-        GridBagConstraints gbcItem = createGridBagConstraints(0.5);
+        GridBagConstraints gbcItem = createGridBagConstraints(0.4);
         GridBagConstraints gbcCodigo = createGridBagConstraints(0.6);
-        GridBagConstraints gbcDescricao = createGridBagConstraints(4.2);
-        GridBagConstraints gbcQnt = createGridBagConstraints(1.5);
+        GridBagConstraints gbcDescricao = createGridBagConstraints(6.3);
+        GridBagConstraints gbcQnt = createGridBagConstraints(1.0);
         GridBagConstraints gbcValorUni = createGridBagConstraints(1.0);
+        GridBagConstraints gbcDesconto = createGridBagConstraints(1.1);
         GridBagConstraints gbcSubtotal = createGridBagConstraints(1.0);
 
         gbcItens.gridx = 0;
@@ -102,17 +107,22 @@ public class ResumoDaVenda extends JPanel {
         painelConteudoItens.add(lblValorUni, gbcValorUni);
 
         gbcItens.gridx = 5;
+        painelConteudoItens.add(lblDesconto, gbcDesconto);
+
+        gbcItens.gridx = 6;
         painelConteudoItens.add(lblSubtotal, gbcSubtotal);
 
         painelItens.add(painelConteudoItens, BorderLayout.NORTH);
 
         painelDetalhesItens = new JPanel(new GridBagLayout());
         painelDetalhesItens.setBackground(Color.LIGHT_GRAY);
-        painelDetalhesItens.setPreferredSize(new Dimension(painelItens.getWidth(), 150));
 
         JScrollPane scrollPane = new JScrollPane(painelDetalhesItens);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPane.setPreferredSize(new Dimension(painelItens.getWidth(), 100));
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setPreferredSize(new Dimension(0, 150));
+        scrollPane.getViewport().setBackground(Color.LIGHT_GRAY);
+
         painelItens.add(scrollPane, BorderLayout.CENTER);
 
         painelInternoDireito.add(painelClienteInfo, BorderLayout.NORTH);
@@ -160,49 +170,81 @@ public class ResumoDaVenda extends JPanel {
 
         painelInternoDireito.add(painelFooter, BorderLayout.SOUTH);
         add(painelInternoDireito);
+
+        GridBagConstraints gbcFiller = new GridBagConstraints();
+        gbcFiller.gridx = 0;
+        gbcFiller.gridy = 9999;
+        gbcFiller.weighty = 1.0;
+        gbcFiller.fill = GridBagConstraints.VERTICAL;
+        painelDetalhesItens.add(Box.createVerticalGlue(), gbcFiller);
     }
 
     private GridBagConstraints createGridBagConstraints(double weightx) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.weightx = weightx;
         return gbc;
     }
 
-    public void adicionarItem(String item, String codigo, String descricao, String quantidade, String valorUnitario,
-            String subtotal, String desconto) {
-        GridBagConstraints gbcItemDetalhe = createGridBagConstraints(0.55);
+    public void adicionarItem(String ordem, String codigo, String descricao,
+            String quantidade, String valorUnitario, String subtotal, String desconto) {
+        GridBagConstraints gbcItemDetalhe = createGridBagConstraints(0.4);
         GridBagConstraints gbcCodigoDetalhe = createGridBagConstraints(0.6);
-        GridBagConstraints gbcDescricaoDetalhe = createGridBagConstraints(2.3);
-        GridBagConstraints gbcQntDetalhe = createGridBagConstraints(1.3);
-        GridBagConstraints gbcValorUniDetalhe = createGridBagConstraints(1.0);
-        GridBagConstraints gbcSubtotalDetalhe = createGridBagConstraints(0.5);
+        GridBagConstraints gbcDescricaoDetalhe = createGridBagConstraints(4.2);
+        GridBagConstraints gbcQntDetalhe = createGridBagConstraints(1.0);
+        GridBagConstraints gbcValorUniDetalhe = createGridBagConstraints(1.4);
+        GridBagConstraints gbcDescontoDetalhe = createGridBagConstraints(1.0);
+        GridBagConstraints gbcSubtotalDetalhe = createGridBagConstraints(1.0);
+
+        JLabel lblOrdem = new JLabel(ordem, SwingConstants.CENTER);
+        JLabel lblCodigo = new JLabel(codigo, SwingConstants.CENTER);
+
+        JTextArea lblDescricao = new JTextArea(descricao);
+        lblDescricao.setLineWrap(true);
+        lblDescricao.setWrapStyleWord(true);
+        lblDescricao.setEditable(false);
+        lblDescricao.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 2));
+        lblDescricao.setRows(2);
+        lblDescricao.setPreferredSize(new Dimension(20, 40));
+        lblDescricao.setBackground(Color.LIGHT_GRAY);
+
+        JLabel lblQuantidade = new JLabel(quantidade, SwingConstants.CENTER);
+        JLabel lblValorUnitario = new JLabel(valorUnitario, SwingConstants.CENTER);
+        JLabel lblDescontoItem = new JLabel(desconto, SwingConstants.CENTER);
+        JLabel lblSubtotal = new JLabel(subtotal, SwingConstants.CENTER);
 
         gbcItemDetalhe.gridy = linhaAtual;
         gbcItemDetalhe.gridx = 0;
-        painelDetalhesItens.add(new JLabel(item), gbcItemDetalhe);
+        painelDetalhesItens.add(lblOrdem, gbcItemDetalhe);
 
         gbcCodigoDetalhe.gridy = linhaAtual;
         gbcCodigoDetalhe.gridx = 1;
-        painelDetalhesItens.add(new JLabel(codigo), gbcCodigoDetalhe);
+        painelDetalhesItens.add(lblCodigo, gbcCodigoDetalhe);
 
         gbcDescricaoDetalhe.gridy = linhaAtual;
         gbcDescricaoDetalhe.gridx = 2;
-        painelDetalhesItens.add(new JLabel(descricao), gbcDescricaoDetalhe);
+        painelDetalhesItens.add(lblDescricao, gbcDescricaoDetalhe);
 
         gbcQntDetalhe.gridy = linhaAtual;
         gbcQntDetalhe.gridx = 3;
-        painelDetalhesItens.add(new JLabel(quantidade), gbcQntDetalhe);
+        painelDetalhesItens.add(lblQuantidade, gbcQntDetalhe);
 
         gbcValorUniDetalhe.gridy = linhaAtual;
         gbcValorUniDetalhe.gridx = 4;
-        painelDetalhesItens.add(new JLabel(valorUnitario), gbcValorUniDetalhe);
+        painelDetalhesItens.add(lblValorUnitario, gbcValorUniDetalhe);
+
+        gbcDescontoDetalhe.gridy = linhaAtual;
+        gbcDescontoDetalhe.gridx = 5;
+        painelDetalhesItens.add(lblDescontoItem, gbcDescontoDetalhe);
 
         gbcSubtotalDetalhe.gridy = linhaAtual;
-        gbcSubtotalDetalhe.gridx = 5;
-        painelDetalhesItens.add(new JLabel(subtotal), gbcSubtotalDetalhe);
+        gbcSubtotalDetalhe.gridx = 6;
+        painelDetalhesItens.add(lblSubtotal, gbcSubtotalDetalhe);
+
+        itensMap.put(ordem, new Component[] { lblOrdem, lblCodigo, lblDescricao,
+                lblQuantidade, lblValorUnitario, lblDescontoItem, lblSubtotal });
 
         linhaAtual++;
 
@@ -212,12 +254,68 @@ public class ResumoDaVenda extends JPanel {
         descontoTotal = descontoTotal.add(descontoItem);
         totalGeral = subtotalTotal.subtract(descontoTotal);
 
-        lblSubtotalValor.setText(subtotalTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
-        lblDescontoValor.setText(descontoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
-        lblTotalValor.setText(totalGeral.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+        atualizarTotais();
 
+        SwingUtilities.invokeLater(() -> {
+            JScrollPane scrollPane = (JScrollPane) painelDetalhesItens.getParent().getParent();
+            JScrollBar verticalBar = scrollPane.getVerticalScrollBar();
+            if (linhaAtual == 1) {
+                verticalBar.setValue(verticalBar.getMinimum());
+            } else {
+                verticalBar.setValue(verticalBar.getMaximum());
+            }
+        });
+    }
+
+    public void removerItem(String ordem) {
+        Component[] componentes = itensMap.get(ordem);
+        if (componentes != null) {
+            for (Component comp : componentes) {
+                painelDetalhesItens.remove(comp);
+            }
+
+            String subtotalStr = ((JLabel) componentes[6]).getText();
+            String descontoStr = ((JLabel) componentes[5]).getText();
+            BigDecimal subtotalItem = new BigDecimal(subtotalStr.replace(",", "."));
+            BigDecimal descontoItem = new BigDecimal(descontoStr.replace(",", "."));
+
+            subtotalTotal = subtotalTotal.subtract(subtotalItem);
+            descontoTotal = descontoTotal.subtract(descontoItem);
+            totalGeral = subtotalTotal.subtract(descontoTotal);
+
+            itensMap.remove(ordem);
+
+            revalidate();
+            repaint();
+            atualizarTotais();
+        }
+    }
+
+    private void atualizarTotais() {
+        lblSubtotalValor.setText(subtotalTotal.setScale(2, RoundingMode.HALF_UP)
+                .toString().replace(".", ","));
+        lblDescontoValor.setText(descontoTotal.setScale(2, RoundingMode.HALF_UP)
+                .toString().replace(".", ","));
+        lblTotalValor.setText(totalGeral.setScale(2, RoundingMode.HALF_UP)
+                .toString().replace(".", ","));
         revalidate();
         repaint();
+    }
+
+    public String[] getDadosItemPorOrdem(String ordem) {
+        Component[] componentes = itensMap.get(ordem);
+        if (componentes != null) {
+            return new String[] {
+                    ((JLabel) componentes[0]).getText(),
+                    ((JLabel) componentes[1]).getText(),
+                    ((JTextArea) componentes[2]).getText(),
+                    ((JLabel) componentes[3]).getText(),
+                    ((JLabel) componentes[4]).getText(),
+                    ((JLabel) componentes[5]).getText(),
+                    ((JLabel) componentes[6]).getText()
+            };
+        }
+        return null;
     }
 
     public BigDecimal getTotalGeral() {

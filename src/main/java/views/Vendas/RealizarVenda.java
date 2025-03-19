@@ -22,6 +22,7 @@ import controllers.Cliente.ClienteController;
 import dao.ItemVenda.ItemVendaDAO;
 import main.ConexaoBD;
 import models.Cliente.Cliente;
+import models.ItemVenda.ItemVenda;
 import models.Medicamento.Medicamento;
 import models.Produto.Produto;
 import views.Clientes.CadastrarCliente;
@@ -173,6 +174,7 @@ public class RealizarVenda extends JPanel {
                 if (termo.isEmpty()) {
                     txtCodigoProduto.setText("");
                     txtPrecoUnitario.setText("");
+                    txtQuantidade.setEnabled(false);
                     popupMenu.setVisible(false);
                     popupMenu.removeAll();
                 } else {
@@ -275,8 +277,9 @@ public class RealizarVenda extends JPanel {
                                 txtPrecoUnitario.setText(String.format("%.2f", m.getValorUnit()));
                             }
 
+                            txtQuantidade.setEnabled(true);
+                            txtQuantidade.requestFocusInWindow();
                             popupMenu.setVisible(false);
-                            txtItem.requestFocusInWindow();
                         });
 
                         popupMenu.add(menuItem);
@@ -339,6 +342,7 @@ public class RealizarVenda extends JPanel {
 
         txtQuantidade = createTextFieldOutrosCampos();
         txtQuantidade.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+        txtQuantidade.setEnabled(false);
         gbc.gridx = 0;
         gbc.gridy = 3;
         painelInternoEsquerdo.add(txtQuantidade, gbc);
@@ -387,20 +391,46 @@ public class RealizarVenda extends JPanel {
         gbc.gridy = 9;
         painelInternoEsquerdo.add(txtPrecoTotal, gbc);
 
+        JButton btnAdicionarItem = new JButton("Adicionar Item");
+        btnAdicionarItem.setFont(new Font("Arial", Font.BOLD, 16));
+        btnAdicionarItem.setBackground(BUTTON_CONFIRM_COLOR);
+        btnAdicionarItem.setForeground(Color.WHITE);
+        btnAdicionarItem.setFocusPainted(false);
+        btnAdicionarItem.addActionListener(e -> confirmarItem());
+        gbc.gridx = 0;
         gbc.gridy = 10;
-        painelInternoEsquerdo.add(Box.createVerticalStrut(10), gbc);
+        gbc.insets = new Insets(10, 5, 5, 5);
+        painelInternoEsquerdo.add(btnAdicionarItem, gbc);
 
         txtQuantidade.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                atualizarPrecoTotal();
+                calcularPrecoTotal();
             }
         });
 
         txtDesconto.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                atualizarPrecoTotal();
+                calcularPrecoTotal();
+            }
+        });
+
+        txtQuantidade.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    confirmarItem();
+                }
+            }
+        });
+
+        txtDesconto.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    confirmarItem();
+                }
             }
         });
 
@@ -408,11 +438,18 @@ public class RealizarVenda extends JPanel {
         return painelEsquerdo;
     }
 
-    private void atualizarPrecoTotal() {
+    private void calcularPrecoTotal() {
         try {
-            String quantidadeText = txtQuantidade.getText().replace(",", ".").trim();
-            if (quantidadeText.isEmpty())
+            if (txtCodigoProduto.getText().trim().isEmpty()) {
+                txtPrecoTotal.setText("0,00");
                 return;
+            }
+
+            String quantidadeText = txtQuantidade.getText().replace(",", ".").trim();
+            if (quantidadeText.isEmpty()) {
+                txtPrecoTotal.setText("0,00");
+                return;
+            }
             int quantidade = Integer.parseInt(quantidadeText);
 
             String precoUnitarioText = txtPrecoUnitario.getText().replace(",", ".").trim();
@@ -421,16 +458,70 @@ public class RealizarVenda extends JPanel {
             String descontoText = txtDesconto.getText().replace(",", ".").trim();
             BigDecimal desconto = new BigDecimal(descontoText);
 
+            String codigoProduto = txtCodigoProduto.getText().trim();
+            int idItem = Integer.parseInt(codigoProduto);
+            ItemVenda itemVenda = new ItemVenda();
+
+            boolean estoqueSuficiente = ItemVendaDAO.verificarTipoEEstoque(conn, idItem, quantidade, itemVenda);
+            if (!estoqueSuficiente) {
+                String tipoItem = (itemVenda.getProduto() != null) ? "produto"
+                        : (itemVenda.getMedicamento() != null) ? "medicamento" : "item";
+                if (itemVenda.getMedicamento() != null && itemVenda.getMedicamento().getTipoReceita() != null) {
+                    tipoItem += " (" + itemVenda.getMedicamento().getTipoReceita().name().toLowerCase() + ")";
+                }
+                JOptionPane.showMessageDialog(this,
+                        "Quantidade solicitada (" + quantidade + ") excede o estoque disponível para o " + tipoItem
+                                + ".",
+                        "Erro de Estoque",
+                        JOptionPane.ERROR_MESSAGE);
+                txtQuantidade.requestFocusInWindow();
+                return;
+            }
+
             BigDecimal precoTotal = (precoUnitario.multiply(new BigDecimal(quantidade))).subtract(desconto);
             String precoTotalFormatado = precoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",");
-
             txtPrecoTotal.setText(precoTotalFormatado);
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+            txtPrecoTotal.setText("0,00");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao verificar estoque: " + e.getMessage(), "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+            txtPrecoTotal.setText("0,00");
+        }
+    }
+
+    private void confirmarItem() {
+        try {
+            if (txtCodigoProduto.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, selecione um item antes de informar a quantidade.",
+                        "Erro", JOptionPane.ERROR_MESSAGE);
+                txtItem.requestFocusInWindow();
+                return;
+            }
+
+            String quantidadeText = txtQuantidade.getText().replace(",", ".").trim();
+            if (quantidadeText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, insira a quantidade.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+                txtQuantidade.requestFocusInWindow();
+                return;
+            }
+
+            String precoTotalText = txtPrecoTotal.getText().replace(",", ".").trim();
+            if (precoTotalText.equals("0,00") || precoTotalText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Preço total inválido. Verifique os valores.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             int resposta = JOptionPane.showConfirmDialog(this,
                     "Confirmar item?\n" +
                             "Produto: " + txtItem.getText() + "\n" +
                             "Quantidade: " + quantidadeText + "\n" +
-                            "Preço Total: " + precoTotalFormatado,
+                            "Preço Total: " + precoTotalText,
                     "Confirmação de Item",
                     JOptionPane.YES_NO_OPTION);
 
@@ -445,14 +536,12 @@ public class RealizarVenda extends JPanel {
                         txtDesconto.getText());
 
                 atualizarTotalFooter();
-
                 limparCampos();
                 popupMenu.setVisible(false);
                 popupMenu.removeAll();
             }
-
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro",
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro ao confirmar item: " + e.getMessage(), "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -461,6 +550,7 @@ public class RealizarVenda extends JPanel {
         txtItem.setText("");
         txtCodigoProduto.setText("");
         txtQuantidade.setText("");
+        txtQuantidade.setEnabled(false);
         txtPrecoUnitario.setText("0,00");
         txtDesconto.setText("0,00");
         txtPrecoTotal.setText("0,00");
@@ -526,6 +616,17 @@ public class RealizarVenda extends JPanel {
             repaint();
         });
         botoesVenda.add(btnCancelarVenda);
+        botoesVenda.add(Box.createRigidArea(new Dimension(25, 0)));
+
+        JButton btnRemoverItem = new JButton("Remover Item");
+        btnRemoverItem.setFont(new Font("Arial", Font.BOLD, 18));
+        btnRemoverItem.setBackground(Color.ORANGE);
+        btnRemoverItem.setForeground(Color.WHITE);
+        btnRemoverItem.setFocusPainted(false);
+        btnRemoverItem.setMinimumSize(new Dimension(185, 40));
+        btnRemoverItem.setPreferredSize(new Dimension(185, 40));
+        btnRemoverItem.addActionListener(e -> abrirDialogoRemoverItem());
+        botoesVenda.add(btnRemoverItem);
         botoesVenda.add(Box.createRigidArea(new Dimension(25, 0)));
 
         JButton btnConfirmarVenda = new JButton("Confirmar Venda");
@@ -707,6 +808,82 @@ public class RealizarVenda extends JPanel {
         });
 
         dialogo.setLocationRelativeTo(null);
+        dialogo.setVisible(true);
+    }
+
+    private void abrirDialogoRemoverItem() {
+        JDialog dialogo = new JDialog();
+        dialogo.setTitle("Remover Item");
+        dialogo.setSize(350, 180);
+        dialogo.setLayout(new GridBagLayout());
+        dialogo.setModal(true);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.CENTER;
+
+        JLabel lblOrdem = new JLabel("Digite o número do item (ordem):");
+        lblOrdem.setFont(new Font("Arial", Font.BOLD, 16));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        dialogo.add(lblOrdem, gbc);
+
+        JTextField txtOrdem = new JTextField();
+        txtOrdem.setFont(new Font("Arial", Font.PLAIN, 18));
+        txtOrdem.setColumns(10);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        dialogo.add(txtOrdem, gbc);
+
+        JButton btnRemover = new JButton("Remover");
+        btnRemover.setFont(new Font("Arial", Font.BOLD, 16));
+        btnRemover.setBackground(INPUT_BG_COLOR);
+        btnRemover.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        dialogo.add(btnRemover, gbc);
+
+        btnRemover.addActionListener(e -> {
+            String ordem = txtOrdem.getText().trim();
+            if (ordem.isEmpty()) {
+                JOptionPane.showMessageDialog(dialogo, "Por favor, informe o número do item.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                String[] dadosItem = painelDireito.getDadosItemPorOrdem(ordem);
+                if (dadosItem == null) {
+                    JOptionPane.showMessageDialog(dialogo, "Item com ordem '" + ordem + "' não encontrado.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                String mensagemConfirmacao = "Deseja remover o item?\n" +
+                        "Ordem: " + dadosItem[0] + "\n" +
+                        "Produto: " + dadosItem[2] + "\n" +
+                        "Quantidade: " + dadosItem[3] + "\n" +
+                        "Preço Total: " + dadosItem[6];
+                int resposta = JOptionPane.showConfirmDialog(dialogo, mensagemConfirmacao, "Confirmação de Remoção",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (resposta == JOptionPane.YES_OPTION) {
+                    painelDireito.removerItem(ordem);
+                    atualizarTotalFooter();
+                    dialogo.dispose();
+                    JOptionPane.showMessageDialog(this, "Item removido com sucesso!", "Sucesso",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialogo, "Erro ao remover item: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        txtOrdem.addActionListener(e -> btnRemover.doClick());
+
+        dialogo.setLocationRelativeTo(this);
         dialogo.setVisible(true);
     }
 
