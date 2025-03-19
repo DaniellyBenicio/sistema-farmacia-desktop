@@ -322,7 +322,8 @@ public class ItemVendaDAO {
     private static int qntDisponivelProduto = -1;
     private static int qntDisponivelMedicamento = -1;
 
-    public static boolean verificarTipoEEstoque(Connection conn, int idItem, int quantidade, ItemVenda iv)
+    public static boolean verificarTipoEEstoque(Connection conn, int idItem, int quantidade, ItemVenda iv,
+            boolean isRemocao)
             throws SQLException {
 
         if (qntDisponivelProduto == -1) {
@@ -332,7 +333,8 @@ public class ItemVendaDAO {
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
                         qntDisponivelProduto = rs.getInt("qntEstoque");
-                        System.out.println("Produto encontrado. ID: " + idItem + ", Estoque inicial: " + qntDisponivelProduto);
+                        System.out.println(
+                                "Produto encontrado. ID: " + idItem + ", Estoque inicial: " + qntDisponivelProduto);
                     }
                 }
             }
@@ -340,12 +342,19 @@ public class ItemVendaDAO {
 
         if (qntDisponivelProduto != -1) {
             System.out.println("Estoque atual de produto ID " + idItem + ": " + qntDisponivelProduto);
-            if (qntDisponivelProduto >= quantidade) {
+            if (isRemocao) {
+                qntDisponivelProduto += quantidade;
+                System.out.println("Estoque restaurado de produto ID " + idItem + ": " + qntDisponivelProduto);
                 Produto produto = new Produto();
                 produto.setId(idItem);
                 iv.setProduto(produto);
                 iv.setQnt(quantidade);
-
+                return true;
+            } else if (qntDisponivelProduto >= quantidade) {
+                Produto produto = new Produto();
+                produto.setId(idItem);
+                iv.setProduto(produto);
+                iv.setQnt(quantidade);
                 qntDisponivelProduto -= quantidade;
                 System.out.println("Estoque atualizado de produto ID " + idItem + ": " + qntDisponivelProduto);
                 return true;
@@ -363,22 +372,25 @@ public class ItemVendaDAO {
                     if (rs.next()) {
                         qntDisponivelMedicamento = rs.getInt("qnt");
                         String tipoReceitaStr = rs.getString("tipoReceita");
-                        System.out.println("Medicamento encontrado. ID: " + idItem + ", Estoque inicial: " + qntDisponivelMedicamento
+                        System.out.println("Medicamento encontrado. ID: " + idItem + ", Estoque inicial: "
+                                + qntDisponivelMedicamento
                                 + ", Tipo de Receita: " + tipoReceitaStr);
 
                         Medicamento medicamento = new Medicamento();
                         medicamento.setId(idItem);
                         if (tipoReceitaStr != null) {
                             try {
-                                medicamento.setTipoReceita(Medicamento.TipoReceita.valueOf(tipoReceitaStr.toUpperCase()));
+                                medicamento
+                                        .setTipoReceita(Medicamento.TipoReceita.valueOf(tipoReceitaStr.toUpperCase()));
                             } catch (IllegalArgumentException e) {
-                                throw new SQLException("Tipo de receita inválido no banco de dados para o medicamento ID "
-                                        + idItem + ": " + tipoReceitaStr, e);
+                                throw new SQLException(
+                                        "Tipo de receita inválido no banco de dados para o medicamento ID "
+                                                + idItem + ": " + tipoReceitaStr,
+                                        e);
                             }
                         } else {
                             throw new SQLException("Campo tipoReceita é nulo para o medicamento ID " + idItem);
                         }
-
                         iv.setMedicamento(medicamento);
                     }
                 }
@@ -387,9 +399,13 @@ public class ItemVendaDAO {
 
         if (qntDisponivelMedicamento != -1) {
             System.out.println("Estoque atual de medicamento ID " + idItem + ": " + qntDisponivelMedicamento);
-            if (qntDisponivelMedicamento >= quantidade) {
+            if (isRemocao) {
+                qntDisponivelMedicamento += quantidade;
+                System.out.println("Estoque restaurado de medicamento ID " + idItem + ": " + qntDisponivelMedicamento);
                 iv.setQnt(quantidade);
-
+                return true;
+            } else if (qntDisponivelMedicamento >= quantidade) {
+                iv.setQnt(quantidade);
                 qntDisponivelMedicamento -= quantidade;
                 System.out.println("Estoque atualizado de medicamento ID " + idItem + ": " + qntDisponivelMedicamento);
                 return true;
@@ -401,5 +417,4 @@ public class ItemVendaDAO {
 
         throw new SQLException("Item com ID " + idItem + " não encontrado no banco de dados.");
     }
-
 }

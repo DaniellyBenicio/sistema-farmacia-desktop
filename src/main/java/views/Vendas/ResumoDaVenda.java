@@ -11,16 +11,16 @@ import javax.swing.*;
 
 public class ResumoDaVenda extends JPanel {
 
-    private JLabel lblNomeCliente, lblCpfCliente;
+    private JLabel lblNomeCliente, lblCpfCliente, lblAtendente;
     private JPanel painelDetalhesItens;
     private JLabel lblSubtotalValor, lblDescontoValor, lblTotalValor;
     private int linhaAtual = 0;
     private BigDecimal subtotalTotal = BigDecimal.ZERO;
     private BigDecimal descontoTotal = BigDecimal.ZERO;
     private BigDecimal totalGeral = BigDecimal.ZERO;
-    private Map<String, Component[]> itensMap = new HashMap<>();
+    Map<String, Component[]> itensMap = new HashMap<>();
 
-    public ResumoDaVenda(JLabel lblNomeCliente, JLabel lblCpfCliente) {
+    public ResumoDaVenda(JLabel lblNomeCliente, JLabel lblCpfCliente, JLabel lblAtendente) {
         this.lblNomeCliente = lblNomeCliente;
         this.lblCpfCliente = lblCpfCliente;
 
@@ -58,7 +58,6 @@ public class ResumoDaVenda extends JPanel {
         painelClienteInfo.add(lblNomeCliente, gbc);
 
         gbc.gridy++;
-        JLabel lblAtendente = new JLabel("Atendente: Não Identificado");
         painelClienteInfo.add(lblAtendente, gbc);
 
         gbc.gridy++;

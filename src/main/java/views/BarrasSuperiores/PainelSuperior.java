@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Calendar;
 
 import main.ConexaoBD;
+import views.Vendas.RealizarVenda;
 import dao.Funcionario.FuncionarioDAO;
 
 public class PainelSuperior extends JPanel {
@@ -20,10 +21,13 @@ public class PainelSuperior extends JPanel {
     private String cargoFuncionario;
     private static int idFuncionarioAtual;
     private static String cargoFuncionarioAtual;
+    private static String nomeDoFuncionario;
+    private RealizarVenda realizarVenda;
 
-    public PainelSuperior(CardLayout layoutAlternativo, JPanel painelDeVisualizacao) {
+    public PainelSuperior(CardLayout layoutAlternativo, JPanel painelDeVisualizacao, RealizarVenda realizarVenda) {
         this.layoutAlternativo = layoutAlternativo;
         this.painelDeVisualizacao = painelDeVisualizacao;
+        this.realizarVenda = realizarVenda;
 
         setLayout(new BorderLayout());
         inicializarMenuSuperior();
@@ -143,6 +147,10 @@ public class PainelSuperior extends JPanel {
         return idFuncionarioAtual;
     }
 
+    public static String getNomeFuncionarioAtual() {
+        return nomeDoFuncionario;
+    }
+
     private void buscarFuncionario(String codigoFuncionarioDigitado, JDialog dialogo) {
         if (codigoFuncionarioDigitado == null || codigoFuncionarioDigitado.trim().isEmpty()) {
             mostrarMensagemErro(dialogo, "Por favor, insira o código do funcionário.");
@@ -164,6 +172,7 @@ public class PainelSuperior extends JPanel {
 
                 idFuncionarioAtual = Integer.parseInt(codigoFuncionario);
                 cargoFuncionarioAtual = cargoFuncionario;
+                nomeDoFuncionario = nomeFuncionario;
 
                 if ("Gerente".equalsIgnoreCase(cargoFuncionario) && "Inativo".equalsIgnoreCase(statusFuncionario)) {
                     mostrarMensagemErro(dialogo, "O gerente " + nomeFuncionario
@@ -174,6 +183,10 @@ public class PainelSuperior extends JPanel {
                 labelFuncionario.setText("Funcionário: " + codigoFuncionario + " - " + nomeFuncionario);
                 dialogo.dispose();
                 atualizarEstadoDosBotoesDeAcordoComCargo();
+
+                if (realizarVenda != null) {
+                    realizarVenda.atualizarAtendente(nomeFuncionario);
+                }
 
                 if (!"Gerente".equalsIgnoreCase(cargoFuncionario)) {
                     selecionarOpcaoMenu(botoesMenu[0]);

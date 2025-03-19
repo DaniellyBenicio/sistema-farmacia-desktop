@@ -97,10 +97,11 @@ public class ItemVendaController {
             System.err.println("Erro ao calcular desconto automático: " + e.getMessage());
             throw e;
         }
-    }    
+    }
+
     public boolean verificarEstoque(Connection conn, ItemVenda iv, int idItem, int quantidade) throws SQLException {
         try {
-            boolean estoqueSuficiente = ItemVendaDAO.verificarTipoEEstoque(conn, idItem, quantidade, iv);
+            boolean estoqueSuficiente = ItemVendaDAO.verificarTipoEEstoque(conn, idItem, quantidade, iv, false);
             if (estoqueSuficiente) {
                 System.out.println("Estoque suficiente para o item.");
                 return true;

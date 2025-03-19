@@ -6,14 +6,14 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 import views.BarrasSuperiores.PainelSuperior;
 import views.Clientes.ListaDeClientes;
@@ -37,6 +37,7 @@ public class Farmacia extends JFrame {
     private EstoqueMedicamento estoqueMedicamento;
     private EstoqueProduto estoqueProduto;
     private VisualizarVendas visualizarVendas;
+    private RealizarVenda realizarVenda;
 
     public Farmacia() {
         setTitle("Farmácia");
@@ -56,11 +57,13 @@ public class Farmacia extends JFrame {
             JOptionPane.showMessageDialog(this, "Erro de conexão com o banco de dados", "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
+
+        realizarVenda = new RealizarVenda(conexão);
         principalEstoque = new PrincipalEstoque(conexão, layoutCartao, painelCentral);
         estoqueMedicamento = new EstoqueMedicamento(conexão, principalEstoque, layoutCartao, painelCentral);
         estoqueProduto = new EstoqueProduto(conexão, principalEstoque, layoutCartao, painelCentral);
 
-        painelCentral.add(new RealizarVenda(conexão), "Vendas");
+        painelCentral.add(realizarVenda, "Vendas");
         painelCentral.add(new CadastrarFornecedor(), "CadastrarFornecedor");
         painelCentral.add(new ListaDeFornecedores(conexão), "ListaDeFornecedores");
         painelCentral.add(new CadastrarFuncionario(), "CadastrarFuncionário");
@@ -68,12 +71,12 @@ public class Farmacia extends JFrame {
         painelCentral.add(new ListaDeClientes(conexão), "ListaDeClientes");
         painelCentral.add(new ListaDeMedicamentos(conexão), "ListaDeMedicamentos");
         painelCentral.add(new ListaDeProdutos(conexão), "ListaDeProdutos");
-        //painelCentral.add(new VisualizarVendas(conexão), "VisualizarVendas");
+        // painelCentral.add(new VisualizarVendas(conexão), "VisualizarVendas");
         painelCentral.add(principalEstoque, "GerenciamentoDeEstoque");
         painelCentral.add(estoqueMedicamento, "EstoqueMedicamento");
         painelCentral.add(estoqueProduto, "EstoqueProduto");
 
-        PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral);
+        PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral, realizarVenda);
         add(painelSuperior, BorderLayout.NORTH);
         add(painelCentral, BorderLayout.CENTER);
 
