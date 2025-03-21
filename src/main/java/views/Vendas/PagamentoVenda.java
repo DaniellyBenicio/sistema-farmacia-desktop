@@ -1,13 +1,24 @@
 package views.Vendas;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+
+import dao.Cliente.ClienteDAO;
+import dao.Venda.VendaDAO;
+import main.ConexaoBD;
+import models.Venda.Venda;
+import views.BarrasSuperiores.PainelSuperior;
+
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class PagamentoVenda extends JPanel {
 
@@ -16,9 +27,17 @@ public class PagamentoVenda extends JPanel {
     private JPanel camposPanel;
     private Connection conn;
     private JComboBox<String> comboPagamento, comboParcelas;
-    private JTextField txtPrecoTotal;
+    private JTextField txtPrecoTotal, txtDesconto, txtTotal, txtValorPago, txtValorRestante, txtTroco;
+    private BigDecimal subtotal;
+    private int ordemPagamento = 1;
+    private ResumoDaVenda resumoDaVenda;
+    private Integer funcionarioId;
+    private String cpfCliente;
+    private Integer clienteId;
 
-    public PagamentoVenda(BigDecimal totalGeral) {
+    public PagamentoVenda(BigDecimal totalGeral, ResumoDaVenda resumoDaVenda) {
+        this.subtotal = totalGeral;
+        this.resumoDaVenda = resumoDaVenda;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(new Color(0, 0, 0, 0));
 
@@ -26,7 +45,7 @@ public class PagamentoVenda extends JPanel {
         add(Box.createRigidArea(new Dimension(0, 40)));
         add(titulo);
 
-        JPanel camposPanel = criarCamposPanel(totalGeral);
+        camposPanel = criarCamposPanel(totalGeral);
         add(camposPanel);
 
         JPanel tabelaPanel = createTabelaPagamento();
@@ -79,12 +98,25 @@ public class PagamentoVenda extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(descontoLabel, gbc);
 
-        JTextField txtDesconto = new JTextField();
+        txtDesconto = new JTextField();
         txtDesconto.setPreferredSize(fieldSize);
         estilizarCampo(txtDesconto, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 1;
         txtDesconto.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        txtDesconto.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                atualizarTotal();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                atualizarTotal();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                atualizarTotal();
+            }
+        });
         camposPanel.add(txtDesconto, gbc);
 
         JLabel pagamentoLabel = new JLabel("Pagamento");
@@ -121,7 +153,6 @@ public class PagamentoVenda extends JPanel {
 
     private JPanel createTabelaPagamento() {
         String[] colunas = { "Ordem", "Forma de Pagamento", "Parcelas", "Valor" };
-
         modeloTabela = new DefaultTableModel(colunas, 0);
 
         tabela = new JTable(modeloTabela);
@@ -135,7 +166,6 @@ public class PagamentoVenda extends JPanel {
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-
         for (int i = 0; i < colunas.length; i++) {
             tabela.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
@@ -148,7 +178,6 @@ public class PagamentoVenda extends JPanel {
         tabela.setCellSelectionEnabled(false);
         tabela.setRowSelectionAllowed(true);
         tabela.setColumnSelectionAllowed(false);
-
         for (int i = 0; i < tabela.getColumnModel().getColumnCount(); i++) {
             tabela.getColumnModel().getColumn(i).setResizable(false);
         }
@@ -185,12 +214,14 @@ public class PagamentoVenda extends JPanel {
         gbc.gridy = 0;
         totalPanel.add(totaLabel, gbc);
 
-        JTextField txtTotal = new JTextField();
+        txtTotal = new JTextField();
         txtTotal.setPreferredSize(fieldSize);
         estilizarCampo(txtTotal, fieldFont);
         gbc.gridx = 0;
         gbc.gridy = 1;
         txtTotal.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        txtTotal.setEditable(false);
+        txtTotal.setText(subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
         totalPanel.add(txtTotal, gbc);
 
         JLabel valorPagoLabel = new JLabel("Valor Pago");
@@ -199,12 +230,25 @@ public class PagamentoVenda extends JPanel {
         gbc.gridy = 0;
         totalPanel.add(valorPagoLabel, gbc);
 
-        JTextField txtValorPago = new JTextField();
+        txtValorPago = new JTextField();
         txtValorPago.setPreferredSize(fieldSize);
         estilizarCampo(txtValorPago, fieldFont);
         gbc.gridx = 2;
         gbc.gridy = 1;
         txtValorPago.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        txtValorPago.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                atualizarRestanteETroco();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                atualizarRestanteETroco();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                atualizarRestanteETroco();
+            }
+        });
         totalPanel.add(txtValorPago, gbc);
 
         JLabel valorRestanteLabel = new JLabel("Restante");
@@ -213,12 +257,13 @@ public class PagamentoVenda extends JPanel {
         gbc.gridy = 0;
         totalPanel.add(valorRestanteLabel, gbc);
 
-        JTextField txtValorRestante = new JTextField();
+        txtValorRestante = new JTextField();
         txtValorRestante.setPreferredSize(fieldSize);
         estilizarCampo(txtValorRestante, fieldFont);
         gbc.gridx = 4;
         gbc.gridy = 1;
         txtValorRestante.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        txtValorRestante.setEditable(false);
         totalPanel.add(txtValorRestante, gbc);
 
         JLabel trocoLabel = new JLabel("Troco");
@@ -227,12 +272,13 @@ public class PagamentoVenda extends JPanel {
         gbc.gridy = 0;
         totalPanel.add(trocoLabel, gbc);
 
-        JTextField txtTroco = new JTextField();
+        txtTroco = new JTextField();
         txtTroco.setPreferredSize(fieldSize);
         estilizarCampo(txtTroco, fieldFont);
         gbc.gridx = 6;
         gbc.gridy = 1;
         txtTroco.setBorder(BorderFactory.createLineBorder(bordaAzulClaro, 1));
+        txtTroco.setEditable(false);
         totalPanel.add(txtTroco, gbc);
 
         comboPagamento.addItemListener(e -> {
@@ -278,7 +324,6 @@ public class PagamentoVenda extends JPanel {
     private JPanel criarBotoesPanel() {
         JPanel botoesPanel = new JPanel();
         botoesPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-
         botoesPanel.setBorder(BorderFactory.createEmptyBorder(40, 0, 0, 0));
 
         JButton btnConfirmarVenda = new JButton("Confirmar Venda");
@@ -287,9 +332,148 @@ public class PagamentoVenda extends JPanel {
         btnConfirmarVenda.setForeground(Color.WHITE);
         btnConfirmarVenda.setFocusPainted(false);
         btnConfirmarVenda.setPreferredSize(new Dimension(170, 30));
-
+        btnConfirmarVenda.addActionListener(e -> confirmarPagamento());
         botoesPanel.add(btnConfirmarVenda);
 
         return botoesPanel;
+    }
+
+    private void atualizarTotal() {
+        try {
+            String descontoStr = txtDesconto.getText().replace(",", ".");
+            BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
+            BigDecimal total = subtotal.subtract(desconto);
+            if (total.compareTo(BigDecimal.ZERO) < 0) {
+                total = BigDecimal.ZERO;
+            }
+            txtTotal.setText(total.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+            atualizarRestanteETroco();
+        } catch (NumberFormatException e) {
+            txtTotal.setText(subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+        }
+    }
+
+    private void atualizarRestanteETroco() {
+        try {
+            String totalStr = txtTotal.getText().replace(",", ".");
+            String valorPagoStr = txtValorPago.getText().replace(",", ".");
+            BigDecimal total = new BigDecimal(totalStr);
+            BigDecimal valorPago = valorPagoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(valorPagoStr);
+
+            BigDecimal totalPagoTabela = BigDecimal.ZERO;
+            for (int i = 0; i < modeloTabela.getRowCount(); i++) {
+                String valorTabela = modeloTabela.getValueAt(i, 3).toString().replace(",", ".");
+                totalPagoTabela = totalPagoTabela.add(new BigDecimal(valorTabela));
+            }
+
+            BigDecimal totalPago = totalPagoTabela.add(valorPago);
+            BigDecimal restante = total.subtract(totalPago);
+            if (restante.compareTo(BigDecimal.ZERO) < 0) {
+                restante = BigDecimal.ZERO;
+            }
+            txtValorRestante.setText(restante.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+
+            BigDecimal troco = totalPago.subtract(total);
+            if (troco.compareTo(BigDecimal.ZERO) < 0) {
+                troco = BigDecimal.ZERO;
+            }
+            txtTroco.setText(troco.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+        } catch (NumberFormatException e) {
+            txtValorRestante.setText(txtTotal.getText());
+            txtTroco.setText("0,00");
+        }
+    }
+
+    private void confirmarPagamento() {
+        try {
+            String formaPagamento = (String) comboPagamento.getSelectedItem();
+            String parcelas = (String) comboParcelas.getSelectedItem();
+            String valorPagoStr = txtValorPago.getText().replace(",", ".");
+
+            if ("Selecione".equals(formaPagamento) || valorPagoStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Selecione a forma de pagamento e informe o valor pago.");
+                return;
+            }
+
+            BigDecimal valorPago = new BigDecimal(valorPagoStr);
+            if (valorPago.compareTo(BigDecimal.ZERO) <= 0) {
+                JOptionPane.showMessageDialog(this, "O valor pago deve ser maior que zero.");
+                return;
+            }
+
+            modeloTabela.addRow(new Object[] {
+                    ordemPagamento++,
+                    formaPagamento,
+                    "Cartão de Crédito".equals(formaPagamento) ? parcelas : "1",
+                    valorPago.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",")
+            });
+
+            comboPagamento.setSelectedIndex(0);
+            comboParcelas.setSelectedIndex(0);
+            txtValorPago.setText("");
+            atualizarRestanteETroco();
+
+            String restanteStr = txtValorRestante.getText().replace(",", ".");
+            BigDecimal restante = new BigDecimal(restanteStr);
+            if (restante.compareTo(BigDecimal.ZERO) == 0) {
+                salvarDados();
+                JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Valor pago inválido. Use o formato correto (ex: 30,00)");
+        }
+    }
+
+    private void salvarDados() {
+        try (Connection conn = ConexaoBD.getConnection()) {
+
+            cpfCliente = resumoDaVenda.lblCpfCliente.getText().replace("CPF: ", "").trim();
+            funcionarioId = PainelSuperior.getIdFuncionarioAtual();
+
+            if (!cpfCliente.isEmpty()) {
+                clienteId = ClienteDAO.buscarClientePorCpfRetornaId(conn, cpfCliente);
+            } else {
+                clienteId = null;
+            }
+
+            String descontoStr = txtDesconto.getText().replace(",", ".");
+            BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
+            LocalDateTime agora = LocalDateTime.now();
+
+            for (int i = 0; i < modeloTabela.getRowCount(); i++) {
+                String formaPagamentoStr = (String) modeloTabela.getValueAt(i, 1);
+                String formaPagamento = converterFormaPagamento(formaPagamentoStr);
+
+                String valorStr = modeloTabela.getValueAt(i, 3).toString().replace(",", ".");
+                BigDecimal valorPago = new BigDecimal(valorStr);
+
+                Venda venda = new Venda(clienteId, funcionarioId, valorPago, desconto, formaPagamento, agora);
+                VendaDAO.realizarVenda(conn, venda);
+            }
+
+            JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
+            Window dialog = SwingUtilities.getWindowAncestor(this);
+            if (dialog != null) {
+                dialog.dispose();
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao salvar venda: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private String converterFormaPagamento(String forma) {
+        switch (forma) {
+            case "Dinheiro":
+                return "DINHEIRO";
+            case "Cartão de Crédito":
+                return "CARTAO_CREDITO";
+            case "Cartão de Débito":
+                return "CARTAO_DEBITO";
+            case "PIX":
+                return "PIX";
+            default:
+                throw new IllegalArgumentException("Forma de pagamento inválida: " + forma);
+        }
     }
 }

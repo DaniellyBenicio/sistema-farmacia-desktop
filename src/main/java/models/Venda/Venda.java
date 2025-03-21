@@ -2,70 +2,64 @@ package models.Venda;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import models.Cliente.Cliente;
-import models.Funcionario.Funcionario;
 
-    public class Venda {
-    private int id;
-    private Cliente cliente;
-    private Funcionario funcionario; 
+public class Venda {
+    private Integer id; 
+    private Integer clienteId;
+    private Integer funcionarioId;
     private BigDecimal valorTotal;
     private BigDecimal desconto;
     private FormaPagamento formaPagamento;
     private LocalDateTime data;
 
-    public Venda(){};
+    public Venda() {}
 
-    public Venda(Cliente cliente, Funcionario funcionario, BigDecimal valorTotal, BigDecimal desconto, FormaPagamento formaPagamento, LocalDateTime data) {
-        this.cliente = cliente;
-        this.funcionario = funcionario;
+    public Venda(Integer clienteId, Integer funcionarioId, BigDecimal valorTotal, BigDecimal desconto, String formaPagamento, LocalDateTime data) {
+        this.clienteId = clienteId;
+        this.funcionarioId = funcionarioId;
         this.valorTotal = valorTotal;
         this.desconto = desconto;
-        this.formaPagamento = formaPagamento;
+        this.formaPagamento = FormaPagamento.valueOf(formaPagamento.toUpperCase()); 
         this.data = data;
     }
 
     public enum FormaPagamento {
-        DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX
+        DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX;
     }
-   
-    public int getId() {
+
+    public Integer getId() {
         return id;
     }
-    
-    public void setId(int id) {
-        if (id <= 0) {
+
+    public void setId(Integer id) {
+        if (id != null && id <= 0) {
             throw new IllegalArgumentException("O id deve ser um valor positivo.");
         }
         this.id = id;
     }
 
-    public Cliente getCliente() {
-        return cliente;
-    }
-    
-    public void setCliente(Cliente cliente) {
-        if (cliente != null) {
-            if (cliente.getId() <= 0) {
-                throw new IllegalArgumentException("Se o cliente não for nulo, o ID deve ser um valor positivo.");
-            }
-        }
-        this.cliente = cliente;
+    public Integer getClienteId() {
+        return clienteId;
     }
 
-    public Funcionario getFuncionario() {
-        return funcionario;
+    public void setClienteId(Integer clienteId) {
+        if (clienteId != null && clienteId <= 0) {
+            throw new IllegalArgumentException("O ID do cliente deve ser um valor positivo.");
+        }
+        this.clienteId = clienteId;
     }
 
-    public void setFuncionario(Funcionario funcionario) {
-        if (funcionario != null) {
-            if(funcionario.getId() <=0){
-                throw new IllegalArgumentException("ID do funcionário deve ser um valor positivo.");
-            }
-        }
-        this.funcionario = funcionario;
+    public Integer getFuncionarioId() {
+        return funcionarioId;
     }
-    
+
+    public void setFuncionarioId(Integer funcionarioId) {
+        if (funcionarioId != null && funcionarioId <= 0) {
+            throw new IllegalArgumentException("O ID do funcionário deve ser um valor positivo.");
+        }
+        this.funcionarioId = funcionarioId;
+    }
+
     public BigDecimal getValorTotal() {
         return valorTotal;
     }
@@ -85,7 +79,7 @@ import models.Funcionario.Funcionario;
         if (desconto == null || desconto.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Desconto não pode ser nulo ou negativo.");
         }
-        if (desconto.compareTo(valorTotal) > 0) {
+        if (valorTotal != null && desconto.compareTo(valorTotal) > 0) {
             throw new IllegalArgumentException("Desconto não pode ser maior que o valor total.");
         }
         this.desconto = desconto;
@@ -100,18 +94,16 @@ import models.Funcionario.Funcionario;
             throw new IllegalArgumentException("Forma de pagamento não pode ser nula.");
         }
         this.formaPagamento = formaPagamento;
-    }     
+    }
 
     public LocalDateTime getData() {
         return data;
     }
-    
+
     public void setData(LocalDateTime data) {
         if (data == null || data.isAfter(LocalDateTime.now())) {
             throw new IllegalArgumentException("Data não pode ser nula ou futura.");
         }
         this.data = data;
     }
-
 }
-

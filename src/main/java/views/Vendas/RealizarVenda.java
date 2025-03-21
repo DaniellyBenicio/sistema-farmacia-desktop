@@ -60,8 +60,9 @@ public class RealizarVenda extends JPanel {
     private void initializeComponents() {
         lblNomeCliente = new JLabel("Nome do Consumidor: Não Identificado");
         lblCpfCliente = new JLabel("CPF do Consumidor: Não Identificado");
-        lblAtendente = new JLabel("Atendente: " + (PainelSuperior.getNomeFuncionarioAtual() != null 
-            ? PainelSuperior.getNomeFuncionarioAtual() : "Não identificado"));
+        lblAtendente = new JLabel("Atendente: " + (PainelSuperior.getNomeFuncionarioAtual() != null
+                ? PainelSuperior.getNomeFuncionarioAtual()
+                : "Não identificado"));
     }
 
     public void atualizarAtendente(String nomeFuncionario) {
@@ -283,7 +284,8 @@ public class RealizarVenda extends JPanel {
             try {
                 abrirDialogoIdentificacaoCliente();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao identificar cliente " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Erro ao identificar cliente " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
         botoesVenda.add(btnIdentificarCliente);
@@ -299,19 +301,20 @@ public class RealizarVenda extends JPanel {
         btnCancelarVenda.setEnabled(false);
         btnCancelarVenda.addActionListener(e -> {
             // Restaurar quantidades estáticas de estoque
-         //   ItemVendaDAO.resetQuantidades(); // Chamada correta ao método estático na classe ItemVendaDAO
-        
+            // ItemVendaDAO.resetQuantidades(); // Chamada correta ao método estático na
+            // classe ItemVendaDAO
+
             // Limpar campos de entrada
             limparCampos();
-        
+
             // Reiniciar variáveis
             ordemItem = 1;
             itensMap.clear();
-        
+
             // Reiniciar informações do cliente
             lblNomeCliente.setText("Nome do Consumidor: Não Identificado");
             lblCpfCliente.setText("CPF do Consumidor: Não Identificado");
-        
+
             // Recriar e reintegrar o painel direito
             painelDireito = createPainelDireito();
             JPanel painelMeio = (JPanel) getComponent(1);
@@ -322,11 +325,11 @@ public class RealizarVenda extends JPanel {
             gbc.weightx = 0.9;
             gbc.fill = GridBagConstraints.BOTH;
             painelMeio.add(painelDireito, gbc);
-        
+
             // Limpar popup
             popupMenu.setVisible(false);
             popupMenu.removeAll();
-        
+
             // Atualizar interface
             atualizarTotalFooter();
             atualizarEstadoBotoes();
@@ -421,7 +424,8 @@ public class RealizarVenda extends JPanel {
             @Override
             public void focusLost(FocusEvent e) {
                 SwingUtilities.invokeLater(() -> {
-                    if (!popupMenu.isShowing()) popupMenu.setVisible(false);
+                    if (!popupMenu.isShowing())
+                        popupMenu.setVisible(false);
                 });
             }
 
@@ -459,14 +463,16 @@ public class RealizarVenda extends JPanel {
         txtQuantidade.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) confirmarItem();
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                    confirmarItem();
             }
         });
 
         txtDesconto.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) confirmarItem();
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                    confirmarItem();
             }
         });
     }
@@ -494,16 +500,19 @@ public class RealizarVenda extends JPanel {
 
                     int itemCount = 0;
                     for (Object item : itens) {
-                        if (itemCount >= 10) break;
+                        if (itemCount >= 10)
+                            break;
                         String texto;
                         if (item instanceof Produto) {
                             Produto p = (Produto) item;
-                            texto = String.format("%s %s %s %s UN", p.getNome().toUpperCase(), p.getEmbalagem().toUpperCase(), 
-                                p.getQntMedida().toUpperCase(), p.getQntEmbalagem());
+                            texto = String.format("%s %s %s %s UN", p.getNome().toUpperCase(),
+                                    p.getEmbalagem().toUpperCase(),
+                                    p.getQntMedida().toUpperCase(), p.getQntEmbalagem());
                         } else if (item instanceof Medicamento) {
                             Medicamento m = (Medicamento) item;
-                            texto = String.format("%s %s %s %s %s UN", m.getNome().toUpperCase(), m.getFormaFarmaceutica().toUpperCase(), 
-                                m.getDosagem().toUpperCase(), m.getEmbalagem().toUpperCase(), m.getQntEmbalagem());
+                            texto = String.format("%s %s %s %s %s UN", m.getNome().toUpperCase(),
+                                    m.getFormaFarmaceutica().toUpperCase(),
+                                    m.getDosagem().toUpperCase(), m.getEmbalagem().toUpperCase(), m.getQntEmbalagem());
                         } else {
                             continue;
                         }
@@ -535,7 +544,8 @@ public class RealizarVenda extends JPanel {
                     }
 
                     int totalHeight = itemCount * ITEM_HEIGHT;
-                    if (totalHeight < ITEM_HEIGHT) totalHeight = ITEM_HEIGHT;
+                    if (totalHeight < ITEM_HEIGHT)
+                        totalHeight = ITEM_HEIGHT;
 
                     popupMenu.setPreferredSize(new Dimension(painelItem.getWidth(), totalHeight));
                     SwingUtilities.invokeLater(() -> {
@@ -544,7 +554,8 @@ public class RealizarVenda extends JPanel {
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Erro ao buscar itens: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Erro ao buscar itens: " + e.getMessage(), "Erro",
+                            JOptionPane.ERROR_MESSAGE);
                     popupMenu.setVisible(false);
                 }
             }
@@ -577,7 +588,8 @@ public class RealizarVenda extends JPanel {
             String precoTotalFormatado = precoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",");
             txtPrecoTotal.setText(precoTotalFormatado);
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
             txtPrecoTotal.setText("0,00");
         }
     }
@@ -585,14 +597,16 @@ public class RealizarVenda extends JPanel {
     private void confirmarItem() {
         try {
             if (txtCodigoProduto.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, selecione um item antes de informar a quantidade.", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Por favor, selecione um item antes de informar a quantidade.",
+                        "Erro", JOptionPane.ERROR_MESSAGE);
                 txtItem.requestFocusInWindow();
                 return;
             }
 
             String quantidadeText = txtQuantidade.getText().replace(",", ".").trim();
             if (quantidadeText.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, insira a quantidade.", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Por favor, insira a quantidade.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
                 txtQuantidade.requestFocusInWindow();
                 return;
             }
@@ -600,7 +614,8 @@ public class RealizarVenda extends JPanel {
             int quantidade = Integer.parseInt(quantidadeText);
             String precoTotalText = txtPrecoTotal.getText().replace(",", ".").trim();
             if (precoTotalText.equals("0,00") || precoTotalText.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Preço total inválido. Verifique os valores.", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Preço total inválido. Verifique os valores.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -610,17 +625,20 @@ public class RealizarVenda extends JPanel {
             boolean estoqueSuficiente = ItemVendaDAO.verificarTipoEEstoque(conn, idItem, quantidade, itemVenda, false);
 
             if (!estoqueSuficiente) {
-                String tipoItem = (itemVenda.getProduto() != null) ? "produto" : (itemVenda.getMedicamento() != null) ? "medicamento" : "item";
+                String tipoItem = (itemVenda.getProduto() != null) ? "produto"
+                        : (itemVenda.getMedicamento() != null) ? "medicamento" : "item";
                 if (itemVenda.getMedicamento() != null && itemVenda.getMedicamento().getTipoReceita() != null) {
                     tipoItem += " (" + itemVenda.getMedicamento().getTipoReceita().name().toLowerCase() + ")";
                 }
-                JOptionPane.showMessageDialog(this, "Quantidade solicitada (" + quantidade + ") excede o estoque disponível para o " + tipoItem + ".", 
-                    "Erro de Estoque", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "Quantidade solicitada (" + quantidade + ") excede o estoque disponível para o " + tipoItem
+                                + ".",
+                        "Erro de Estoque", JOptionPane.ERROR_MESSAGE);
                 txtQuantidade.requestFocusInWindow();
                 return;
             }
 
-            Object[] opcoes = {"Sim", "Não"};
+            Object[] opcoes = { "Sim", "Não" };
             int resposta = JOptionPane.showOptionDialog(this,
                     "Confirmar item?\n" +
                             "Produto: " + txtItem.getText() + "\n" +
@@ -633,7 +651,8 @@ public class RealizarVenda extends JPanel {
 
             if (resposta == JOptionPane.YES_OPTION) {
                 painelDireito.adicionarItem(String.valueOf(ordemItem++), txtCodigoProduto.getText(), txtItem.getText(),
-                    txtQuantidade.getText(), txtPrecoUnitario.getText(), txtPrecoTotal.getText(), txtDesconto.getText());
+                        txtQuantidade.getText(), txtPrecoUnitario.getText(), txtPrecoTotal.getText(),
+                        txtDesconto.getText());
                 atualizarTotalFooter();
                 limparCampos();
                 popupMenu.setVisible(false);
@@ -641,14 +660,16 @@ public class RealizarVenda extends JPanel {
                 atualizarEstadoBotoes();
             }
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Erro ao verificar estoque: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Erro ao verificar estoque: " + e.getMessage(), "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void confirmarVenda() {
-        Object[] options = {"Sim", "Não"};
+        Object[] options = { "Sim", "Não" };
         int resposta = JOptionPane.showOptionDialog(this,
                 "Deseja finalizar a venda?\nVocê será direcionado para a tela de pagamento.",
                 "Confirmar Venda",
@@ -660,7 +681,8 @@ public class RealizarVenda extends JPanel {
             try {
                 abrirDialogoPagamentoVenda();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao confirmar venda: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Erro ao confirmar venda: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         } else if (resposta == 1) {
             JOptionPane.showMessageDialog(this, "Operação cancelada.", "Cancelamento", JOptionPane.INFORMATION_MESSAGE);
@@ -723,14 +745,17 @@ public class RealizarVenda extends JPanel {
 
         ((AbstractDocument) txtCpf.getDocument()).setDocumentFilter(new DocumentFilter() {
             @Override
-            public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                    throws BadLocationException {
                 String currentText = fb.getDocument().getText(0, fb.getDocument().getLength());
                 String newText = currentText.substring(0, offset) + text + currentText.substring(offset + length);
-                if (newText.matches("\\d{0,11}")) super.replace(fb, offset, length, text, attrs);
+                if (newText.matches("\\d{0,11}"))
+                    super.replace(fb, offset, length, text, attrs);
             }
 
             @Override
-            public void insertString(DocumentFilter.FilterBypass fb, int offset, String text, AttributeSet attrs) throws BadLocationException {
+            public void insertString(DocumentFilter.FilterBypass fb, int offset, String text, AttributeSet attrs)
+                    throws BadLocationException {
                 replace(fb, offset, 0, text, attrs);
             }
         });
@@ -769,9 +794,10 @@ public class RealizarVenda extends JPanel {
                     lblCpfCliente.setText("CPF do Cliente: " + cliente.getCpf());
                     atualizaPainelDireito();
                 } else {
-                    Object[] options = {"Sim", "Não"};
-                    int opcao = JOptionPane.showOptionDialog(dialogo, "Cliente não cadastrado. Deseja cadastrar?", 
-                        "Cadastrar Cliente", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+                    Object[] options = { "Sim", "Não" };
+                    int opcao = JOptionPane.showOptionDialog(dialogo, "Cliente não cadastrado. Deseja cadastrar?",
+                            "Cadastrar Cliente", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
+                            options, options[0]);
 
                     if (opcao == 0) {
                         JDialog cadastroDialog = new JDialog(dialogo, "Cadastrar Cliente", true);
@@ -783,12 +809,14 @@ public class RealizarVenda extends JPanel {
                         cadastroDialog.setVisible(true);
                         dialogo.setVisible(false);
                     } else {
-                        JOptionPane.showMessageDialog(dialogo, "Operação cancelada.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(dialogo, "Operação cancelada.", "Aviso",
+                                JOptionPane.INFORMATION_MESSAGE);
                         dialogo.setVisible(false);
                     }
                 }
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(dialogo, "Erro ao buscar cliente: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialogo, "Erro ao buscar cliente: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -830,14 +858,16 @@ public class RealizarVenda extends JPanel {
         btnRemover.addActionListener(e -> {
             String ordem = txtOrdem.getText().trim();
             if (ordem.isEmpty()) {
-                JOptionPane.showMessageDialog(dialogo, "Por favor, informe o número do item.", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialogo, "Por favor, informe o número do item.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             try {
                 String[] dadosItem = painelDireito.getDadosItemPorOrdem(ordem);
                 if (dadosItem == null) {
-                    JOptionPane.showMessageDialog(dialogo, "Item com ordem '" + ordem + "' não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(dialogo, "Item com ordem '" + ordem + "' não encontrado.", "Erro",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -847,9 +877,9 @@ public class RealizarVenda extends JPanel {
                         "Quantidade: " + dadosItem[3] + "\n" +
                         "Preço Total: " + dadosItem[6];
 
-                Object[] opcoes = {"Sim", "Não"};
-                int resposta = JOptionPane.showOptionDialog(dialogo, mensagemConfirmacao, "Confirmação de Remoção", 
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, opcoes, opcoes[0]);
+                Object[] opcoes = { "Sim", "Não" };
+                int resposta = JOptionPane.showOptionDialog(dialogo, mensagemConfirmacao, "Confirmação de Remoção",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, opcoes, opcoes[0]);
 
                 if (resposta == JOptionPane.YES_OPTION) {
                     int idItem = Integer.parseInt(dadosItem[1]);
@@ -861,10 +891,12 @@ public class RealizarVenda extends JPanel {
                     atualizarTotalFooter();
                     atualizarEstadoBotoes();
                     dialogo.dispose();
-                    JOptionPane.showMessageDialog(this, "Item removido com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Item removido com sucesso!", "Sucesso",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialogo, "Erro ao remover item: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialogo, "Erro ao remover item: " + ex.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -874,13 +906,18 @@ public class RealizarVenda extends JPanel {
     }
 
     private void abrirDialogoPagamentoVenda() {
+        if (painelDireito.itensMap.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nenhum item na venda para processar o pagamento.", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         JDialog dialogoPagamento = new JDialog();
         dialogoPagamento.setTitle("Pagamento da Venda");
         dialogoPagamento.setSize(900, 650);
         dialogoPagamento.setModal(true);
         dialogoPagamento.setLocationRelativeTo(this);
 
-        PagamentoVenda painelPagamento = new PagamentoVenda(painelDireito.getTotalGeral());
+        PagamentoVenda painelPagamento = new PagamentoVenda(painelDireito.getTotalGeral(), painelDireito);
         dialogoPagamento.add(painelPagamento);
         dialogoPagamento.setVisible(true);
     }

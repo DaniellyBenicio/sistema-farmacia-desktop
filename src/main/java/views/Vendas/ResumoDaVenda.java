@@ -11,7 +11,9 @@ import javax.swing.*;
 
 public class ResumoDaVenda extends JPanel {
 
-    private JLabel lblNomeCliente, lblCpfCliente, lblAtendente;
+    private JLabel lblNomeCliente;
+    JLabel lblCpfCliente;
+    JLabel lblAtendente;
     private JPanel painelDetalhesItens;
     private JLabel lblSubtotalValor, lblDescontoValor, lblTotalValor;
     private int linhaAtual = 0;
