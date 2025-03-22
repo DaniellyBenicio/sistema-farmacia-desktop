@@ -435,108 +435,113 @@ public class PagamentoVenda extends JPanel {
     private void salvarDados() {
         try (Connection conn = ConexaoBD.getConnection()) {
             conn.setAutoCommit(false);
-    
+
             String cpfCliente = resumoDaVenda.lblCpfCliente.getText().replace("CPF: ", "").trim();
             int funcionarioId = PainelSuperior.getIdFuncionarioAtual();
-    
+
             Integer clienteId = null;
             if (!cpfCliente.isEmpty()) {
                 clienteId = ClienteDAO.buscarClientePorCpfRetornaId(conn, cpfCliente);
             }
-    
+
             String descontoStr = txtDesconto.getText().replace(",", ".").trim();
             BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
             LocalDateTime agora = LocalDateTime.now();
-    
+
             int vendaId = -1;
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
                 String formaPagamentoStr = (String) modeloTabela.getValueAt(i, 1);
                 String formaPagamento = converterFormaPagamento(formaPagamentoStr);
-    
+
                 String valorStr = modeloTabela.getValueAt(i, 3).toString().replace(",", ".").trim();
                 BigDecimal valorPago = new BigDecimal(valorStr);
-    
+
                 Venda venda = new Venda(clienteId, funcionarioId, valorPago, desconto, formaPagamento, agora);
                 int idGerado = VendaDAO.realizarVenda(conn, venda);
+                System.out.println(clienteId);
+                System.out.println(funcionarioId);
+                System.out.println(valorPago);
+                System.out.println(desconto);
+                System.out.println(formaPagamento);
                 if (i == 0 && idGerado != -1) {
                     vendaId = idGerado;
                 } else if (idGerado == -1) {
                     throw new SQLException("Erro ao registrar venda na linha " + i);
                 }
             }
-    
-            // Process items
-            try {
-                for (String ordem : resumoDaVenda.itensMap.keySet()) {
-                    String[] dadosItem = resumoDaVenda.getDadosItemPorOrdem(ordem);
-                    int idItem = Integer.parseInt(dadosItem[1].trim());
-                    String nomeCompleto = dadosItem[2].trim(); // Texto completo
-                    String nomeBase = nomeCompleto.split(" ")[0]; // Pega apenas o primeiro termo (nome base)
-                    int quantidade = Integer.parseInt(dadosItem[3].replace(",", ".").trim());
-                    BigDecimal precoUnitario = new BigDecimal(dadosItem[4].replace(",", ".").trim());
-                    BigDecimal descontoItem = new BigDecimal(dadosItem[5].replace(",", ".").trim());
-                    BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
-    
-                    ItemVenda itemVenda = new ItemVenda();
-                    itemVenda.setVendaId(vendaId);
-                    itemVenda.setDesconto(descontoItem);
-                    itemVenda.setPrecoUnit(precoUnitario);
-                    itemVenda.setQnt(quantidade);
-                    itemVenda.setSubtotal(subtotal);
-    
-                    String tipo = ItemVendaDAO.verificarTipoItem(conn, nomeBase);
-                    if ("Medicamento".equals(tipo)) {
-                        Medicamento medicamento = MedicamentoDAO.buscarPorId(conn, idItem);
-                        itemVenda.setMedicamento(medicamento);
-                        itemVenda.setProduto(null);
-                        boolean temReceita = ItemVendaDAO.verificarNecessidadeReceita(conn, nomeBase);
-                        if (temReceita) {
-                            System.out.println("Medicamento '" + nomeBase + "' exige receita.");
-                        }
-                    } else if ("Produto".equals(tipo)) {
-                        Produto produto = ProdutoDAO.buscarPorId(conn, idItem);
-                        itemVenda.setProduto(produto);
-                        itemVenda.setMedicamento(null);
-                    } else {
-                        throw new SQLException("Item '" + nomeBase + "' não identificado como produto ou medicamento.");
+
+            for (String ordem : resumoDaVenda.itensMap.keySet()) {
+                String[] dadosItem = resumoDaVenda.getDadosItemPorOrdem(ordem);
+                int idItem = Integer.parseInt(dadosItem[1].trim());
+                String nomeCompleto = dadosItem[2].trim();
+                String nomeBase = nomeCompleto.split(" ")[0].toLowerCase();
+                int quantidade = Integer.parseInt(dadosItem[3].replace(",", ".").trim());
+                BigDecimal precoUnitario = new BigDecimal(dadosItem[4].replace(",", ".").trim());
+                BigDecimal descontoItem = new BigDecimal(dadosItem[5].replace(",", ".").trim());
+                BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+
+                ItemVenda itemVenda = new ItemVenda();
+                itemVenda.setVendaId(vendaId);
+                itemVenda.setQnt(quantidade);
+                itemVenda.setPrecoUnit(precoUnitario);
+                itemVenda.setDesconto(descontoItem);
+                itemVenda.setSubtotal(subtotal);
+
+                System.out.println(vendaId);
+                System.out.println(quantidade);
+                System.out.println(precoUnitario);
+                System.out.println(descontoItem);
+                System.out.println(subtotal);
+
+                String tipoItemInfo = ItemVendaDAO.verificarTipoItem(conn, nomeBase);
+                if (tipoItemInfo.startsWith("Medicamento")) {
+                    Medicamento medicamento = MedicamentoDAO.buscarPorId(conn, idItem);
+                    if (medicamento == null) {
+                        throw new SQLException("Medicamento com ID " + idItem + " não encontrado.");
                     }
-    
-                    ItemVendaDAO.inserirItemVenda(conn, itemVenda, nomeBase);
+                    itemVenda.setMedicamento(medicamento);
+                    itemVenda.setProduto(null);
+                } else if (tipoItemInfo.startsWith("Produto")) {
+                    Produto produto = ProdutoDAO.buscarPorId(conn, idItem);
+                    if (produto == null) {
+                        throw new SQLException("Produto com ID " + idItem + " não encontrado.");
+                    }
+                    itemVenda.setProduto(produto);
+                    itemVenda.setMedicamento(null);
+                } else {
+                    throw new SQLException("Item '" + nomeBase + "' não identificado como produto ou medicamento.");
                 }
-    
-                conn.commit();
-                JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
-    
-                Window dialog = SwingUtilities.getWindowAncestor(this);
-                if (dialog != null) {
-                    dialog.dispose();
-                }
-            } catch (SQLException e) {
-                try {
-                    conn.rollback();
-                    JOptionPane.showMessageDialog(this, "Erro ao salvar itens da venda: " + e.getMessage());
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Erro ao realizar rollback: " + rollbackEx.getMessage());
-                }
-                throw e;
-            } catch (Exception e) {
-                try {
-                    conn.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
-                throw new SQLException("Erro inesperado ao processar itens: " + e.getMessage(), e);
+
+                ItemVendaDAO.inserirItemVenda(conn, itemVenda, nomeBase);
             }
+
+            conn.commit();
+            JOptionPane.showMessageDialog(this, "Venda registrada com sucesso!");
+
+            Window dialog = SwingUtilities.getWindowAncestor(this);
+            if (dialog != null) {
+                dialog.dispose();
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Erro ao processar venda: " + e.getMessage());
+            try {
+                conn.rollback();
+                JOptionPane.showMessageDialog(this, "Erro ao salvar venda: " + e.getMessage());
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erro ao realizar rollback: " + rollbackEx.getMessage());
+            }
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erro inesperado: " + e.getMessage());
+            try {
+                conn.rollback();
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
         }
     }
-
 
     private String converterFormaPagamento(String forma) {
         switch (forma) {
