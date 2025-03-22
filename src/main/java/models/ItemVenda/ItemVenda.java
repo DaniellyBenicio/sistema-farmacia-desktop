@@ -12,9 +12,10 @@ public class ItemVenda {
     private int qnt;
     private BigDecimal precoUnit;
     private BigDecimal subtotal;
-    private BigDecimal desconto;
+    private BigDecimal desconto = BigDecimal.ZERO;
 
     public ItemVenda() {
+        this.desconto = BigDecimal.ZERO; 
     }
 
     public ItemVenda(int venda_id, Produto produto, Medicamento medicamento, int qnt, BigDecimal precoUnit,
@@ -24,9 +25,8 @@ public class ItemVenda {
         this.medicamento = medicamento;
         this.qnt = qnt;
         this.precoUnit = precoUnit;
-        this.subtotal = precoUnit.multiply(BigDecimal.valueOf(qnt));
+        this.subtotal = precoUnit != null ? precoUnit.multiply(BigDecimal.valueOf(qnt)) : BigDecimal.ZERO;
         this.desconto = desconto != null ? desconto : BigDecimal.ZERO;
-
     }
 
     public int getId() {
@@ -121,16 +121,19 @@ public class ItemVenda {
     }
 
     public void setDesconto(BigDecimal desconto) {
-        if (desconto == null || desconto.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("O desconto não pode ser nulo ou negativo.");
-        }
-        if (precoUnit != null && qnt > 0) {
-            BigDecimal subtotalTemp = precoUnit.multiply(BigDecimal.valueOf(qnt));
-            if (desconto.compareTo(subtotalTemp) > 0) {
-                throw new IllegalArgumentException("O desconto não pode ser maior que o subtotal.");
+        if (desconto == null) {
+            this.desconto = BigDecimal.ZERO; 
+        } else if (desconto.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("O desconto não pode ser negativo.");
+        } else {
+            if (precoUnit != null && qnt > 0) {
+                BigDecimal subtotalTemp = precoUnit.multiply(BigDecimal.valueOf(qnt));
+                if (desconto.compareTo(subtotalTemp) > 0) {
+                    throw new IllegalArgumentException("O desconto não pode ser maior que o subtotal.");
+                }
             }
+            this.desconto = desconto;
         }
-        this.desconto = desconto;
         atualizarSubtotal();
     }
 

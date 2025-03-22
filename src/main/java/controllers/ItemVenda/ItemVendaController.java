@@ -9,9 +9,9 @@ import java.util.List;
 
 public class ItemVendaController {
 
-    public void inserirItemVenda(Connection conn, ItemVenda iv) throws SQLException {
+    public void inserirItemVenda(Connection conn, ItemVenda iv,  String nomeItem) throws SQLException {
         try {
-            ItemVendaDAO.inserirItemVenda(conn, iv);
+            ItemVendaDAO.inserirItemVenda(conn, iv, nomeItem);
             System.out.println("Item de venda inserido com sucesso.");
         } catch (SQLException e) {
             System.err.println("Erro ao inserir item de venda: " + e.getMessage());
@@ -99,17 +99,17 @@ public class ItemVendaController {
         }
     }
 
-    public boolean verificarEstoque(Connection conn, ItemVenda iv, int idItem, int quantidade) throws SQLException {
+    public boolean verificarEstoque(Connection conn, ItemVenda iv, int quantidade, String nomeItem) throws SQLException {
         try {
-            boolean estoqueSuficiente = ItemVendaDAO.verificarTipoEEstoque(conn, idItem, quantidade, iv, false);
+            boolean estoqueSuficiente = ItemVendaDAO.verificarTipoEEstoque(conn, iv, quantidade, false, nomeItem);
             if (estoqueSuficiente) {
-                System.out.println("Estoque suficiente para o item.");
+                System.out.println("Estoque suficiente para o item: " + nomeItem);
                 return true;
             } else {
-                throw new SQLException("Estoque insuficiente para o produto/medicamento.");
+                throw new SQLException("Estoque insuficiente para o item: " + nomeItem);
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao verificar estoque: " + e.getMessage());
+            System.err.println("Erro ao verificar estoque para o item '" + nomeItem + "': " + e.getMessage());
             throw e;
         }
     }

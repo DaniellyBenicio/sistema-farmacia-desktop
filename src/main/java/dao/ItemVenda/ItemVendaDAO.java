@@ -14,21 +14,22 @@ import models.Medicamento.Medicamento.TipoReceita;
 import models.Produto.Produto;
 
 public class ItemVendaDAO {
-    public static void inserirItemVenda(Connection conn, ItemVenda iv) throws SQLException {
-        String sql = "insert into itemVenda (venda_id, produto_id, medicamento_id, qnt, precoUnit, desconto) VALUES (?, ?, ?, ?, ?, ?)";
-
+    public static void inserirItemVenda(Connection conn, ItemVenda iv, String nomeItem) throws SQLException {
+        String sql = "INSERT INTO itemVenda (venda_id, produto_id, medicamento_id, qnt, precoUnit, desconto) VALUES (?, ?, ?, ?, ?, ?)";
+    
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             calcularDescontoAutomatico(conn, iv);
             pstmt.setInt(1, iv.getVendaId());
-            pstmt.setObject(2, (iv.getProduto() != null) ? iv.getProduto().getId() : null);
-            pstmt.setObject(3, (iv.getMedicamento() != null) ? iv.getMedicamento().getId() : null);
+            pstmt.setObject(2, iv.getProduto() != null ? iv.getProduto().getId() : null);
+            pstmt.setObject(3, iv.getMedicamento() != null ? iv.getMedicamento().getId() : null);
             pstmt.setInt(4, iv.getQnt());
             pstmt.setBigDecimal(5, iv.getPrecoUnit());
             pstmt.setBigDecimal(6, iv.getDesconto());
-
+    
             pstmt.executeUpdate();
+            System.out.println("Item '" + nomeItem + "' inserido com sucesso na venda ID " + iv.getVendaId());
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao inserir ItemVenda no banco de dados.", e);
+            throw new SQLException("Erro ao inserir ItemVenda no banco de dados para o item '" + nomeItem + "': " + e.getMessage(), e);
         }
     }
 
@@ -319,143 +320,152 @@ public class ItemVendaDAO {
         return itens;
     }
 
-    private static int qntDisponivelProduto = -1;
-    private static int qntDisponivelMedicamento = -1;
-
-    public static boolean verificarTipoEEstoque(Connection conn, int idItem, int quantidade, ItemVenda iv,
-            boolean isRemocao)
+    public static boolean verificarTipoEEstoque(Connection conn, ItemVenda iv, int quantidade, boolean isRemocao, String nomeItem)
             throws SQLException {
+        String sqlProduto = "SELECT id, qntEstoque FROM produto WHERE LOWER(nome) = LOWER(?)";
+        String sqlMedicamento = "SELECT id, qnt, tipoReceita FROM medicamento WHERE LOWER(nome) = LOWER(?)";
 
-        if (qntDisponivelProduto == -1) {
-            String sqlProduto = "SELECT qntEstoque FROM produto WHERE id = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(sqlProduto)) {
-                pstmt.setInt(1, idItem);
-                try (ResultSet rs = pstmt.executeQuery()) {
-                    if (rs.next()) {
-                        qntDisponivelProduto = rs.getInt("qntEstoque");
-                        System.out.println(
-                                "Produto encontrado. ID: " + idItem + ", Estoque inicial: " + qntDisponivelProduto);
+        int qntDisponivel = -1;
+        boolean isProduto = false;
+
+        // Primeiro, tenta encontrar o item como produto
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlProduto)) {
+            pstmt.setString(1, nomeItem);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    qntDisponivel = rs.getInt("qntEstoque");
+                    int idProduto = rs.getInt("id");
+                    isProduto = true;
+                    System.out.println("Produto encontrado. Nome: " + nomeItem + ", ID: " + idProduto + ", Estoque inicial: " + qntDisponivel);
+
+                    if (isRemocao) {
+                        qntDisponivel += quantidade;
+                        Produto produto = new Produto();
+                        produto.setId(idProduto);
+                        iv.setProduto(produto);
+                        iv.setQnt(quantidade);
+                        atualizarEstoqueProduto(conn, idProduto, qntDisponivel);
+                        System.out.println("Estoque restaurado de produto ID " + idProduto + ": " + qntDisponivel);
+                        return true;
+                    } else if (qntDisponivel >= quantidade) {
+                        Produto produto = new Produto();
+                        produto.setId(idProduto);
+                        iv.setProduto(produto);
+                        iv.setQnt(quantidade);
+                        qntDisponivel -= quantidade;
+                        atualizarEstoqueProduto(conn, idProduto, qntDisponivel);
+                        System.out.println("Estoque atualizado de produto ID " + idProduto + ": " + qntDisponivel);
+                        return true;
+                    } else {
+                        System.out.println("Estoque insuficiente para o produto: " + nomeItem);
+                        return false;
                     }
                 }
             }
         }
 
-        if (qntDisponivelProduto != -1) {
-            System.out.println("Estoque atual de produto ID " + idItem + ": " + qntDisponivelProduto);
-            if (isRemocao) {
-                qntDisponivelProduto += quantidade;
-                System.out.println("Estoque restaurado de produto ID " + idItem + ": " + qntDisponivelProduto);
-                Produto produto = new Produto();
-                produto.setId(idItem);
-                iv.setProduto(produto);
-                iv.setQnt(quantidade);
-                return true;
-            } else if (qntDisponivelProduto >= quantidade) {
-                Produto produto = new Produto();
-                produto.setId(idItem);
-                iv.setProduto(produto);
-                iv.setQnt(quantidade);
-                qntDisponivelProduto -= quantidade;
-                System.out.println("Estoque atualizado de produto ID " + idItem + ": " + qntDisponivelProduto);
-                return true;
-            } else {
-                System.out.println("Estoque insuficiente para o produto ID: " + idItem);
-                return false;
-            }
-        }
-
-        if (qntDisponivelMedicamento == -1) {
-            String sqlMedicamento = "SELECT qnt, tipoReceita FROM medicamento WHERE id = ?";
+        // Se não for produto, tenta encontrar como medicamento
+        if (!isProduto) {
             try (PreparedStatement pstmt = conn.prepareStatement(sqlMedicamento)) {
-                pstmt.setInt(1, idItem);
+                pstmt.setString(1, nomeItem);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
-                        qntDisponivelMedicamento = rs.getInt("qnt");
+                        qntDisponivel = rs.getInt("qnt");
+                        int idMedicamento = rs.getInt("id");
                         String tipoReceitaStr = rs.getString("tipoReceita");
-                        System.out.println("Medicamento encontrado. ID: " + idItem + ", Estoque inicial: "
-                                + qntDisponivelMedicamento
-                                + ", Tipo de Receita: " + tipoReceitaStr);
+                        System.out.println("Medicamento encontrado. Nome: " + nomeItem + ", ID: " + idMedicamento + ", Estoque inicial: " + qntDisponivel);
 
                         Medicamento medicamento = new Medicamento();
-                        medicamento.setId(idItem);
-                        if (tipoReceitaStr != null) {
+                        medicamento.setId(idMedicamento);
+                        if (tipoReceitaStr != null && !tipoReceitaStr.trim().isEmpty()) {
                             try {
-                                medicamento
-                                        .setTipoReceita(Medicamento.TipoReceita.valueOf(tipoReceitaStr.toUpperCase()));
+                                medicamento.setTipoReceita(TipoReceita.valueOf(tipoReceitaStr.toUpperCase()));
                             } catch (IllegalArgumentException e) {
-                                throw new SQLException(
-                                        "Tipo de receita inválido no banco de dados para o medicamento ID "
-                                                + idItem + ": " + tipoReceitaStr,
-                                        e);
+                                throw new SQLException("Tipo de receita inválido para " + nomeItem + ": " + tipoReceitaStr, e);
                             }
-                        } else {
-                            throw new SQLException("Campo tipoReceita é nulo para o medicamento ID " + idItem);
                         }
                         iv.setMedicamento(medicamento);
+
+                        if (isRemocao) {
+                            qntDisponivel += quantidade;
+                            iv.setQnt(quantidade);
+                            atualizarEstoqueMedicamento(conn, idMedicamento, qntDisponivel);
+                            System.out.println("Estoque restaurado de medicamento ID " + idMedicamento + ": " + qntDisponivel);
+                            return true;
+                        } else if (qntDisponivel >= quantidade) {
+                            iv.setQnt(quantidade);
+                            qntDisponivel -= quantidade;
+                            atualizarEstoqueMedicamento(conn, idMedicamento, qntDisponivel);
+                            System.out.println("Estoque atualizado de medicamento ID " + idMedicamento + ": " + qntDisponivel);
+                            return true;
+                        } else {
+                            System.out.println("Estoque insuficiente para o medicamento: " + nomeItem);
+                            return false;
+                        }
                     }
                 }
             }
         }
 
-        if (qntDisponivelMedicamento != -1) {
-            System.out.println("Estoque atual de medicamento ID " + idItem + ": " + qntDisponivelMedicamento);
-            if (isRemocao) {
-                qntDisponivelMedicamento += quantidade;
-                System.out.println("Estoque restaurado de medicamento ID " + idItem + ": " + qntDisponivelMedicamento);
-                iv.setQnt(quantidade);
-                return true;
-            } else if (qntDisponivelMedicamento >= quantidade) {
-                iv.setQnt(quantidade);
-                qntDisponivelMedicamento -= quantidade;
-                System.out.println("Estoque atualizado de medicamento ID " + idItem + ": " + qntDisponivelMedicamento);
-                return true;
-            } else {
-                System.out.println("Estoque insuficiente para o medicamento ID: " + idItem);
-                return false;
-            }
-        }
-
-        throw new SQLException("Item com ID " + idItem + " não encontrado no banco de dados.");
+        throw new SQLException("Item '" + nomeItem + "' não encontrado no banco de dados.");
     }
 
-    public static String verificarTipoItem(Connection conn, int id) throws SQLException {
-        String sqlMedicamento = "SELECT id FROM medicamento WHERE id = ?";
-        String sqlProduto = "SELECT id FROM produto WHERE id = ?";
-    
+    private static void atualizarEstoqueProduto(Connection conn, int id, int novaQuantidade) throws SQLException {
+        String sql = "UPDATE produto SET qntEstoque = ? WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, novaQuantidade);
+            pstmt.setInt(2, id);
+            pstmt.executeUpdate();
+        }
+    }
+
+    private static void atualizarEstoqueMedicamento(Connection conn, int id, int novaQuantidade) throws SQLException {
+        String sql = "UPDATE medicamento SET qnt = ? WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, novaQuantidade);
+            pstmt.setInt(2, id);
+            pstmt.executeUpdate();
+        }
+    }
+
+    // Outras funções permanecem inalteradas, mas aqui está um exemplo para consistência
+    public static String verificarTipoItem(Connection conn, String nomeItem) throws SQLException {
+        String sqlMedicamento = "SELECT id FROM medicamento WHERE LOWER(nome) = LOWER(?)";
+        String sqlProduto = "SELECT id FROM produto WHERE LOWER(nome) = LOWER(?)";
+
         try (PreparedStatement stmtMedicamento = conn.prepareStatement(sqlMedicamento)) {
-            stmtMedicamento.setInt(1, id);
-            ResultSet rsMedicamento = stmtMedicamento.executeQuery();
-            if (rsMedicamento.next()) {
-                return "Medicamento";
+            stmtMedicamento.setString(1, nomeItem);
+            try (ResultSet rs = stmtMedicamento.executeQuery()) {
+                if (rs.next()) {
+                    return "Medicamento";
+                }
             }
         }
-    
+
         try (PreparedStatement stmtProduto = conn.prepareStatement(sqlProduto)) {
-            stmtProduto.setInt(1, id);
-            ResultSet rsProduto = stmtProduto.executeQuery();
-            if (rsProduto.next()) {
-                return "Produto";
+            stmtProduto.setString(1, nomeItem);
+            try (ResultSet rs = stmtProduto.executeQuery()) {
+                if (rs.next()) {
+                    return "Produto";
+                }
             }
         }
-    
-        return "ID não encontrado"; // Se não estiver em nenhuma das tabelas
+
+        return "ID não encontrado";
     }
 
-    public static boolean verificarNecessidadeReceita(Connection conn, int id) throws SQLException {
-        String sql = "SELECT tipoReceita FROM medicamento WHERE id = ?";
-    
+    public static boolean verificarNecessidadeReceita(Connection conn, String nomeItem) throws SQLException {
+        String sql = "SELECT tipoReceita FROM medicamento WHERE LOWER(nome) = LOWER(?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                String tipoReceita = rs.getString("tipoReceita");
-                return tipoReceita != null && !tipoReceita.trim().isEmpty(); // Retorna true se precisar de receita
+            stmt.setString(1, nomeItem);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String tipoReceita = rs.getString("tipoReceita");
+                    return tipoReceita != null && !tipoReceita.trim().isEmpty();
+                }
             }
         }
-    
-        return false; // Se não estiver na tabela de medicamentos, não precisa de receita
+        return false;
     }
-    
     
 }
