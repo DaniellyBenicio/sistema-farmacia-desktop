@@ -3,13 +3,21 @@ package views.Vendas;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Map;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import dao.Cliente.ClienteDAO;
+import dao.ItemVenda.ItemVendaDAO;
+import dao.Medicamento.MedicamentoDAO;
+import dao.Produto.ProdutoDAO;
 import dao.Venda.VendaDAO;
 import main.ConexaoBD;
+import models.ItemVenda.ItemVenda;
+import models.Medicamento.Medicamento;
+import models.Produto.Produto;
 import models.Venda.Venda;
 import views.BarrasSuperiores.PainelSuperior;
 
@@ -426,20 +434,21 @@ public class PagamentoVenda extends JPanel {
 
     private void salvarDados() {
         try (Connection conn = ConexaoBD.getConnection()) {
+            conn.setAutoCommit(false);
 
-            cpfCliente = resumoDaVenda.lblCpfCliente.getText().replace("CPF: ", "").trim();
-            funcionarioId = PainelSuperior.getIdFuncionarioAtual();
+            String cpfCliente = resumoDaVenda.lblCpfCliente.getText().replace("CPF: ", "").trim();
+            int funcionarioId = PainelSuperior.getIdFuncionarioAtual();
 
+            Integer clienteId = null;
             if (!cpfCliente.isEmpty()) {
                 clienteId = ClienteDAO.buscarClientePorCpfRetornaId(conn, cpfCliente);
-            } else {
-                clienteId = null;
             }
 
             String descontoStr = txtDesconto.getText().replace(",", ".");
             BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
             LocalDateTime agora = LocalDateTime.now();
 
+            int vendaId = -1;
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
                 String formaPagamentoStr = (String) modeloTabela.getValueAt(i, 1);
                 String formaPagamento = converterFormaPagamento(formaPagamentoStr);
@@ -448,15 +457,52 @@ public class PagamentoVenda extends JPanel {
                 BigDecimal valorPago = new BigDecimal(valorStr);
 
                 Venda venda = new Venda(clienteId, funcionarioId, valorPago, desconto, formaPagamento, agora);
-                VendaDAO.realizarVenda(conn, venda);
+                int idGerado = VendaDAO.realizarVenda(conn, venda);
+                if (i == 0 && idGerado != -1) {
+                    vendaId = idGerado;
+                } else if (idGerado == -1) {
+                    throw new SQLException("Erro ao registrar venda na linha " + i);
+                }
             }
 
+            for (String ordem : resumoDaVenda.itensMap.keySet()) {
+                String[] dadosItem = resumoDaVenda.getDadosItemPorOrdem(ordem);
+                int idItem = Integer.parseInt(dadosItem[1]);
+                int quantidade = Integer.parseInt(dadosItem[3].replace(",", ".").trim());
+                BigDecimal precoUnitario = new BigDecimal(dadosItem[4].replace(",", "."));
+                BigDecimal descontoItem = new BigDecimal(dadosItem[5].replace(",", "."));
+                BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+
+                ItemVenda itemVenda;
+                Produto produto = null;
+                Medicamento medicamento = null;
+
+                try {
+                    produto = ProdutoDAO.buscarPorId(conn, idItem);
+                    itemVenda = new ItemVenda(vendaId, produto, null, quantidade, precoUnitario, subtotal,
+                            descontoItem);
+                } catch (SQLException e) {
+                    medicamento = MedicamentoDAO.buscarPorId(conn, idItem);
+                    itemVenda = new ItemVenda(vendaId, null, medicamento, quantidade, precoUnitario, subtotal,
+                            descontoItem);
+                }
+
+                ItemVendaDAO.inserirItemVenda(conn, itemVenda);
+            }
+
+            conn.commit();
             JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
             Window dialog = SwingUtilities.getWindowAncestor(this);
             if (dialog != null) {
                 dialog.dispose();
             }
+
         } catch (SQLException e) {
+            try {
+                conn.rollback();
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
             JOptionPane.showMessageDialog(this, "Erro ao salvar venda: " + e.getMessage());
             e.printStackTrace();
         }

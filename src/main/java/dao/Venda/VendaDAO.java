@@ -32,16 +32,16 @@ public class VendaDAO {
         }
     }
 
-    public static void realizarVenda(Connection conn, Venda v) throws SQLException {
+    public static int realizarVenda(Connection conn, Venda v) throws SQLException {
         Integer funcionarioId = FuncionarioDAO.verificarFuncionarioPorId(conn, v.getFuncionarioId());
         if (funcionarioId == null) {
             System.out.println("Funcionário não encontrado para o ID: " + v.getFuncionarioId());
-            return;
+            return -1;
         }
 
         if (verificarVendaExistente(conn, v)) {
             System.out.println("Venda já existente para este cliente, funcionário e data!");
-            return;
+            return -1;
         }
 
         BigDecimal descontoCalculado = BigDecimal.ZERO;
@@ -85,11 +85,12 @@ public class VendaDAO {
                         int idVenda = rs.getInt(1);
                         v.setId(idVenda);
                         System.out.println("Venda registrada com sucesso! ID: " + idVenda);
+                        return idVenda;
                     }
                 }
-            } else {
-                System.out.println("Erro ao registrar a venda.");
             }
+            System.out.println("Erro ao registrar a venda.");
+            return -1;
         }
     }
 

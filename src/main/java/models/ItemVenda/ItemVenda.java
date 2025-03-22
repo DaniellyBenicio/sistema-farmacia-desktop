@@ -14,9 +14,11 @@ public class ItemVenda {
     private BigDecimal subtotal;
     private BigDecimal desconto;
 
-    public ItemVenda() {}
+    public ItemVenda() {
+    }
 
-    public ItemVenda(int venda_id, Produto produto, Medicamento medicamento, int qnt, BigDecimal precoUnit, BigDecimal desconto) {
+    public ItemVenda(int venda_id, Produto produto, Medicamento medicamento, int qnt, BigDecimal precoUnit,
+            BigDecimal subtotal, BigDecimal desconto) {
         this.venda_id = venda_id;
         this.produto = produto;
         this.medicamento = medicamento;
@@ -55,11 +57,12 @@ public class ItemVenda {
 
     public void setProduto(Produto produto) {
         if (produto == null && medicamento == null) {
-            throw new IllegalArgumentException("Pelo menos um dos campos (produto ou medicamento) deve ser preenchido.");
+            throw new IllegalArgumentException(
+                    "Pelo menos um dos campos (produto ou medicamento) deve ser preenchido.");
         }
         this.produto = produto;
-        if(produto != null) {
-            this.medicamento = null; 
+        if (produto != null) {
+            this.medicamento = null;
         }
     }
 
@@ -69,14 +72,15 @@ public class ItemVenda {
 
     public void setMedicamento(Medicamento medicamento) {
         if (produto == null && medicamento == null) {
-            throw new IllegalArgumentException("Pelo menos um dos campos (produto ou medicamento) deve ser preenchido.");
+            throw new IllegalArgumentException(
+                    "Pelo menos um dos campos (produto ou medicamento) deve ser preenchido.");
         }
         this.medicamento = medicamento;
-        if(medicamento != null) {
-            this.produto = null; 
+        if (medicamento != null) {
+            this.produto = null;
         }
     }
-    
+
     public int getQnt() {
         return qnt;
     }
@@ -87,7 +91,7 @@ public class ItemVenda {
         }
         this.qnt = qnt;
         atualizarSubtotal();
-    }  
+    }
 
     public BigDecimal getPrecoUnit() {
         return precoUnit;
@@ -99,7 +103,7 @@ public class ItemVenda {
         }
         this.precoUnit = precoUnit;
         atualizarSubtotal();
-    }   
+    }
 
     public BigDecimal getSubtotal() {
         return subtotal;
@@ -111,7 +115,7 @@ public class ItemVenda {
         }
         this.subtotal = subtotal;
     }
-    
+
     public BigDecimal getDesconto() {
         return desconto;
     }
@@ -129,7 +133,7 @@ public class ItemVenda {
         this.desconto = desconto;
         atualizarSubtotal();
     }
-    
+
     private void atualizarSubtotal() {
         if (precoUnit != null && qnt > 0) {
             BigDecimal precoComDesconto = precoUnit.multiply(BigDecimal.valueOf(qnt)).subtract(desconto);
@@ -138,5 +142,5 @@ public class ItemVenda {
             this.subtotal = BigDecimal.ZERO;
         }
     }
-    
+
 }
