@@ -417,4 +417,45 @@ public class ItemVendaDAO {
 
         throw new SQLException("Item com ID " + idItem + " não encontrado no banco de dados.");
     }
+
+    public static String verificarTipoItem(Connection conn, int id) throws SQLException {
+        String sqlMedicamento = "SELECT id FROM medicamento WHERE id = ?";
+        String sqlProduto = "SELECT id FROM produto WHERE id = ?";
+    
+        try (PreparedStatement stmtMedicamento = conn.prepareStatement(sqlMedicamento)) {
+            stmtMedicamento.setInt(1, id);
+            ResultSet rsMedicamento = stmtMedicamento.executeQuery();
+            if (rsMedicamento.next()) {
+                return "Medicamento";
+            }
+        }
+    
+        try (PreparedStatement stmtProduto = conn.prepareStatement(sqlProduto)) {
+            stmtProduto.setInt(1, id);
+            ResultSet rsProduto = stmtProduto.executeQuery();
+            if (rsProduto.next()) {
+                return "Produto";
+            }
+        }
+    
+        return "ID não encontrado"; // Se não estiver em nenhuma das tabelas
+    }
+
+    public static boolean verificarNecessidadeReceita(Connection conn, int id) throws SQLException {
+        String sql = "SELECT tipoReceita FROM medicamento WHERE id = ?";
+    
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                String tipoReceita = rs.getString("tipoReceita");
+                return tipoReceita != null && !tipoReceita.trim().isEmpty(); // Retorna true se precisar de receita
+            }
+        }
+    
+        return false; // Se não estiver na tabela de medicamentos, não precisa de receita
+    }
+    
+    
 }
