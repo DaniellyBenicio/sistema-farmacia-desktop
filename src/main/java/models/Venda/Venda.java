@@ -1,7 +1,12 @@
 package models.Venda;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import dao.ItemVenda.ItemVendaDAO;
+import models.ItemVenda.ItemVenda;
 
 public class Venda {
     private Integer id; 
@@ -106,4 +111,5 @@ public class Venda {
         }
         this.data = data;
     }
+
 }

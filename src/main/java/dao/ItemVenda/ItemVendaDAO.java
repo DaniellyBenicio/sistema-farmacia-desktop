@@ -16,7 +16,7 @@ import models.Produto.Produto;
 public class ItemVendaDAO {
     public static void inserirItemVenda(Connection conn, ItemVenda iv, String nomeItem) throws SQLException {
         String sql = "INSERT INTO itemVenda (venda_id, produto_id, medicamento_id, qnt, precoUnit, desconto) VALUES (?, ?, ?, ?, ?, ?)";
-
+    
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             calcularDescontoAutomatico(conn, iv);
             pstmt.setInt(1, iv.getVendaId());
@@ -25,12 +25,11 @@ public class ItemVendaDAO {
             pstmt.setInt(4, iv.getQnt());
             pstmt.setBigDecimal(5, iv.getPrecoUnit());
             pstmt.setBigDecimal(6, iv.getDesconto());
-
+    
             pstmt.executeUpdate();
             System.out.println("Item '" + nomeItem + "' inserido com sucesso na venda ID " + iv.getVendaId());
         } catch (SQLException e) {
-            throw new SQLException(
-                    "Erro ao inserir ItemVenda no banco de dados para o item '" + nomeItem + "': " + e.getMessage(), e);
+            throw new SQLException("Erro ao inserir ItemVenda no banco de dados para o item '" + nomeItem + "': " + e.getMessage(), e);
         }
     }
 
@@ -50,10 +49,12 @@ public class ItemVendaDAO {
                                 case "SIMILAR":
                                     descontoCalculado = iv.getPrecoUnit()
                                             .multiply(BigDecimal.valueOf(iv.getQnt()))
-                                            .multiply(new BigDecimal("0.20"));
+                                            .multiply(new BigDecimal("0.15"));
                                     break;
                                 case "ÉTICO":
-                                    descontoCalculado = new BigDecimal("5.00");
+                                    descontoCalculado = iv.getPrecoUnit()
+                                        .multiply(BigDecimal.valueOf(iv.getQnt()))
+                                        .multiply(new BigDecimal("0.05"));
                                     break;
                                 default:
                                     descontoCalculado = BigDecimal.ZERO;
@@ -321,8 +322,7 @@ public class ItemVendaDAO {
         return itens;
     }
 
-    public static boolean verificarTipoEEstoque(Connection conn, ItemVenda iv, int quantidade, boolean isRemocao,
-            String nomeItem)
+    public static boolean verificarTipoEEstoque(Connection conn, ItemVenda iv, int quantidade, boolean isRemocao, String nomeItem)
             throws SQLException {
         String sqlProduto = "SELECT id, qntEstoque FROM produto WHERE LOWER(nome) = LOWER(?)";
         String sqlMedicamento = "SELECT id, qnt, tipoReceita FROM medicamento WHERE LOWER(nome) = LOWER(?)";
@@ -338,8 +338,7 @@ public class ItemVendaDAO {
                     qntDisponivel = rs.getInt("qntEstoque");
                     int idProduto = rs.getInt("id");
                     isProduto = true;
-                    System.out.println("Produto encontrado. Nome: " + nomeItem + ", ID: " + idProduto
-                            + ", Estoque inicial: " + qntDisponivel);
+                    System.out.println("Produto encontrado. Nome: " + nomeItem + ", ID: " + idProduto + ", Estoque inicial: " + qntDisponivel);
 
                     if (isRemocao) {
                         qntDisponivel += quantidade;
@@ -376,8 +375,7 @@ public class ItemVendaDAO {
                         qntDisponivel = rs.getInt("qnt");
                         int idMedicamento = rs.getInt("id");
                         String tipoReceitaStr = rs.getString("tipoReceita");
-                        System.out.println("Medicamento encontrado. Nome: " + nomeItem + ", ID: " + idMedicamento
-                                + ", Estoque inicial: " + qntDisponivel);
+                        System.out.println("Medicamento encontrado. Nome: " + nomeItem + ", ID: " + idMedicamento + ", Estoque inicial: " + qntDisponivel);
 
                         Medicamento medicamento = new Medicamento();
                         medicamento.setId(idMedicamento);
@@ -385,8 +383,7 @@ public class ItemVendaDAO {
                             try {
                                 medicamento.setTipoReceita(TipoReceita.valueOf(tipoReceitaStr.toUpperCase()));
                             } catch (IllegalArgumentException e) {
-                                throw new SQLException(
-                                        "Tipo de receita inválido para " + nomeItem + ": " + tipoReceitaStr, e);
+                                throw new SQLException("Tipo de receita inválido para " + nomeItem + ": " + tipoReceitaStr, e);
                             }
                         }
                         iv.setMedicamento(medicamento);
@@ -395,15 +392,13 @@ public class ItemVendaDAO {
                             qntDisponivel += quantidade;
                             iv.setQnt(quantidade);
                             atualizarEstoqueMedicamento(conn, idMedicamento, qntDisponivel);
-                            System.out.println(
-                                    "Estoque restaurado de medicamento ID " + idMedicamento + ": " + qntDisponivel);
+                            System.out.println("Estoque restaurado de medicamento ID " + idMedicamento + ": " + qntDisponivel);
                             return true;
                         } else if (qntDisponivel >= quantidade) {
                             iv.setQnt(quantidade);
                             qntDisponivel -= quantidade;
                             atualizarEstoqueMedicamento(conn, idMedicamento, qntDisponivel);
-                            System.out.println(
-                                    "Estoque atualizado de medicamento ID " + idMedicamento + ": " + qntDisponivel);
+                            System.out.println("Estoque atualizado de medicamento ID " + idMedicamento + ": " + qntDisponivel);
                             return true;
                         } else {
                             System.out.println("Estoque insuficiente para o medicamento: " + nomeItem);
@@ -435,46 +430,44 @@ public class ItemVendaDAO {
         }
     }
 
+    // Outras funções permanecem inalteradas, mas aqui está um exemplo para consistência
     public static String verificarTipoItem(Connection conn, String nomeItem) throws SQLException {
-        System.out.println("verificarTipoItem: Iniciando a verificação do item: " + nomeItem);
-
-        String sqlMedicamento = "SELECT id, nome, tipoReceita FROM medicamento WHERE LOWER(nome) LIKE LOWER(?)";
-        String sqlProduto = "SELECT id FROM produto WHERE LOWER(nome) LIKE LOWER(?)";
+        String sqlMedicamento = "SELECT id FROM medicamento WHERE LOWER(nome) = LOWER(?)";
+        String sqlProduto = "SELECT id FROM produto WHERE LOWER(nome) = LOWER(?)";
 
         try (PreparedStatement stmtMedicamento = conn.prepareStatement(sqlMedicamento)) {
-            stmtMedicamento.setString(1, nomeItem + "%");
-            System.out.println("verificarTipoItem: Executando consulta para medicamento.");
-
+            stmtMedicamento.setString(1, nomeItem);
             try (ResultSet rs = stmtMedicamento.executeQuery()) {
                 if (rs.next()) {
-                    int id = rs.getInt("id");
-                    String nome = rs.getString("nome");
-                    String tipoReceita = rs.getString("tipoReceita");
-                    boolean necessitaReceita = tipoReceita != null && !tipoReceita.trim().isEmpty();
-
-                    System.out.println("verificarTipoItem: Encontrado medicamento. ID: " + id + ", Nome: " + nome
-                            + ", Necessita Receita: " + necessitaReceita);
-                    return "Medicamento | ID: " + id + " | Nome: " + nome + " | Necessita Receita: " + necessitaReceita;
+                    return "Medicamento";
                 }
-                System.out.println("verificarTipoItem: Medicamento não encontrado.");
             }
         }
 
         try (PreparedStatement stmtProduto = conn.prepareStatement(sqlProduto)) {
-            stmtProduto.setString(1, nomeItem + "%");
-            System.out.println("verificarTipoItem: Executando consulta para produto.");
-
+            stmtProduto.setString(1, nomeItem);
             try (ResultSet rs = stmtProduto.executeQuery()) {
                 if (rs.next()) {
-                    int id = rs.getInt("id");
-                    System.out.println("verificarTipoItem: Encontrado produto. ID: " + id);
-                    return "Produto | ID: " + id;
+                    return "Produto";
                 }
-                System.out.println("verificarTipoItem: Produto não encontrado.");
             }
         }
 
-        System.out.println("verificarTipoItem: Item não encontrado.");
-        return "Item não encontrado";
+        return "ID não encontrado";
     }
+
+    public static boolean verificarNecessidadeReceita(Connection conn, String nomeItem) throws SQLException {
+        String sql = "SELECT tipoReceita FROM medicamento WHERE LOWER(nome) = LOWER(?)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nomeItem);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String tipoReceita = rs.getString("tipoReceita");
+                    return tipoReceita != null && !tipoReceita.trim().isEmpty();
+                }
+            }
+        }
+        return false;
+    }
+    
 }
