@@ -86,8 +86,6 @@ public class Venda {
     public void setData(LocalDateTime data) {
         if (data == null) {
             this.data = LocalDateTime.now();
-        } else if (data.isAfter(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Data não pode ser futura.");
         } else {
             this.data = data;
         }
