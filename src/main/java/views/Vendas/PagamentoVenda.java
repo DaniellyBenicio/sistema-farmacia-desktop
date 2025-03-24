@@ -3,7 +3,6 @@ package views.Vendas;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.Map;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -31,21 +30,28 @@ import javax.swing.event.DocumentListener;
 public class PagamentoVenda extends JPanel {
 
     private JTable tabela;
-    private DefaultTableModel modeloTabela;
+    DefaultTableModel modeloTabela;
     private JPanel camposPanel;
     private Connection conn;
     private JComboBox<String> comboPagamento, comboParcelas;
-    private JTextField txtPrecoTotal, txtDesconto, txtTotal, txtValorPago, txtValorRestante, txtTroco;
+    private JTextField txtPrecoTotal;
+    JTextField txtDesconto;
+    private JTextField txtTotal;
+    private JTextField txtValorPago;
+    private JTextField txtValorRestante;
+    private JTextField txtTroco;
     private BigDecimal subtotal;
     private int ordemPagamento = 1;
     private ResumoDaVenda resumoDaVenda;
+    private RealizarVenda realizarVenda;
     private Integer funcionarioId;
     private String cpfCliente;
     private Integer clienteId;
 
-    public PagamentoVenda(BigDecimal totalGeral, ResumoDaVenda resumoDaVenda) {
+    public PagamentoVenda(BigDecimal totalGeral, ResumoDaVenda resumoDaVenda, RealizarVenda realizarVenda) {
         this.subtotal = totalGeral;
         this.resumoDaVenda = resumoDaVenda;
+        this.realizarVenda = realizarVenda;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(new Color(0, 0, 0, 0));
 
@@ -160,7 +166,8 @@ public class PagamentoVenda extends JPanel {
     }
 
     private JPanel createTabelaPagamento() {
-        String[] colunas = { "Ordem", "Forma de Pagamento", "Parcelas", "Valor" };
+        String[] colunas = { "Ordem", "Forma de Pagamento", "Parcelas", "Valor Total", "Desconto", "Valor Pago",
+                "Troco" };
         modeloTabela = new DefaultTableModel(colunas, 0);
 
         tabela = new JTable(modeloTabela);
@@ -182,6 +189,9 @@ public class PagamentoVenda extends JPanel {
         tabela.getColumnModel().getColumn(1).setPreferredWidth(170);
         tabela.getColumnModel().getColumn(2).setPreferredWidth(30);
         tabela.getColumnModel().getColumn(3).setPreferredWidth(60);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(60);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(60);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(60);
 
         tabela.setCellSelectionEnabled(false);
         tabela.setRowSelectionAllowed(true);
@@ -363,31 +373,38 @@ public class PagamentoVenda extends JPanel {
 
     private void atualizarRestanteETroco() {
         try {
-            String totalStr = txtTotal.getText().replace(",", ".");
             String valorPagoStr = txtValorPago.getText().replace(",", ".");
-            BigDecimal total = new BigDecimal(totalStr);
             BigDecimal valorPago = valorPagoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(valorPagoStr);
 
             BigDecimal totalPagoTabela = BigDecimal.ZERO;
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
-                String valorTabela = modeloTabela.getValueAt(i, 3).toString().replace(",", ".");
+                String valorTabela = modeloTabela.getValueAt(i, 5).toString().replace(",", ".");
                 totalPagoTabela = totalPagoTabela.add(new BigDecimal(valorTabela));
             }
 
             BigDecimal totalPago = totalPagoTabela.add(valorPago);
-            BigDecimal restante = total.subtract(totalPago);
+            String descontoStr = txtDesconto.getText().replace(",", ".").trim();
+            BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
+            BigDecimal totalBase = subtotal.subtract(desconto);
+
+            BigDecimal restanteAntes = totalBase.subtract(totalPagoTabela);
+            if (restanteAntes.compareTo(BigDecimal.ZERO) < 0) {
+                restanteAntes = BigDecimal.ZERO;
+            }
+
+            BigDecimal restante = totalBase.subtract(totalPago);
             if (restante.compareTo(BigDecimal.ZERO) < 0) {
                 restante = BigDecimal.ZERO;
             }
             txtValorRestante.setText(restante.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
 
-            BigDecimal troco = totalPago.subtract(total);
-            if (troco.compareTo(BigDecimal.ZERO) < 0) {
-                troco = BigDecimal.ZERO;
+            BigDecimal troco = BigDecimal.ZERO;
+            if (valorPago.compareTo(restanteAntes) > 0) {
+                troco = valorPago.subtract(restanteAntes);
             }
             txtTroco.setText(troco.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
         } catch (NumberFormatException e) {
-            txtValorRestante.setText(txtTotal.getText());
+            txtValorRestante.setText(subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
             txtTroco.setText("0,00");
         }
     }
@@ -409,20 +426,60 @@ public class PagamentoVenda extends JPanel {
                 return;
             }
 
+            BigDecimal totalPagoTabela = BigDecimal.ZERO;
+            for (int i = 0; i < modeloTabela.getRowCount(); i++) {
+                String valorTabela = modeloTabela.getValueAt(i, 5).toString().replace(",", "."); // Coluna "Valor Pago"
+                totalPagoTabela = totalPagoTabela.add(new BigDecimal(valorTabela));
+            }
+            BigDecimal totalPago = totalPagoTabela.add(valorPago);
+
+            String descontoStr = txtDesconto.getText().replace(",", ".").trim();
+            BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
+            BigDecimal totalBase = subtotal.subtract(desconto);
+
+            BigDecimal restanteAntes = totalBase.subtract(totalPagoTabela);
+            if (restanteAntes.compareTo(BigDecimal.ZERO) < 0) {
+                restanteAntes = BigDecimal.ZERO;
+            }
+
+            String valorTotalTabela;
+            if (modeloTabela.getRowCount() == 0) {
+                valorTotalTabela = totalBase.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",");
+            } else {
+                valorTotalTabela = restanteAntes.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",");
+            }
+
+            BigDecimal restante = totalBase.subtract(totalPago);
+            if (restante.compareTo(BigDecimal.ZERO) < 0) {
+                restante = BigDecimal.ZERO;
+            }
+
+            BigDecimal troco = BigDecimal.ZERO;
+            if (valorPago.compareTo(restanteAntes) > 0) {
+                troco = valorPago.subtract(restanteAntes);
+            }
+
             modeloTabela.addRow(new Object[] {
                     ordemPagamento++,
                     formaPagamento,
                     "Cartão de Crédito".equals(formaPagamento) ? parcelas : "1",
-                    valorPago.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",")
+                    valorTotalTabela,
+                    modeloTabela.getRowCount() == 0
+                            ? desconto.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",")
+                            : "0,00",
+                    valorPago.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","),
+                    troco.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",")
             });
+
+            if (modeloTabela.getRowCount() == 1) {
+                txtDesconto.setEditable(false);
+            }
 
             comboPagamento.setSelectedIndex(0);
             comboParcelas.setSelectedIndex(0);
             txtValorPago.setText("");
             atualizarRestanteETroco();
 
-            String restanteStr = txtValorRestante.getText().replace(",", ".");
-            BigDecimal restante = new BigDecimal(restanteStr);
             if (restante.compareTo(BigDecimal.ZERO) == 0) {
                 salvarDados();
                 JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
@@ -435,27 +492,27 @@ public class PagamentoVenda extends JPanel {
     private void salvarDados() {
         try (Connection conn = ConexaoBD.getConnection()) {
             conn.setAutoCommit(false);
-    
+
             String cpfCliente = resumoDaVenda.lblCpfCliente.getText().replace("CPF: ", "").trim();
             int funcionarioId = PainelSuperior.getIdFuncionarioAtual();
-    
+
             Integer clienteId = null;
             if (!cpfCliente.isEmpty()) {
                 clienteId = ClienteDAO.buscarClientePorCpfRetornaId(conn, cpfCliente);
             }
-    
+
             String descontoStr = txtDesconto.getText().replace(",", ".").trim();
             BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
             LocalDateTime agora = LocalDateTime.now();
-    
+
             int vendaId = -1;
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
                 String formaPagamentoStr = (String) modeloTabela.getValueAt(i, 1);
                 String formaPagamento = converterFormaPagamento(formaPagamentoStr);
-    
+
                 String valorStr = modeloTabela.getValueAt(i, 3).toString().replace(",", ".").trim();
                 BigDecimal valorPago = new BigDecimal(valorStr);
-    
+
                 Venda venda = new Venda(clienteId, funcionarioId, valorPago, desconto, formaPagamento, agora);
                 int idGerado = VendaDAO.realizarVenda(conn, venda);
                 if (i == 0 && idGerado != -1) {
@@ -464,26 +521,25 @@ public class PagamentoVenda extends JPanel {
                     throw new SQLException("Erro ao registrar venda na linha " + i);
                 }
             }
-    
-            // Process items
+
             try {
                 for (String ordem : resumoDaVenda.itensMap.keySet()) {
                     String[] dadosItem = resumoDaVenda.getDadosItemPorOrdem(ordem);
                     int idItem = Integer.parseInt(dadosItem[1].trim());
-                    String nomeCompleto = dadosItem[2].trim(); // Texto completo
-                    String nomeBase = nomeCompleto.split(" ")[0]; // Pega apenas o primeiro termo (nome base)
+                    String nomeCompleto = dadosItem[2].trim();
+                    String nomeBase = nomeCompleto.split(" ")[0];
                     int quantidade = Integer.parseInt(dadosItem[3].replace(",", ".").trim());
                     BigDecimal precoUnitario = new BigDecimal(dadosItem[4].replace(",", ".").trim());
                     BigDecimal descontoItem = new BigDecimal(dadosItem[5].replace(",", ".").trim());
                     BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
-    
+
                     ItemVenda itemVenda = new ItemVenda();
                     itemVenda.setVendaId(vendaId);
                     itemVenda.setDesconto(descontoItem);
                     itemVenda.setPrecoUnit(precoUnitario);
                     itemVenda.setQnt(quantidade);
                     itemVenda.setSubtotal(subtotal);
-    
+
                     String tipo = ItemVendaDAO.verificarTipoItem(conn, nomeBase);
                     if ("Medicamento".equals(tipo)) {
                         Medicamento medicamento = MedicamentoDAO.buscarPorId(conn, idItem);
@@ -500,17 +556,21 @@ public class PagamentoVenda extends JPanel {
                     } else {
                         throw new SQLException("Item '" + nomeBase + "' não identificado como produto ou medicamento.");
                     }
-    
+
                     ItemVendaDAO.inserirItemVenda(conn, itemVenda, nomeBase);
                 }
-    
+
                 conn.commit();
                 JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
-    
+
                 Window dialog = SwingUtilities.getWindowAncestor(this);
                 if (dialog != null) {
                     dialog.dispose();
                 }
+                if (realizarVenda != null) {
+                    realizarVenda.reiniciarVenda();
+                }
+                NotaFiscal.exibirNotaFiscal(resumoDaVenda, this);
             } catch (SQLException e) {
                 try {
                     conn.rollback();
@@ -536,7 +596,6 @@ public class PagamentoVenda extends JPanel {
             JOptionPane.showMessageDialog(this, "Erro inesperado: " + e.getMessage());
         }
     }
-
 
     private String converterFormaPagamento(String forma) {
         switch (forma) {

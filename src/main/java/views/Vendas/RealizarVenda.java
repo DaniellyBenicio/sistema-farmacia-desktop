@@ -24,14 +24,12 @@ import views.Clientes.CadastrarCliente;
 
 public class RealizarVenda extends JPanel {
 
-    // Campos da classe
     private final Connection conn;
     private Map<String, Component[]> itensMap = new HashMap<>();
     private int ordemItem = 1;
 
-    // Componentes de interface
     private JLabel itemLabel, lblCodigoProduto, lblQuantidade, lblPrecoUnitario, lblDesconto, lblPrecoTotal;
-    private JLabel lblNomeCliente, lblCpfCliente, lblAtendente;
+    JLabel lblNomeCliente, lblCpfCliente, lblAtendente;
     private JTextField txtItem, txtCodigoProduto, txtQuantidade, txtPrecoUnitario, txtDesconto, txtPrecoTotal, txtTotal;
     private JPanel painelItem;
     private JPopupMenu popupMenu;
@@ -39,7 +37,6 @@ public class RealizarVenda extends JPanel {
     private ResumoDaVenda painelDireito;
     private JButton btnRemoverItem, btnConfirmarVenda, btnCancelarVenda;
 
-    // Constantes de estilo
     private static final Color BACKGROUND_COLOR = new Color(240, 236, 236);
     private static final Color BORDER_COLOR = new Color(173, 216, 230);
     private static final Color INPUT_BG_COLOR = new Color(24, 39, 55);
@@ -47,7 +44,6 @@ public class RealizarVenda extends JPanel {
     private static final Color BUTTON_CONFIRM_COLOR = new Color(0, 133, 0);
     private static final int ITEM_HEIGHT = 40;
 
-    // Construtor
     public RealizarVenda(Connection conn) {
         this.conn = conn;
         initializeComponents();
@@ -56,7 +52,6 @@ public class RealizarVenda extends JPanel {
         atualizarEstadoBotoes();
     }
 
-    // Métodos de Inicialização
     private void initializeComponents() {
         lblNomeCliente = new JLabel("Nome do Consumidor: Não Identificado");
         lblCpfCliente = new JLabel("CPF do Consumidor: Não Identificado");
@@ -73,19 +68,16 @@ public class RealizarVenda extends JPanel {
         return !itensMap.isEmpty();
     }
 
-    // Configuração do Layout
     private void setupLayout() {
         setLayout(new BorderLayout());
         setBackground(BACKGROUND_COLOR);
         setBorder(BorderFactory.createEmptyBorder(10, 50, 0, 50));
 
-        // Painel superior
         JPanel painelTopo = new JPanel(new BorderLayout());
         painelTopo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         painelTopo.add(createItemPanel(), BorderLayout.CENTER);
         add(painelTopo, BorderLayout.NORTH);
 
-        // Painel central
         JPanel painelMeio = new JPanel(new GridBagLayout());
         GridBagConstraints gbcMeio = new GridBagConstraints();
         gbcMeio.fill = GridBagConstraints.BOTH;
@@ -105,7 +97,6 @@ public class RealizarVenda extends JPanel {
         painelMeio.add(painelDireito, gbcMeio);
         add(painelMeio, BorderLayout.CENTER);
 
-        // Painel inferior
         JPanel painelFooter = new JPanel(new GridBagLayout());
         GridBagConstraints gbcFooter = new GridBagConstraints();
         gbcFooter.fill = GridBagConstraints.BOTH;
@@ -132,7 +123,6 @@ public class RealizarVenda extends JPanel {
         });
     }
 
-    // Criação de Painéis
     private JPanel createItemPanel() {
         painelItem = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -261,7 +251,7 @@ public class RealizarVenda extends JPanel {
         painel.add(btnAdicionarItem, gbc);
     }
 
-    private ResumoDaVenda createPainelDireito() {
+    public ResumoDaVenda createPainelDireito() {
         ResumoDaVenda resumo = new ResumoDaVenda(lblNomeCliente, lblCpfCliente, lblAtendente);
         resumo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
         return resumo;
@@ -300,10 +290,6 @@ public class RealizarVenda extends JPanel {
         btnCancelarVenda.setPreferredSize(new Dimension(185, 40));
         btnCancelarVenda.setEnabled(false);
         btnCancelarVenda.addActionListener(e -> {
-            // Restaurar quantidades estáticas de estoque
-            // ItemVendaDAO.resetQuantidades(); // Chamada correta ao método estático na
-            // classe ItemVendaDAO
-
             // Limpar campos de entrada
             limparCampos();
 
@@ -402,7 +388,6 @@ public class RealizarVenda extends JPanel {
         return textField;
     }
 
-    // Configuração de Eventos
     private void configurarEventosItemPanel() {
         txtItem.addKeyListener(new KeyAdapter() {
             @Override
@@ -477,10 +462,9 @@ public class RealizarVenda extends JPanel {
         });
     }
 
-    // Métodos de Ação
     private void atualizarResultadosBusca(String termo) {
         popupMenu.removeAll();
-    
+
         SwingWorker<List<Object>, Void> worker = new SwingWorker<>() {
             @Override
             protected List<Object> doInBackground() throws Exception {
@@ -488,7 +472,7 @@ public class RealizarVenda extends JPanel {
                     return ItemVendaDAO.buscarTodosItensDisponiveis(conn, termo);
                 }
             }
-    
+
             @Override
             protected void done() {
                 try {
@@ -497,23 +481,23 @@ public class RealizarVenda extends JPanel {
                         popupMenu.setVisible(false);
                         return;
                     }
-    
+
                     int itemCount = 0;
                     for (Object item : itens) {
                         if (itemCount >= 10)
                             break;
-    
-                        String textoExibicao; // Texto completo para exibição
-                        String nomeBase;     // Apenas o nome base para verificação
+
+                        String textoExibicao;
+                        String nomeBase;
                         int idItem;
                         BigDecimal precoUnitario;
-    
+
                         if (item instanceof Produto) {
                             Produto p = (Produto) item;
                             textoExibicao = String.format("%s %s %s %s UN", p.getNome().toUpperCase(),
                                     p.getEmbalagem().toUpperCase(),
                                     p.getQntMedida().toUpperCase(), p.getQntEmbalagem());
-                            nomeBase = p.getNome().toUpperCase(); // Apenas o nome
+                            nomeBase = p.getNome().toUpperCase();
                             idItem = p.getId();
                             precoUnitario = p.getValor();
                         } else if (item instanceof Medicamento) {
@@ -521,13 +505,13 @@ public class RealizarVenda extends JPanel {
                             textoExibicao = String.format("%s %s %s %s %s UN", m.getNome().toUpperCase(),
                                     m.getFormaFarmaceutica().toUpperCase(),
                                     m.getDosagem().toUpperCase(), m.getEmbalagem().toUpperCase(), m.getQntEmbalagem());
-                            nomeBase = m.getNome().toUpperCase(); // Apenas o nome
+                            nomeBase = m.getNome().toUpperCase();
                             idItem = m.getId();
                             precoUnitario = m.getValorUnit();
                         } else {
                             continue;
                         }
-    
+
                         JMenuItem menuItem = new JMenuItem(textoExibicao);
                         menuItem.setBackground(new Color(24, 39, 55));
                         menuItem.setForeground(Color.WHITE);
@@ -535,25 +519,23 @@ public class RealizarVenda extends JPanel {
                         menuItem.setFont(new Font("Arial", Font.PLAIN, 16));
                         menuItem.setPreferredSize(new Dimension(painelItem.getWidth(), ITEM_HEIGHT));
                         menuItem.addActionListener(e -> {
-                            txtItem.setText(textoExibicao); // Texto completo para exibição
+                            txtItem.setText(textoExibicao);
                             txtCodigoProduto.setText(String.valueOf(idItem));
                             txtPrecoUnitario.setText(String.format("%.2f", precoUnitario));
                             txtQuantidade.setEnabled(true);
                             txtQuantidade.requestFocusInWindow();
                             popupMenu.setVisible(false);
-    
-                            // Armazena o nome base em uma variável ou campo auxiliar
-                            txtItem.putClientProperty("nomeBase", nomeBase); // Usamos putClientProperty para armazenar
+                            txtItem.putClientProperty("nomeBase", nomeBase);
                         });
-    
+
                         popupMenu.add(menuItem);
                         itemCount++;
                     }
-    
+
                     int totalHeight = itemCount * ITEM_HEIGHT;
                     if (totalHeight < ITEM_HEIGHT)
                         totalHeight = ITEM_HEIGHT;
-    
+
                     popupMenu.setPreferredSize(new Dimension(painelItem.getWidth(), totalHeight));
                     SwingUtilities.invokeLater(() -> {
                         popupMenu.show(txtItem, 0, txtItem.getHeight());
@@ -567,7 +549,7 @@ public class RealizarVenda extends JPanel {
                 }
             }
         };
-    
+
         worker.execute();
     }
 
@@ -609,7 +591,7 @@ public class RealizarVenda extends JPanel {
                 txtItem.requestFocusInWindow();
                 return;
             }
-    
+
             String quantidadeText = txtQuantidade.getText().replace(",", ".").trim();
             if (quantidadeText.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Por favor, insira a quantidade.", "Erro",
@@ -617,7 +599,7 @@ public class RealizarVenda extends JPanel {
                 txtQuantidade.requestFocusInWindow();
                 return;
             }
-    
+
             int quantidade = Integer.parseInt(quantidadeText);
             String precoTotalText = txtPrecoTotal.getText().replace(",", ".").trim();
             if (precoTotalText.equals("0,00") || precoTotalText.isEmpty()) {
@@ -625,17 +607,18 @@ public class RealizarVenda extends JPanel {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-    
-            String nomeBase = (String) txtItem.getClientProperty("nomeBase"); // Recupera o nome base
+
+            String nomeBase = (String) txtItem.getClientProperty("nomeBase");
             if (nomeBase == null) {
                 JOptionPane.showMessageDialog(this, "Erro: Nome base do item não encontrado.", "Erro",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-    
+
             ItemVenda itemVenda = new ItemVenda();
-            boolean estoqueSuficiente = ItemVendaDAO.verificarTipoEEstoque(conn, itemVenda, quantidade, false, nomeBase);
-    
+            boolean estoqueSuficiente = ItemVendaDAO.verificarTipoEEstoque(conn, itemVenda, quantidade, false,
+                    nomeBase);
+
             if (!estoqueSuficiente) {
                 String tipoItem = (itemVenda.getProduto() != null) ? "produto"
                         : (itemVenda.getMedicamento() != null) ? "medicamento" : "item";
@@ -643,12 +626,13 @@ public class RealizarVenda extends JPanel {
                     tipoItem += " (" + itemVenda.getMedicamento().getTipoReceita().name().toLowerCase() + ")";
                 }
                 JOptionPane.showMessageDialog(this,
-                        "Quantidade solicitada (" + quantidade + ") excede o estoque disponível para o " + tipoItem + ".",
+                        "Quantidade solicitada (" + quantidade + ") excede o estoque disponível para o " + tipoItem
+                                + ".",
                         "Erro de Estoque", JOptionPane.ERROR_MESSAGE);
                 txtQuantidade.requestFocusInWindow();
                 return;
             }
-    
+
             Object[] opcoes = { "Sim", "Não" };
             int resposta = JOptionPane.showOptionDialog(this,
                     "Confirmar item?\n" +
@@ -659,7 +643,7 @@ public class RealizarVenda extends JPanel {
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE,
                     null, opcoes, opcoes[0]);
-    
+
             if (resposta == JOptionPane.YES_OPTION) {
                 painelDireito.adicionarItem(String.valueOf(ordemItem++), txtCodigoProduto.getText(), txtItem.getText(),
                         txtQuantidade.getText(), txtPrecoUnitario.getText(), txtPrecoTotal.getText(),
@@ -728,7 +712,6 @@ public class RealizarVenda extends JPanel {
         painelDireito.repaint();
     }
 
-    // Diálogos
     private void abrirDialogoIdentificacaoCliente() {
         JDialog dialogo = new JDialog();
         dialogo.setTitle("Identificar Cliente");
@@ -841,31 +824,31 @@ public class RealizarVenda extends JPanel {
         dialogo.setSize(350, 180);
         dialogo.setLayout(new GridBagLayout());
         dialogo.setModal(true);
-    
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.CENTER;
-    
+
         JLabel lblOrdem = new JLabel("Digite o número do item (ordem):");
         lblOrdem.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 0;
         dialogo.add(lblOrdem, gbc);
-    
+
         JTextField txtOrdem = new JTextField();
         txtOrdem.setFont(new Font("Arial", Font.PLAIN, 18));
         txtOrdem.setColumns(10);
         gbc.gridy = 1;
         dialogo.add(txtOrdem, gbc);
-    
+
         JButton btnRemover = new JButton("Remover");
         btnRemover.setFont(new Font("Arial", Font.BOLD, 16));
         btnRemover.setBackground(INPUT_BG_COLOR);
         btnRemover.setForeground(Color.WHITE);
         gbc.gridy = 2;
         dialogo.add(btnRemover, gbc);
-    
+
         btnRemover.addActionListener(e -> {
             String ordem = txtOrdem.getText().trim();
             if (ordem.isEmpty()) {
@@ -873,7 +856,7 @@ public class RealizarVenda extends JPanel {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-    
+
             try {
                 String[] dadosItem = painelDireito.getDadosItemPorOrdem(ordem);
                 if (dadosItem == null) {
@@ -881,25 +864,25 @@ public class RealizarVenda extends JPanel {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-    
+
                 String mensagemConfirmacao = "Deseja remover o item?\n" +
                         "Ordem: " + dadosItem[0] + "\n" +
                         "Produto: " + dadosItem[2] + "\n" +
                         "Quantidade: " + dadosItem[3] + "\n" +
                         "Preço Total: " + dadosItem[6];
-    
+
                 Object[] opcoes = { "Sim", "Não" };
                 int resposta = JOptionPane.showOptionDialog(dialogo, mensagemConfirmacao, "Confirmação de Remoção",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, opcoes, opcoes[0]);
-    
+
                 if (resposta == JOptionPane.YES_OPTION) {
                     int quantidadeRemovida = Integer.parseInt(dadosItem[3].replace(",", ".").trim());
                     String nomeCompleto = dadosItem[2].trim();
                     String nomeBase = nomeCompleto.split(" ")[0]; // Apenas o nome base
                     ItemVenda itemVenda = new ItemVenda();
-    
+
                     ItemVendaDAO.verificarTipoEEstoque(conn, itemVenda, quantidadeRemovida, true, nomeBase);
-    
+
                     painelDireito.removerItem(ordem);
                     atualizarTotalFooter();
                     atualizarEstadoBotoes();
@@ -912,7 +895,7 @@ public class RealizarVenda extends JPanel {
                         JOptionPane.ERROR_MESSAGE);
             }
         });
-    
+
         txtOrdem.addActionListener(e -> btnRemover.doClick());
         dialogo.setLocationRelativeTo(this);
         dialogo.setVisible(true);
@@ -930,8 +913,45 @@ public class RealizarVenda extends JPanel {
         dialogoPagamento.setModal(true);
         dialogoPagamento.setLocationRelativeTo(this);
 
-        PagamentoVenda painelPagamento = new PagamentoVenda(painelDireito.getTotalGeral(), painelDireito);
+        PagamentoVenda painelPagamento = new PagamentoVenda(painelDireito.getTotalGeral(), painelDireito, this); // Passar
+                                                                                                                 // this
         dialogoPagamento.add(painelPagamento);
         dialogoPagamento.setVisible(true);
+    }
+
+    // Esse aqui é um método público para após realizar pagamento limpar tudo da
+    // venda antiga
+    public void reiniciarVenda() {
+        // Limpar campos de entrada
+        limparCampos();
+
+        // Reiniciar variáveis
+        ordemItem = 1;
+        itensMap.clear();
+
+        // Reiniciar informações do cliente
+        lblNomeCliente.setText("Nome do Consumidor: Não Identificado");
+        lblCpfCliente.setText("CPF do Consumidor: Não Identificado");
+
+        // Recriar e reintegrar o painel direito (ResumoDaVenda)
+        painelDireito = createPainelDireito();
+        JPanel painelMeio = (JPanel) getComponent(1);
+        painelMeio.remove(1);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 0.9;
+        gbc.fill = GridBagConstraints.BOTH;
+        painelMeio.add(painelDireito, gbc);
+
+        // Limpar popup
+        popupMenu.setVisible(false);
+        popupMenu.removeAll();
+
+        // Atualizar interface
+        atualizarTotalFooter();
+        atualizarEstadoBotoes();
+        revalidate();
+        repaint();
     }
 }
