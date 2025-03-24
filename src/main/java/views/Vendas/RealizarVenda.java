@@ -492,6 +492,8 @@ public class RealizarVenda extends JPanel {
                         int idItem;
                         BigDecimal precoUnitario;
 
+                        ItemVenda itemVenda = new ItemVenda(); // Create ItemVenda object for discount calculation
+
                         if (item instanceof Produto) {
                             Produto p = (Produto) item;
                             textoExibicao = String.format("%s %s %s %s UN", p.getNome().toUpperCase(),
@@ -500,6 +502,7 @@ public class RealizarVenda extends JPanel {
                             nomeBase = p.getNome().toUpperCase();
                             idItem = p.getId();
                             precoUnitario = p.getValor();
+                            itemVenda.setProduto(p);
                         } else if (item instanceof Medicamento) {
                             Medicamento m = (Medicamento) item;
                             textoExibicao = String.format("%s %s %s %s %s UN", m.getNome().toUpperCase(),
@@ -508,9 +511,27 @@ public class RealizarVenda extends JPanel {
                             nomeBase = m.getNome().toUpperCase();
                             idItem = m.getId();
                             precoUnitario = m.getValorUnit();
+                            itemVenda.setMedicamento(m);
                         } else {
                             continue;
                         }
+
+                        // Set initial values for ItemVenda
+                        itemVenda.setPrecoUnit(precoUnitario);
+                        itemVenda.setQnt(1); // Default quantity of 1 for initial discount calculation
+                        itemVenda.setDesconto(BigDecimal.ZERO); // Initialize discount
+
+                        // Calculate automatic discount
+                        try (Connection conn = ConexaoBD.getConnection()) {
+                            ItemVendaDAO.calcularDescontoAutomatico(conn, itemVenda);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            JOptionPane.showMessageDialog(null, "Erro ao calcular desconto: " + e.getMessage(), "Erro",
+                                    JOptionPane.ERROR_MESSAGE);
+                            continue;
+                        }
+
+                        BigDecimal descontoCalculado = itemVenda.getDesconto();
 
                         JMenuItem menuItem = new JMenuItem(textoExibicao);
                         menuItem.setBackground(new Color(24, 39, 55));
@@ -521,11 +542,15 @@ public class RealizarVenda extends JPanel {
                         menuItem.addActionListener(e -> {
                             txtItem.setText(textoExibicao);
                             txtCodigoProduto.setText(String.valueOf(idItem));
-                            txtPrecoUnitario.setText(String.format("%.2f", precoUnitario));
+                            txtPrecoUnitario.setText(String.format("%.2f", precoUnitario).replace(".", ","));
+                            txtDesconto.setText(String.format("%.2f", descontoCalculado).replace(".", ",")); // Set
+                                                                                                             // discount
+                            txtQuantidade.setText("1"); // Default quantity
                             txtQuantidade.setEnabled(true);
                             txtQuantidade.requestFocusInWindow();
                             popupMenu.setVisible(false);
                             txtItem.putClientProperty("nomeBase", nomeBase);
+                            calcularPrecoTotal(); // Recalculate total with initial discount
                         });
 
                         popupMenu.add(menuItem);

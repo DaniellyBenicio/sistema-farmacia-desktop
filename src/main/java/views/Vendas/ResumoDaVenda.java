@@ -192,6 +192,7 @@ public class ResumoDaVenda extends JPanel {
 
     public void adicionarItem(String ordem, String codigo, String descricao,
             String quantidade, String valorUnitario, String subtotal, String desconto) {
+
         GridBagConstraints gbcItemDetalhe = createGridBagConstraints(0.4);
         GridBagConstraints gbcCodigoDetalhe = createGridBagConstraints(0.6);
         GridBagConstraints gbcDescricaoDetalhe = createGridBagConstraints(4.2);
@@ -252,9 +253,13 @@ public class ResumoDaVenda extends JPanel {
 
         BigDecimal subtotalItem = new BigDecimal(subtotal.replace(",", "."));
         BigDecimal descontoItem = new BigDecimal(desconto.replace(",", "."));
-        subtotalTotal = subtotalTotal.add(subtotalItem);
+        totalGeral = totalGeral.add(subtotalItem);
+
+        BigDecimal qnt = new BigDecimal(quantidade.replace(",", "."));
+        BigDecimal valorUni = new BigDecimal(valorUnitario.replace(",", "."));
+        BigDecimal subtotalSemDesconto = valorUni.multiply(qnt);
+        subtotalTotal = subtotalTotal.add(subtotalSemDesconto);
         descontoTotal = descontoTotal.add(descontoItem);
-        totalGeral = subtotalTotal.subtract(descontoTotal);
 
         atualizarTotais();
 
@@ -278,12 +283,18 @@ public class ResumoDaVenda extends JPanel {
 
             String subtotalStr = ((JLabel) componentes[6]).getText();
             String descontoStr = ((JLabel) componentes[5]).getText();
+            String quantidadeStr = ((JLabel) componentes[3]).getText();
+            String valorUnitarioStr = ((JLabel) componentes[4]).getText();
+
             BigDecimal subtotalItem = new BigDecimal(subtotalStr.replace(",", "."));
             BigDecimal descontoItem = new BigDecimal(descontoStr.replace(",", "."));
+            BigDecimal qnt = new BigDecimal(quantidadeStr.replace(",", "."));
+            BigDecimal valorUni = new BigDecimal(valorUnitarioStr.replace(",", "."));
+            BigDecimal subtotalSemDesconto = valorUni.multiply(qnt);
 
-            subtotalTotal = subtotalTotal.subtract(subtotalItem);
+            totalGeral = totalGeral.subtract(subtotalItem);
+            subtotalTotal = subtotalTotal.subtract(subtotalSemDesconto);
             descontoTotal = descontoTotal.subtract(descontoItem);
-            totalGeral = subtotalTotal.subtract(descontoTotal);
 
             itensMap.remove(ordem);
 
