@@ -63,9 +63,9 @@ public class VendaDAO {
             }
         }
 
-        String sqlInserir = "INSERT INTO venda (cliente_id, funcionario_id, valorTotal, desconto, formaPagamento, data) "
+        String sqlInserir = "INSERT INTO venda (cliente_id, funcionario_id, valorTotal, desconto, data) "
                 +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sqlInserir, PreparedStatement.RETURN_GENERATED_KEYS)) {
             if (v.getClienteId() != null) {
                 pstmt.setInt(1, v.getClienteId());
@@ -75,8 +75,7 @@ public class VendaDAO {
             pstmt.setInt(2, v.getFuncionarioId());
             pstmt.setBigDecimal(3, v.getValorTotal());
             pstmt.setBigDecimal(4, v.getDesconto());
-            pstmt.setString(5, v.getFormaPagamento().name());
-            pstmt.setTimestamp(6, Timestamp.valueOf(v.getData()));
+            pstmt.setTimestamp(5, Timestamp.valueOf(v.getData()));
 
             int linhasAfetadas = pstmt.executeUpdate();
             if (linhasAfetadas > 0) {
@@ -106,7 +105,6 @@ public class VendaDAO {
                     v.setFuncionarioId(rs.getInt("funcionario_id"));
                     v.setValorTotal(rs.getBigDecimal("valor_total"));
                     v.setDesconto(rs.getBigDecimal("desconto"));
-                    v.setFormaPagamento(Venda.FormaPagamento.valueOf(rs.getString("forma_pagamento")));
                     v.setData(rs.getTimestamp("data").toLocalDateTime());
                     return v;
                 }
@@ -127,7 +125,6 @@ public class VendaDAO {
                 v.setFuncionarioId(rs.getInt("funcionario_id"));
                 v.setValorTotal(rs.getBigDecimal("valor_total"));
                 v.setDesconto(rs.getBigDecimal("desconto"));
-                v.setFormaPagamento(Venda.FormaPagamento.valueOf(rs.getString("forma_pagamento")));
                 v.setData(rs.getTimestamp("data").toLocalDateTime());
                 vendas.add(v);
             }
@@ -144,7 +141,7 @@ public class VendaDAO {
     }
 
     public static void editarVenda(Connection conn, Venda v) throws SQLException {
-        String sql = "UPDATE venda SET cliente_id = ?, funcionario_id = ?, valor_total = ?, desconto = ?, forma_pagamento = ?, data = ? WHERE id = ?";
+        String sql = "UPDATE venda SET cliente_id = ?, funcionario_id = ?, valor_total = ?, desconto = ?, data = ? WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             if (v.getClienteId() != null) {
                 pstmt.setInt(1, v.getClienteId());
@@ -154,9 +151,8 @@ public class VendaDAO {
             pstmt.setInt(2, v.getFuncionarioId());
             pstmt.setBigDecimal(3, v.getValorTotal());
             pstmt.setBigDecimal(4, v.getDesconto());
-            pstmt.setString(5, v.getFormaPagamento().name());
-            pstmt.setTimestamp(6, Timestamp.valueOf(v.getData()));
-            pstmt.setInt(7, v.getId());
+            pstmt.setTimestamp(5, Timestamp.valueOf(v.getData()));
+            pstmt.setInt(6, v.getId());
 
             int linhasAfetadas = pstmt.executeUpdate();
             if (linhasAfetadas == 0) {

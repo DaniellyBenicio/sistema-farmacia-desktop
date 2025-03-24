@@ -128,7 +128,6 @@ create table venda(
     funcionario_id int not null,
     valorTotal decimal(10,2) not null,
     desconto decimal(10,2) default 0,
-	formaPagamento enum('DINHEIRO', 'CARTAO_CREDITO', 'CARTAO_DEBITO', 'PIX') not null,
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     foreign key (cliente_id) references Cliente(id),
     foreign key (funcionario_id) references Funcionario(id),
@@ -151,6 +150,40 @@ create table itemVenda (
     foreign key (produto_id) references produto(id) on delete set null,
     foreign key (medicamento_id) references medicamento(id) on delete set null
 );
+
+create table pagamento (
+    id int primary key auto_increment not null, 
+    venda_id int not null,
+    formaPagamento ENUM('DINHEIRO', 'CARTAO_CREDITO', 'CARTAO_DEBITO', 'PIX') NOT NULL,
+    valorPago DECIMAL(10,2) NOT NULL CHECK (valorPago > 0),
+    foreign key (venda_id) references venda(id) on delete cascade,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp on update current_timestamp
+);
+
+DELIMITER $$
+
+CREATE TRIGGER checarPagamento AFTER INSERT ON pagamento
+FOR EACH ROW
+BEGIN
+    DECLARE total_pago DECIMAL(10,2);
+    DECLARE valor_venda DECIMAL(10,2);
+
+    SELECT COALESCE(SUM(valorPago), 0) INTO total_pago
+    FROM pagamento
+    WHERE venda_id = NEW.venda_id;
+
+    SELECT valorTotal INTO valor_venda
+    FROM venda
+    WHERE id = NEW.venda_id;
+
+    IF total_pago != valor_venda THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Erro: O total pago deve ser igual ao valor da venda.';
+    END IF;
+END $$
+
+DELIMITER ;
 
 DELIMITER $$
 

@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import dao.Medicamento.MedicamentoDAO;
-import dao.Produto.ProdutoDAO;
 import models.Medicamento.Medicamento;
 
 public class MedicamentoController {

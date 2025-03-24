@@ -1,12 +1,7 @@
 package models.Venda;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
 import java.time.LocalDateTime;
-import java.util.List;
-
-import dao.ItemVenda.ItemVendaDAO;
-import models.ItemVenda.ItemVenda;
 
 public class Venda {
     private Integer id; 
@@ -14,22 +9,16 @@ public class Venda {
     private Integer funcionarioId;
     private BigDecimal valorTotal;
     private BigDecimal desconto;
-    private FormaPagamento formaPagamento;
     private LocalDateTime data;
 
     public Venda() {}
 
-    public Venda(Integer clienteId, Integer funcionarioId, BigDecimal valorTotal, BigDecimal desconto, String formaPagamento, LocalDateTime data) {
+    public Venda(Integer clienteId, Integer funcionarioId, BigDecimal valorTotal, BigDecimal desconto, LocalDateTime data) {
         this.clienteId = clienteId;
         this.funcionarioId = funcionarioId;
         this.valorTotal = valorTotal;
         this.desconto = desconto;
-        this.formaPagamento = FormaPagamento.valueOf(formaPagamento.toUpperCase()); 
         this.data = data;
-    }
-
-    public enum FormaPagamento {
-        DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX;
     }
 
     public Integer getId() {
@@ -88,17 +77,6 @@ public class Venda {
             throw new IllegalArgumentException("Desconto não pode ser maior que o valor total.");
         }
         this.desconto = desconto;
-    }
-
-    public FormaPagamento getFormaPagamento() {
-        return formaPagamento;
-    }
-
-    public void setFormaPagamento(FormaPagamento formaPagamento) {
-        if (formaPagamento == null) {
-            throw new IllegalArgumentException("Forma de pagamento não pode ser nula.");
-        }
-        this.formaPagamento = formaPagamento;
     }
 
     public LocalDateTime getData() {
