@@ -11,7 +11,7 @@ import javax.swing.*;
 
 public class ResumoDaVenda extends JPanel {
 
-    private JLabel lblNomeCliente;
+    JLabel lblNomeCliente;
     JLabel lblCpfCliente;
     JLabel lblAtendente;
     private JPanel painelDetalhesItens;
@@ -25,6 +25,7 @@ public class ResumoDaVenda extends JPanel {
     public ResumoDaVenda(JLabel lblNomeCliente, JLabel lblCpfCliente, JLabel lblAtendente) {
         this.lblNomeCliente = lblNomeCliente;
         this.lblCpfCliente = lblCpfCliente;
+        this.lblAtendente = lblAtendente;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createEmptyBorder(10, 5, 5, 17));

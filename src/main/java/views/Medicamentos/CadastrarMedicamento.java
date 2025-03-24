@@ -125,7 +125,7 @@ public class CadastrarMedicamento extends JPanel {
         gbc.gridy = 0;
         camposPanel.add(embalagemLabel, gbc);
 
-        String[] tiposdeEmbalagem = { "Selecione", "Ampolas", "Caixa", "Envelope", "Frasco", "Pote", "Outros" };
+        String[] tiposdeEmbalagem = { "Selecione", "Ampola", "Caixa", "Envelope", "Frasco", "Pote", "Outros" };
         embalagemComboBox = new JComboBox<>(tiposdeEmbalagem);
         embalagemComboBox.setPreferredSize(new Dimension(150, 40));
         estilizarComboBox(embalagemComboBox, fieldFont);
