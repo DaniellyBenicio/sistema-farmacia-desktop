@@ -11,11 +11,13 @@ import javax.swing.table.DefaultTableModel;
 import dao.Cliente.ClienteDAO;
 import dao.ItemVenda.ItemVendaDAO;
 import dao.Medicamento.MedicamentoDAO;
+import dao.Pagamento.PagamentoDAO;
 import dao.Produto.ProdutoDAO;
 import dao.Venda.VendaDAO;
 import main.ConexaoBD;
 import models.ItemVenda.ItemVenda;
 import models.Medicamento.Medicamento;
+import models.Pagamento.Pagamento;
 import models.Produto.Produto;
 import models.Venda.Venda;
 import views.BarrasSuperiores.PainelSuperior;
@@ -490,108 +492,118 @@ public class PagamentoVenda extends JPanel {
     }
 
     private void salvarDados() {
-        try (Connection conn = ConexaoBD.getConnection()) {
+        try (Connection conn = ConexaoBD.getConnection()) { 
             conn.setAutoCommit(false);
-
+    
             String cpfCliente = resumoDaVenda.lblCpfCliente.getText().replace("CPF: ", "").trim();
             int funcionarioId = PainelSuperior.getIdFuncionarioAtual();
-
+    
             Integer clienteId = null;
             if (!cpfCliente.isEmpty()) {
                 clienteId = ClienteDAO.buscarClientePorCpfRetornaId(conn, cpfCliente);
             }
-
+    
             String descontoStr = txtDesconto.getText().replace(",", ".").trim();
             BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
             LocalDateTime agora = LocalDateTime.now();
-
-            int vendaId = -1;
+    
+            BigDecimal valorTotal = BigDecimal.ZERO;
+            for (int i = 0; i < modeloTabela.getRowCount(); i++) {
+                String valorStr = modeloTabela.getValueAt(i, 3).toString().replace(",", ".").trim();
+                valorTotal = valorTotal.subtract(desconto.divide(BigDecimal.valueOf(modeloTabela.getRowCount())));
+                valorTotal = valorTotal.add(new BigDecimal(valorStr));
+            }
+            
+            clienteId = null;
+            if (!cpfCliente.isEmpty()) {
+                clienteId = ClienteDAO.buscarClientePorCpfRetornaId(conn, cpfCliente);
+            }
+           
+            Venda venda = new Venda(clienteId, funcionarioId, valorTotal, desconto, agora);
+            int vendaId = VendaDAO.realizarVenda(conn, venda);
+            if (vendaId == -1) {
+                throw new SQLException("Erro ao registrar a venda.");
+            }
+    
+            // Register payments
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
                 String formaPagamentoStr = (String) modeloTabela.getValueAt(i, 1);
                 String formaPagamento = converterFormaPagamento(formaPagamentoStr);
-
                 String valorStr = modeloTabela.getValueAt(i, 3).toString().replace(",", ".").trim();
                 BigDecimal valorPago = new BigDecimal(valorStr);
-
-                Venda venda = new Venda(clienteId, funcionarioId, valorPago, desconto, formaPagamento, agora);
-                int idGerado = VendaDAO.realizarVenda(conn, venda);
-                if (i == 0 && idGerado != -1) {
-                    vendaId = idGerado;
-                } else if (idGerado == -1) {
-                    throw new SQLException("Erro ao registrar venda na linha " + i);
-                }
+    
+                Pagamento pagamento = new Pagamento(vendaId, Pagamento.FormaPagamento.valueOf(formaPagamento), valorPago);
+                PagamentoDAO.cadastrarPagamento(conn, pagamento);
             }
-
-            try {
-                for (String ordem : resumoDaVenda.itensMap.keySet()) {
-                    String[] dadosItem = resumoDaVenda.getDadosItemPorOrdem(ordem);
-                    int idItem = Integer.parseInt(dadosItem[1].trim());
-                    String nomeCompleto = dadosItem[2].trim();
-                    String nomeBase = nomeCompleto.split(" ")[0];
-                    int quantidade = Integer.parseInt(dadosItem[3].replace(",", ".").trim());
-                    BigDecimal precoUnitario = new BigDecimal(dadosItem[4].replace(",", ".").trim());
-                    BigDecimal descontoItem = new BigDecimal(dadosItem[5].replace(",", ".").trim());
-                    BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
-
-                    ItemVenda itemVenda = new ItemVenda();
-                    itemVenda.setVendaId(vendaId);
-                    itemVenda.setDesconto(descontoItem);
-                    itemVenda.setPrecoUnit(precoUnitario);
-                    itemVenda.setQnt(quantidade);
-                    itemVenda.setSubtotal(subtotal);
-
-                    String tipo = ItemVendaDAO.verificarTipoItem(conn, nomeBase);
-                    if ("Medicamento".equals(tipo)) {
-                        Medicamento medicamento = MedicamentoDAO.buscarPorId(conn, idItem);
-                        itemVenda.setMedicamento(medicamento);
-                        itemVenda.setProduto(null);
-                        boolean temReceita = ItemVendaDAO.verificarNecessidadeReceita(conn, nomeBase);
-                        if (temReceita) {
-                            System.out.println("Medicamento '" + nomeBase + "' exige receita.");
-                        }
-                    } else if ("Produto".equals(tipo)) {
-                        Produto produto = ProdutoDAO.buscarPorId(conn, idItem);
-                        itemVenda.setProduto(produto);
-                        itemVenda.setMedicamento(null);
-                    } else {
-                        throw new SQLException("Item '" + nomeBase + "' não identificado como produto ou medicamento.");
+    
+            for (String ordem : resumoDaVenda.itensMap.keySet()) {
+                String[] dadosItem = resumoDaVenda.getDadosItemPorOrdem(ordem);
+                int idItem = Integer.parseInt(dadosItem[1].trim());
+                String nomeCompleto = dadosItem[2].trim();
+                String nomeBase = nomeCompleto.split(" ")[0];
+                int quantidade = Integer.parseInt(dadosItem[3].replace(",", ".").trim());
+                BigDecimal precoUnitario = new BigDecimal(dadosItem[4].replace(",", ".").trim());
+                BigDecimal descontoItem = new BigDecimal(dadosItem[5].replace(",", ".").trim());
+                BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+    
+                ItemVenda itemVenda = new ItemVenda();
+                itemVenda.setVendaId(vendaId);
+                itemVenda.setDesconto(descontoItem);
+                itemVenda.setPrecoUnit(precoUnitario);
+                itemVenda.setQnt(quantidade);
+                itemVenda.setSubtotal(subtotal);
+    
+                String tipo = ItemVendaDAO.verificarTipoItem(conn, nomeBase);
+                if ("Medicamento".equals(tipo)) {
+                    Medicamento medicamento = MedicamentoDAO.buscarPorId(conn, idItem);
+                    itemVenda.setMedicamento(medicamento);
+                    itemVenda.setProduto(null);
+                    boolean temReceita = ItemVendaDAO.verificarNecessidadeReceita(conn, nomeBase);
+                    if (temReceita) {
+                        System.out.println("Medicamento '" + nomeBase + "' exige receita.");
                     }
-
-                    ItemVendaDAO.inserirItemVenda(conn, itemVenda, nomeBase);
+                } else if ("Produto".equals(tipo)) {
+                    Produto produto = ProdutoDAO.buscarPorId(conn, idItem);
+                    itemVenda.setProduto(produto);
+                    itemVenda.setMedicamento(null);
+                } else {
+                    throw new SQLException("Item '" + nomeBase + "' não identificado como produto ou medicamento.");
                 }
-
-                conn.commit();
-                JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
-
-                Window dialog = SwingUtilities.getWindowAncestor(this);
-                if (dialog != null) {
-                    dialog.dispose();
-                }
-                if (realizarVenda != null) {
-                    realizarVenda.reiniciarVenda();
-                }
-                NotaFiscal.exibirNotaFiscal(resumoDaVenda, this);
-            } catch (SQLException e) {
-                try {
-                    conn.rollback();
-                    JOptionPane.showMessageDialog(this, "Erro ao salvar itens da venda: " + e.getMessage());
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Erro ao realizar rollback: " + rollbackEx.getMessage());
-                }
-                throw e;
-            } catch (Exception e) {
-                try {
-                    conn.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
-                throw new SQLException("Erro inesperado ao processar itens: " + e.getMessage(), e);
+    
+                ItemVendaDAO.inserirItemVenda(conn, itemVenda, nomeBase);
             }
+    
+            conn.commit();
+            JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
+    
+            Window dialog = SwingUtilities.getWindowAncestor(this);
+            if (dialog != null) {
+                dialog.dispose();
+            }
+            if (realizarVenda != null) {
+                realizarVenda.reiniciarVenda();
+            }
+            NotaFiscal.exibirNotaFiscal(resumoDaVenda, this);
+    
         } catch (SQLException e) {
+            try {
+                if (conn != null) { 
+                    conn.rollback();
+                }
+                JOptionPane.showMessageDialog(this, "Erro ao processar venda: " + e.getMessage());
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erro ao realizar rollback: " + rollbackEx.getMessage());
+            }
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Erro ao processar venda: " + e.getMessage());
         } catch (Exception e) {
+            try {
+                if (conn != null) { 
+                    conn.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erro inesperado: " + e.getMessage());
         }

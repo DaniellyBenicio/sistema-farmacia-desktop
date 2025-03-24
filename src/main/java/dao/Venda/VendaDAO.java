@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,24 +94,25 @@ public class VendaDAO {
         }
     }
 
-    public static Venda buscarVendaPorId(Connection conn, int id) throws SQLException {
-        String sql = "SELECT * FROM venda WHERE id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    Venda v = new Venda();
-                    v.setId(rs.getInt("id"));
-                    v.setClienteId(rs.getObject("cliente_id") != null ? rs.getInt("cliente_id") : null);
-                    v.setFuncionarioId(rs.getInt("funcionario_id"));
-                    v.setValorTotal(rs.getBigDecimal("valor_total"));
-                    v.setDesconto(rs.getBigDecimal("desconto"));
-                    v.setData(rs.getTimestamp("data").toLocalDateTime());
-                    return v;
-                }
+
+    public static Venda buscarVendaPorId(Connection conn, int vendaId) throws SQLException {
+        String sql = "SELECT id, cliente_id, funcionario_id, valorTotal, desconto, data FROM venda WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, vendaId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Venda venda = new Venda();
+                venda.setId(rs.getInt("id"));
+                int clienteId = rs.getInt("cliente_id");
+                venda.setClienteId(rs.wasNull() ? null : clienteId); 
+                venda.setFuncionarioId(rs.getInt("funcionario_id"));
+                venda.setValorTotal(rs.getBigDecimal("valorTotal"));
+                venda.setDesconto(rs.getBigDecimal("desconto"));
+                venda.setData(rs.getObject("data", LocalDateTime.class));
+                return venda;
             }
+            return null;
         }
-        return null;
     }
 
     public static List<Venda> listarTodasVendas(Connection conn) throws SQLException {
@@ -123,7 +125,7 @@ public class VendaDAO {
                 v.setId(rs.getInt("id"));
                 v.setClienteId(rs.getObject("cliente_id") != null ? rs.getInt("cliente_id") : null);
                 v.setFuncionarioId(rs.getInt("funcionario_id"));
-                v.setValorTotal(rs.getBigDecimal("valor_total"));
+                v.setValorTotal(rs.getBigDecimal("valorTotal"));
                 v.setDesconto(rs.getBigDecimal("desconto"));
                 v.setData(rs.getTimestamp("data").toLocalDateTime());
                 vendas.add(v);
@@ -141,7 +143,7 @@ public class VendaDAO {
     }
 
     public static void editarVenda(Connection conn, Venda v) throws SQLException {
-        String sql = "UPDATE venda SET cliente_id = ?, funcionario_id = ?, valor_total = ?, desconto = ?, data = ? WHERE id = ?";
+        String sql = "UPDATE venda SET cliente_id = ?, funcionario_id = ?, valorTotal = ?, desconto = ?, data = ? WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             if (v.getClienteId() != null) {
                 pstmt.setInt(1, v.getClienteId());
