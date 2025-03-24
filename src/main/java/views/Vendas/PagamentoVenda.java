@@ -422,6 +422,11 @@ public class PagamentoVenda extends JPanel {
                 return;
             }
 
+            if ("Cartão de Crédito".equals(formaPagamento) && "Selecione".equals(parcelas)) {
+                JOptionPane.showMessageDialog(this, "Selecione o número de parcelas para o cartão de crédito.");
+                return;
+            }
+
             BigDecimal valorPago = new BigDecimal(valorPagoStr);
             if (valorPago.compareTo(BigDecimal.ZERO) <= 0) {
                 JOptionPane.showMessageDialog(this, "O valor pago deve ser maior que zero.");
@@ -492,50 +497,51 @@ public class PagamentoVenda extends JPanel {
     }
 
     private void salvarDados() {
-        try (Connection conn = ConexaoBD.getConnection()) { 
+        try (Connection conn = ConexaoBD.getConnection()) {
             conn.setAutoCommit(false);
-    
+
             String cpfCliente = resumoDaVenda.lblCpfCliente.getText().replace("CPF: ", "").trim();
             int funcionarioId = PainelSuperior.getIdFuncionarioAtual();
-    
+
             Integer clienteId = null;
             if (!cpfCliente.isEmpty()) {
                 clienteId = ClienteDAO.buscarClientePorCpfRetornaId(conn, cpfCliente);
             }
-    
+
             String descontoStr = txtDesconto.getText().replace(",", ".").trim();
             BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
             LocalDateTime agora = LocalDateTime.now();
-    
+
             BigDecimal valorTotal = BigDecimal.ZERO;
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
                 String valorStr = modeloTabela.getValueAt(i, 3).toString().replace(",", ".").trim();
                 valorTotal = valorTotal.subtract(desconto.divide(BigDecimal.valueOf(modeloTabela.getRowCount())));
                 valorTotal = valorTotal.add(new BigDecimal(valorStr));
             }
-            
+
             clienteId = null;
             if (!cpfCliente.isEmpty()) {
                 clienteId = ClienteDAO.buscarClientePorCpfRetornaId(conn, cpfCliente);
             }
-           
+
             Venda venda = new Venda(clienteId, funcionarioId, valorTotal, desconto, agora);
             int vendaId = VendaDAO.realizarVenda(conn, venda);
             if (vendaId == -1) {
                 throw new SQLException("Erro ao registrar a venda.");
             }
-    
+
             // Register payments
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
                 String formaPagamentoStr = (String) modeloTabela.getValueAt(i, 1);
                 String formaPagamento = converterFormaPagamento(formaPagamentoStr);
                 String valorStr = modeloTabela.getValueAt(i, 3).toString().replace(",", ".").trim();
                 BigDecimal valorPago = new BigDecimal(valorStr);
-    
-                Pagamento pagamento = new Pagamento(vendaId, Pagamento.FormaPagamento.valueOf(formaPagamento), valorPago);
+
+                Pagamento pagamento = new Pagamento(vendaId, Pagamento.FormaPagamento.valueOf(formaPagamento),
+                        valorPago);
                 PagamentoDAO.cadastrarPagamento(conn, pagamento);
             }
-    
+
             for (String ordem : resumoDaVenda.itensMap.keySet()) {
                 String[] dadosItem = resumoDaVenda.getDadosItemPorOrdem(ordem);
                 int idItem = Integer.parseInt(dadosItem[1].trim());
@@ -545,14 +551,14 @@ public class PagamentoVenda extends JPanel {
                 BigDecimal precoUnitario = new BigDecimal(dadosItem[4].replace(",", ".").trim());
                 BigDecimal descontoItem = new BigDecimal(dadosItem[5].replace(",", ".").trim());
                 BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
-    
+
                 ItemVenda itemVenda = new ItemVenda();
                 itemVenda.setVendaId(vendaId);
                 itemVenda.setDesconto(descontoItem);
                 itemVenda.setPrecoUnit(precoUnitario);
                 itemVenda.setQnt(quantidade);
                 itemVenda.setSubtotal(subtotal);
-    
+
                 String tipo = ItemVendaDAO.verificarTipoItem(conn, nomeBase);
                 if ("Medicamento".equals(tipo)) {
                     Medicamento medicamento = MedicamentoDAO.buscarPorId(conn, idItem);
@@ -569,13 +575,13 @@ public class PagamentoVenda extends JPanel {
                 } else {
                     throw new SQLException("Item '" + nomeBase + "' não identificado como produto ou medicamento.");
                 }
-    
+
                 ItemVendaDAO.inserirItemVenda(conn, itemVenda, nomeBase);
             }
-    
+
             conn.commit();
             JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
-    
+
             Window dialog = SwingUtilities.getWindowAncestor(this);
             if (dialog != null) {
                 dialog.dispose();
@@ -584,10 +590,10 @@ public class PagamentoVenda extends JPanel {
                 realizarVenda.reiniciarVenda();
             }
             NotaFiscal.exibirNotaFiscal(resumoDaVenda, this);
-    
+
         } catch (SQLException e) {
             try {
-                if (conn != null) { 
+                if (conn != null) {
                     conn.rollback();
                 }
                 JOptionPane.showMessageDialog(this, "Erro ao processar venda: " + e.getMessage());
@@ -598,7 +604,7 @@ public class PagamentoVenda extends JPanel {
             e.printStackTrace();
         } catch (Exception e) {
             try {
-                if (conn != null) { 
+                if (conn != null) {
                     conn.rollback();
                 }
             } catch (SQLException rollbackEx) {
