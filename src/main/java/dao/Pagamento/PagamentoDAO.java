@@ -31,9 +31,6 @@ public class PagamentoDAO {
         if (novoTotalPago.compareTo(venda.getValorTotal()) > 0) {
             throw new SQLException("O total pago excede o valor total da venda.");
         }
-        if (novoTotalPago.compareTo(venda.getValorTotal()) < 0) {
-            throw new SQLException("O total pago é menor que o valor total da venda. Adicione mais pagamentos.");
-        }
 
         String sql = "insert into pagamento (venda_id, formaPagamento, valorPago) values (?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -74,9 +71,6 @@ public class PagamentoDAO {
 
         if (novoTotalPago.compareTo(venda.getValorTotal()) > 0) {
             throw new SQLException("O total pago excede o valor total da venda.");
-        }
-        if (novoTotalPago.compareTo(venda.getValorTotal()) < 0) {
-            throw new SQLException("O total pago é menor que o valor total da venda.");
         }
 
         String sql = "update pagamento set venda_id = ?, formaPagamento = ?, valorPago = ? where id = ?";
@@ -193,7 +187,7 @@ public class PagamentoDAO {
         }
     }
 
-    private static BigDecimal calcularTotalPagoPorVenda(Connection conn, int vendaId) throws SQLException {
+    public static BigDecimal calcularTotalPagoPorVenda(Connection conn, int vendaId) throws SQLException {
         if (vendaId <= 0) {
             throw new IllegalArgumentException("O ID da venda deve ser um valor positivo.");
         }
@@ -211,7 +205,7 @@ public class PagamentoDAO {
         return BigDecimal.ZERO;
     }
 
-    private static BigDecimal calcularTotalPagoPorVendaExcluindoId(Connection conn, int vendaId, int pagamentoId) throws SQLException {
+    public static BigDecimal calcularTotalPagoPorVendaExcluindoId(Connection conn, int vendaId, int pagamentoId) throws SQLException {
         if (vendaId <= 0) {
             throw new IllegalArgumentException("O ID da venda deve ser um valor positivo.");
         }

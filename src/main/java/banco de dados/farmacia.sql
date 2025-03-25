@@ -162,68 +162,6 @@ create table pagamento (
 );
 
 DELIMITER $$
-
-CREATE TRIGGER checarPagamento AFTER INSERT ON pagamento
-FOR EACH ROW
-BEGIN
-    DECLARE total_pago DECIMAL(10,2);
-    DECLARE valor_venda DECIMAL(10,2);
-
-    SELECT COALESCE(SUM(valorPago), 0) INTO total_pago
-    FROM pagamento
-    WHERE venda_id = NEW.venda_id;
-
-    SELECT valorTotal INTO valor_venda
-    FROM venda
-    WHERE id = NEW.venda_id;
-
-    IF total_pago != valor_venda THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Erro: O total pago deve ser igual ao valor da venda.';
-    END IF;
-END $$
-
-DELIMITER ;
-
-DELIMITER $$
-
-CREATE TRIGGER atualizarEstoque AFTER INSERT ON itemVenda
-FOR EACH ROW
-BEGIN
-    DECLARE estoque_produto INT;
-    DECLARE estoque_medicamento INT;
-    IF NEW.produto_id IS NOT NULL THEN
-        SELECT qntEstoque INTO estoque_produto
-        FROM produto
-        WHERE id = NEW.produto_id;
-        IF estoque_produto < NEW.qnt THEN
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro: Estoque insuficiente para o produto.';
-        ELSE
-            UPDATE produto
-            SET qntEstoque = GREATEST(qntEstoque - NEW.qnt, 0)
-            WHERE id = NEW.produto_id;
-        END IF;
-    END IF;
-
-    IF NEW.medicamento_id IS NOT NULL THEN
-        SELECT qnt INTO estoque_medicamento
-        FROM medicamento
-        WHERE id = NEW.medicamento_id;
-
-        IF estoque_medicamento < NEW.qnt THEN
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro: Estoque insuficiente para o medicamento.';
-        ELSE
-            UPDATE medicamento
-            SET qnt = GREATEST(qnt - NEW.qnt, 0)
-            WHERE id = NEW.medicamento_id;
-        END IF;
-    END IF;
-END $$
-
-DELIMITER ;
-
-
-DELIMITER $$
 CREATE TRIGGER checarItem BEFORE INSERT ON itemVenda FOR EACH ROW
 BEGIN
     IF NEW.produto_id IS NULL AND NEW.medicamento_id IS NULL THEN

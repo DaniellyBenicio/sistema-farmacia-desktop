@@ -591,14 +591,45 @@ public class RealizarVenda extends JPanel {
                 return;
             }
             int quantidade = Integer.parseInt(quantidadeText);
+            if (quantidade <= 0) {
+                JOptionPane.showMessageDialog(this, "A quantidade deve ser maior que zero.", "Erro", JOptionPane.ERROR_MESSAGE);
+                txtQuantidade.setText("1");
+                calcularPrecoTotal(); // Recalcular com quantidade padrão
+                return;
+            }
 
             String precoUnitarioText = txtPrecoUnitario.getText().replace(",", ".").trim();
             BigDecimal precoUnitario = new BigDecimal(precoUnitarioText);
+            if (precoUnitario.compareTo(BigDecimal.ZERO) < 0) {
+                JOptionPane.showMessageDialog(this, "O preço unitário não pode ser negativo.", "Erro", JOptionPane.ERROR_MESSAGE);
+                txtPrecoUnitario.setText("0,00");
+                calcularPrecoTotal(); // Recalcular com preço padrão
+                return;
+            }
 
+            // Calcular o subtotal (preço unitário × quantidade)
+            BigDecimal subtotal = precoUnitario.multiply(new BigDecimal(quantidade));
+
+            // Obter o desconto informado manualmente
             String descontoText = txtDesconto.getText().replace(",", ".").trim();
-            BigDecimal desconto = new BigDecimal(descontoText);
+            BigDecimal desconto = descontoText.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoText);
 
-            BigDecimal precoTotal = (precoUnitario.multiply(new BigDecimal(quantidade))).subtract(desconto);
+            // Validar o desconto
+            if (desconto.compareTo(BigDecimal.ZERO) < 0) {
+                JOptionPane.showMessageDialog(this, "O desconto não pode ser negativo.", "Erro", JOptionPane.ERROR_MESSAGE);
+                desconto = BigDecimal.ZERO;
+                txtDesconto.setText("0,00");
+            } else if (desconto.compareTo(subtotal) > 0) {
+                JOptionPane.showMessageDialog(this, 
+                    "O desconto (" + descontoText + ") não pode exceder o valor total do item (" + subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",") + ").",
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+                desconto = subtotal; // Limitar o desconto ao subtotal
+                txtDesconto.setText(desconto.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+            }
+
+            // Calcular o preço total com o desconto validado
+            BigDecimal precoTotal = subtotal.subtract(desconto);
+            // O preço total nunca será negativo devido à validação do desconto acima
             String precoTotalFormatado = precoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",");
             txtPrecoTotal.setText(precoTotalFormatado);
         } catch (NumberFormatException e) {
