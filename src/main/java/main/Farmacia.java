@@ -71,7 +71,7 @@ public class Farmacia extends JFrame {
         painelCentral.add(new ListaDeClientes(conexão), "ListaDeClientes");
         painelCentral.add(new ListaDeMedicamentos(conexão), "ListaDeMedicamentos");
         painelCentral.add(new ListaDeProdutos(conexão), "ListaDeProdutos");
-        // painelCentral.add(new VisualizarVendas(conexão), "VisualizarVendas");
+        painelCentral.add(new VisualizarVendas(conexão), "VisualizarVendas");
         painelCentral.add(principalEstoque, "GerenciamentoDeEstoque");
         painelCentral.add(estoqueMedicamento, "EstoqueMedicamento");
         painelCentral.add(estoqueProduto, "EstoqueProduto");
