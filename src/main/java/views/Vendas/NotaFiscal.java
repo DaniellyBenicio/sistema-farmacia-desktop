@@ -167,6 +167,7 @@ public class NotaFiscal extends JPanel implements Printable {
 
         DecimalFormat df = new DecimalFormat("#,##0.00");
 
+        // Subtotal
         JPanel linhaSubtotal = new JPanel();
         linhaSubtotal.setLayout(new BoxLayout(linhaSubtotal, BoxLayout.X_AXIS));
         linhaSubtotal.setBackground(Color.WHITE);
@@ -181,6 +182,7 @@ public class NotaFiscal extends JPanel implements Printable {
         linhaSubtotal.add(Box.createHorizontalGlue());
         painelTotais.add(linhaSubtotal);
 
+        // Desconto Total nos Itens
         BigDecimal descontoItens = BigDecimal.ZERO;
         for (String ordem : resumoDaVenda.itensMap.keySet()) {
             String[] dadosItem = resumoDaVenda.getDadosItemPorOrdem(ordem);
@@ -202,6 +204,7 @@ public class NotaFiscal extends JPanel implements Printable {
         linhaDescontoItens.add(Box.createHorizontalGlue());
         painelTotais.add(linhaDescontoItens);
 
+        // Desconto no Total da Venda
         String descontoStr = pagamentoVenda.txtDesconto.getText().replace(",", ".").trim();
         BigDecimal descontoVenda = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
         JPanel linhaDescontoVenda = new JPanel();
@@ -218,23 +221,32 @@ public class NotaFiscal extends JPanel implements Printable {
         linhaDescontoVenda.add(Box.createHorizontalGlue());
         painelTotais.add(linhaDescontoVenda);
 
-        BigDecimal totalFinal = resumoDaVenda.getTotalGeral().subtract(descontoItens).subtract(descontoVenda);
-        JPanel linhaTotal = new JPanel();
-        linhaTotal.setLayout(new BoxLayout(linhaTotal, BoxLayout.X_AXIS));
-        linhaTotal.setBackground(Color.WHITE);
-        linhaTotal.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel lblTotal = new JLabel("Total:");
-        lblTotal.setFont(new Font("Arial", Font.BOLD, 14));
-        JLabel lblTotalValor = new JLabel("R$ " + df.format(totalFinal));
-        lblTotalValor.setFont(new Font("Arial", Font.PLAIN, 14));
-        linhaTotal.add(lblTotal);
-        linhaTotal.add(Box.createRigidArea(new Dimension(10, 0)));
-        linhaTotal.add(lblTotalValor);
-        linhaTotal.add(Box.createHorizontalGlue());
-        painelTotais.add(linhaTotal);
+        // Valor Pago (soma dos valores pagos na tabela)
+        BigDecimal valorPagoTotal = BigDecimal.ZERO;
+        for (int i = 0; i < pagamentoVenda.modeloTabela.getRowCount(); i++) {
+            String valorPagoStr = pagamentoVenda.modeloTabela.getValueAt(i, 5).toString().replace(",", ".").trim(); // Coluna
+                                                                                                                    // "Valor
+                                                                                                                    // Pago"
+            BigDecimal valorPago = new BigDecimal(valorPagoStr);
+            valorPagoTotal = valorPagoTotal.add(valorPago);
+        }
+        JPanel linhaValorPago = new JPanel();
+        linhaValorPago.setLayout(new BoxLayout(linhaValorPago, BoxLayout.X_AXIS));
+        linhaValorPago.setBackground(Color.WHITE);
+        linhaValorPago.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel lblValorPago = new JLabel("Valor Pago:");
+        lblValorPago.setFont(new Font("Arial", Font.BOLD, 14));
+        JLabel lblValorPagoValor = new JLabel("R$ " + df.format(valorPagoTotal));
+        lblValorPagoValor.setFont(new Font("Arial", Font.PLAIN, 14));
+        linhaValorPago.add(lblValorPago);
+        linhaValorPago.add(Box.createRigidArea(new Dimension(10, 0)));
+        linhaValorPago.add(lblValorPagoValor);
+        linhaValorPago.add(Box.createHorizontalGlue());
+        painelTotais.add(linhaValorPago);
 
         painelTotais.add(Box.createRigidArea(new Dimension(0, 20)));
 
+        // Formas de Pagamento
         JPanel painelFormasPagamento = new JPanel();
         painelFormasPagamento.setLayout(new BoxLayout(painelFormasPagamento, BoxLayout.Y_AXIS));
         painelFormasPagamento.setBackground(Color.WHITE);
@@ -244,14 +256,16 @@ public class NotaFiscal extends JPanel implements Printable {
         for (int i = 0; i < pagamentoVenda.modeloTabela.getRowCount(); i++) {
             String formaPagamento = (String) pagamentoVenda.modeloTabela.getValueAt(i, 1);
             String parcelas = (String) pagamentoVenda.modeloTabela.getValueAt(i, 2);
-            String valor = (String) pagamentoVenda.modeloTabela.getValueAt(i, 3);
+            String valorStr = (String) pagamentoVenda.modeloTabela.getValueAt(i, 5); // Usar "Valor Pago" (coluna 5)
+            BigDecimal valor = new BigDecimal(valorStr.replace(",", "."));
 
             JLabel lblPagamento = new JLabel(
-                    formaPagamento + " (" + parcelas + "x) - R$ " + df.format(new BigDecimal(valor.replace(",", "."))));
+                    formaPagamento + " (" + parcelas + "x) - R$ " + df.format(valor));
             lblPagamento.setFont(new Font("Arial", Font.PLAIN, 14));
             lblPagamento.setAlignmentX(Component.LEFT_ALIGNMENT);
             painelFormasPagamento.add(lblPagamento);
 
+            // Exibir o troco apenas se a forma de pagamento for "Dinheiro"
             if (formaPagamento.equalsIgnoreCase("Dinheiro")) {
                 String trocoStr = (String) pagamentoVenda.modeloTabela.getValueAt(i, 6);
                 BigDecimal troco = trocoStr != null && !trocoStr.isEmpty() ? new BigDecimal(trocoStr.replace(",", "."))
@@ -340,7 +354,6 @@ public class NotaFiscal extends JPanel implements Printable {
         int lineHeight = 15;
         int pageWidth = 550;
         int centerX = pageWidth / 2;
-        int rightAlignX = 500;
 
         g2d.setFont(titleFont);
         FontMetrics fm = g2d.getFontMetrics();
@@ -381,6 +394,7 @@ public class NotaFiscal extends JPanel implements Printable {
 
         int[] columnWidths = { 30, 40, 230, 40, 60, 50, 60 };
         int[] columnXPositions = { 20, 50, 90, 320, 360, 420, 470 };
+        int rightAlignX = columnXPositions[6] + columnWidths[6]; // Align with the right edge of Subtotal column
 
         g2d.setFont(boldFont);
         g2d.drawString("Ordem", columnXPositions[0] + (columnWidths[0] - fm.stringWidth("Ordem")) / 2, y);
@@ -435,7 +449,7 @@ public class NotaFiscal extends JPanel implements Printable {
         }
 
         g2d.drawLine(20, y, pageWidth, y);
-        y += lineHeight;
+        y += lineHeight * 2;
 
         g2d.setFont(boldFont);
         String subtotalLabel = "Subtotal:";
@@ -470,14 +484,19 @@ public class NotaFiscal extends JPanel implements Printable {
         g2d.drawString(descontoVendaValue, rightAlignX - fm.stringWidth(descontoVendaValue), y);
         y += lineHeight;
 
-        BigDecimal totalFinal = resumoDaVenda.getTotalGeral().subtract(descontoItens).subtract(descontoVenda);
+        BigDecimal valorPagoTotal = BigDecimal.ZERO;
+        for (int i = 0; i < pagamentoVenda.modeloTabela.getRowCount(); i++) {
+            String valorPagoStr = pagamentoVenda.modeloTabela.getValueAt(i, 5).toString().replace(",", ".").trim();
+            BigDecimal valorPago = new BigDecimal(valorPagoStr);
+            valorPagoTotal = valorPagoTotal.add(valorPago);
+        }
         g2d.setFont(boldFont);
-        String totalLabel = "Total:";
-        g2d.drawString(totalLabel, 20, y);
+        String valorPagoLabel = "Valor Pago:";
+        g2d.drawString(valorPagoLabel, 20, y);
         g2d.setFont(regularFont);
-        String totalValue = "R$ " + df.format(totalFinal);
-        g2d.drawString(totalValue, rightAlignX - fm.stringWidth(totalValue), y);
-        y += lineHeight * 2;
+        String valorPagoValue = "R$ " + df.format(valorPagoTotal);
+        g2d.drawString(valorPagoValue, rightAlignX - fm.stringWidth(valorPagoValue), y);
+        y += lineHeight * 3;
 
         g2d.setFont(boldFont);
         g2d.drawString("Formas de Pagamento:", 20, y);
@@ -486,8 +505,9 @@ public class NotaFiscal extends JPanel implements Printable {
         for (int i = 0; i < pagamentoVenda.modeloTabela.getRowCount(); i++) {
             String formaPagamento = (String) pagamentoVenda.modeloTabela.getValueAt(i, 1);
             String parcelas = (String) pagamentoVenda.modeloTabela.getValueAt(i, 2);
-            String valor = (String) pagamentoVenda.modeloTabela.getValueAt(i, 3);
-            g2d.drawString(formaPagamento + " (" + parcelas + "x) - R$ " + valor, 20, y);
+            String valorStr = (String) pagamentoVenda.modeloTabela.getValueAt(i, 5);
+            BigDecimal valor = new BigDecimal(valorStr.replace(",", "."));
+            g2d.drawString(formaPagamento + " (" + parcelas + "x) - R$ " + df.format(valor), 20, y);
             y += lineHeight;
 
             if (formaPagamento.equalsIgnoreCase("Dinheiro")) {

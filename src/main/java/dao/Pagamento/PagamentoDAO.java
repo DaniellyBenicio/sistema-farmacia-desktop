@@ -19,26 +19,20 @@ public class PagamentoDAO {
         p.setVendaId(p.getVendaId());
         p.setFormaPagamento(p.getFormaPagamento()); 
         p.setValorPago(p.getValorPago()); 
-
+    
         Venda venda = VendaDAO.buscarVendaPorId(conn, p.getVendaId());
         if (venda == null) {
             throw new SQLException("A venda associada ao pagamento não existe.");
         }
-
-        BigDecimal totalPagoExistente = calcularTotalPagoPorVenda(conn, p.getVendaId());
-        BigDecimal novoTotalPago = totalPagoExistente.add(p.getValorPago());
-
-        if (novoTotalPago.compareTo(venda.getValorTotal()) > 0) {
-            throw new SQLException("O total pago excede o valor total da venda.");
-        }
-
+    
+        // Removida a validação de total pago > valor total, pois o troco é gerenciado no front-end
         String sql = "insert into pagamento (venda_id, formaPagamento, valorPago) values (?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, p.getVendaId());
             pstmt.setString(2, p.getFormaPagamento().name()); 
             pstmt.setBigDecimal(3, p.getValorPago());
             pstmt.executeUpdate();
-
+    
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     p.setId(rs.getInt(1));
