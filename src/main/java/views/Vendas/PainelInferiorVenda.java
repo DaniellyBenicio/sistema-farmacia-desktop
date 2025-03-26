@@ -386,7 +386,11 @@ public class PainelInferiorVenda extends JPanel {
 
     public void atualizarTotalFooter() {
         BigDecimal total = painelDireito.getTotalGeral();
-        txtTotal.setText(total.setScale(2, BigDecimal.ROUND_HALF_UP).toString().replace(".", ","));
+        if (total == null || total.compareTo(BigDecimal.ZERO) <= 0 || painelDireito.itensMap.isEmpty()) {
+            txtTotal.setText("0,00"); // Explicitly set to "0,00" when no items
+        } else {
+            txtTotal.setText(total.setScale(2, BigDecimal.ROUND_HALF_UP).toString().replace(".", ","));
+        }
     }
 
     public void atualizarEstadoBotoes() {

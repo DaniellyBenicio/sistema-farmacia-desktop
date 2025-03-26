@@ -604,13 +604,13 @@ public class PagamentoVenda extends JPanel {
 
             conn.commit();
             JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
-
+    
             Window dialog = SwingUtilities.getWindowAncestor(this);
             if (dialog != null) {
                 dialog.dispose();
             }
             if (realizarVenda != null) {
-                realizarVenda.reiniciarVenda();
+                realizarVenda.reiniciarVenda(); // Reset the sale
             }
             NotaFiscal.exibirNotaFiscal(resumoDaVenda, this);
 
