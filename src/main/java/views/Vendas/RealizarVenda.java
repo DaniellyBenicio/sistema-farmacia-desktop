@@ -407,10 +407,13 @@ public class RealizarVenda extends JPanel {
                             txtItem.setText(textoExibicao);
                             txtCodigoProduto.setText(String.valueOf(idItem));
                             txtPrecoUnitario.setText(String.format("%.2f", precoUnitario).replace(".", ","));
-                            txtDesconto.setText(String.format("%.2f", descontoCalculado).replace(".", ","));
+                            txtDesconto.setText(String.format("%.2f", descontoCalculado).replace(".", ",")); // Desconto
+                                                                                                             // unitário
+                                                                                                             // inicial
                             txtQuantidade.setText("");
                             txtQuantidade.setEnabled(true);
                             txtItem.putClientProperty("nomeBase", nomeBase);
+                            txtItem.putClientProperty("descontoUnitario", descontoCalculado);
                             calcularPrecoTotal();
                             popupMenu.setVisible(false);
                             txtItem.requestFocusInWindow();
@@ -445,12 +448,14 @@ public class RealizarVenda extends JPanel {
         try {
             if (txtCodigoProduto.getText().trim().isEmpty()) {
                 txtPrecoTotal.setText("0,00");
+                txtDesconto.setText("0,00");
                 return;
             }
 
             String quantidadeText = txtQuantidade.getText().replace(",", ".").trim();
             if (quantidadeText.isEmpty()) {
                 txtPrecoTotal.setText("0,00");
+                txtDesconto.setText("0,00");
                 return;
             }
             int quantidade = Integer.parseInt(quantidadeText);
@@ -473,55 +478,44 @@ public class RealizarVenda extends JPanel {
             }
 
             BigDecimal subtotal = precoUnitario.multiply(new BigDecimal(quantidade));
+            BigDecimal descontoTotal = BigDecimal.ZERO;
 
-            ItemVenda itemVenda = new ItemVenda();
-            String nomeBase = (String) txtItem.getClientProperty("nomeBase");
-            if (nomeBase != null && txtCodigoProduto.getText().matches("\\d+")) {
-                try (Connection conn = ConexaoBD.getConnection()) {
-                    int idItem = Integer.parseInt(txtCodigoProduto.getText());
-                    itemVenda.setPrecoUnit(precoUnitario);
-                    itemVenda.setQnt(quantidade);
-                    itemVenda.setDesconto(BigDecimal.ZERO);
-
-                    Medicamento medicamento = new Medicamento();
-                    medicamento.setId(idItem);
-                    itemVenda.setMedicamento(medicamento);
-
-                    ItemVendaDAO.calcularDescontoAutomatico(conn, itemVenda);
-                    BigDecimal descontoAutomatico = itemVenda.getDesconto();
-
-                    txtDesconto
-                            .setText(descontoAutomatico.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
-                } catch (SQLException e) {
-                    JOptionPane.showMessageDialog(this, "Erro ao recalcular desconto: " + e.getMessage(), "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
+            BigDecimal descontoUnitario;
+            Object descontoUnitarioProp = txtItem.getClientProperty("descontoUnitario");
+            if (descontoUnitarioProp instanceof BigDecimal) {
+                descontoUnitario = (BigDecimal) descontoUnitarioProp;
+            } else {
+                String descontoText = txtDesconto.getText().replace(",", ".").trim();
+                descontoUnitario = descontoText.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoText);
             }
 
-            String descontoText = txtDesconto.getText().replace(",", ".").trim();
-            BigDecimal desconto = descontoText.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoText);
+            descontoTotal = descontoUnitario.multiply(new BigDecimal(quantidade));
 
-            if (desconto.compareTo(BigDecimal.ZERO) < 0) {
+            if (descontoTotal.compareTo(BigDecimal.ZERO) < 0) {
                 JOptionPane.showMessageDialog(this, "O desconto não pode ser negativo.", "Erro",
                         JOptionPane.ERROR_MESSAGE);
-                desconto = BigDecimal.ZERO;
+                descontoTotal = BigDecimal.ZERO;
                 txtDesconto.setText("0,00");
-            } else if (desconto.compareTo(subtotal) > 0) {
+            } else if (descontoTotal.compareTo(subtotal) > 0) {
                 JOptionPane.showMessageDialog(this,
-                        "O desconto (" + descontoText + ") não pode exceder o valor total do item ("
+                        "O desconto total ("
+                                + descontoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",")
+                                + ") não pode exceder o valor total do item ("
                                 + subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",") + ").",
                         "Erro", JOptionPane.ERROR_MESSAGE);
-                desconto = subtotal;
-                txtDesconto.setText(desconto.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+                descontoTotal = subtotal;
+                txtDesconto.setText(descontoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+            } else {
+                txtDesconto.setText(descontoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
             }
 
-            BigDecimal precoTotal = subtotal.subtract(desconto);
+            BigDecimal precoTotal = subtotal.subtract(descontoTotal);
             txtPrecoTotal.setText(precoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro",
                     JOptionPane.ERROR_MESSAGE);
             txtPrecoTotal.setText("0,00");
+            txtDesconto.setText("0,00");
         }
     }
 
