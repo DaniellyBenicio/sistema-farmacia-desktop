@@ -363,11 +363,10 @@ public class PagamentoVenda extends JPanel {
             String descontoStr = txtDesconto.getText().replace(",", ".").trim();
             BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
 
-            // Verifica se o desconto ultrapassa o subtotal
             if (desconto.compareTo(subtotal) > 0) {
                 JOptionPane.showMessageDialog(this, "O desconto não pode ultrapassar o subtotal de " +
                         subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",") + ".");
-                txtDesconto.setText(""); // Limpa o campo de desconto
+                txtDesconto.setText("");
                 txtTotal.setText(subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
             } else {
                 BigDecimal total = subtotal.subtract(desconto);
@@ -470,7 +469,7 @@ public class PagamentoVenda extends JPanel {
             BigDecimal troco = BigDecimal.ZERO;
             if (formaPagamento.equalsIgnoreCase("Dinheiro")) {
                 if (valorPago.compareTo(restanteAntes) > 0) {
-                    troco = valorPago.subtract(restanteAntes); // Troco baseado no valor pago em dinheiro e no restante
+                    troco = valorPago.subtract(restanteAntes);
                 }
             }
 
@@ -516,48 +515,51 @@ public class PagamentoVenda extends JPanel {
         try {
             conn = ConexaoBD.getConnection();
             conn.setAutoCommit(false);
-    
+
             String cpfCliente = resumoDaVenda.lblCpfCliente.getText().replace("CPF do Consumidor: ", "").trim();
             int funcionarioId = PainelSuperior.getIdFuncionarioAtual();
-    
+
             Integer clienteId = null;
             if (!cpfCliente.equals("Não Identificado")) {
                 clienteId = ClienteDAO.buscarClientePorCpfRetornaId(conn, cpfCliente);
             }
-    
+
             String descontoStr = txtDesconto.getText().replace(",", ".").trim();
             BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
             LocalDateTime agora = LocalDateTime.now();
-    
+
             BigDecimal valorTotalVenda = subtotal.subtract(desconto);
-    
+
             BigDecimal totalPagoNaTabela = BigDecimal.ZERO;
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
-                String valorStr = modeloTabela.getValueAt(i, 5).toString().replace(",", ".").trim(); // Coluna "Valor Pago"
+                String valorStr = modeloTabela.getValueAt(i, 5).toString().replace(",", ".").trim(); // Coluna "Valor
+                                                                                                     // Pago"
                 BigDecimal valorPago = new BigDecimal(valorStr);
                 totalPagoNaTabela = totalPagoNaTabela.add(valorPago);
             }
-    
+
             if (totalPagoNaTabela.compareTo(valorTotalVenda) < 0) {
-                throw new SQLException("O total pago (" + totalPagoNaTabela + ") é menor que o valor total da venda (" + valorTotalVenda + "). Adicione mais pagamentos.");
+                throw new SQLException("O total pago (" + totalPagoNaTabela + ") é menor que o valor total da venda ("
+                        + valorTotalVenda + "). Adicione mais pagamentos.");
             }
-    
+
             Venda venda = new Venda(clienteId, funcionarioId, valorTotalVenda, desconto, agora);
             int vendaId = VendaDAO.realizarVenda(conn, venda);
             if (vendaId == -1) {
                 throw new SQLException("Erro ao registrar a venda.");
             }
-    
+
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
                 String formaPagamentoStr = (String) modeloTabela.getValueAt(i, 1);
                 String formaPagamento = converterFormaPagamento(formaPagamentoStr);
                 String valorStr = modeloTabela.getValueAt(i, 5).toString().replace(",", ".").trim();
                 BigDecimal valorPago = new BigDecimal(valorStr);
-    
-                Pagamento pagamento = new Pagamento(vendaId, Pagamento.FormaPagamento.valueOf(formaPagamento), valorPago);
+
+                Pagamento pagamento = new Pagamento(vendaId, Pagamento.FormaPagamento.valueOf(formaPagamento),
+                        valorPago);
                 PagamentoDAO.cadastrarPagamento(conn, pagamento);
             }
-    
+
             for (String ordem : resumoDaVenda.itensMap.keySet()) {
                 String[] dadosItem = resumoDaVenda.getDadosItemPorOrdem(ordem);
                 int idItem = Integer.parseInt(dadosItem[1].trim());
@@ -567,14 +569,14 @@ public class PagamentoVenda extends JPanel {
                 BigDecimal precoUnitario = new BigDecimal(dadosItem[4].replace(",", ".").trim());
                 BigDecimal descontoItem = new BigDecimal(dadosItem[5].replace(",", ".").trim());
                 BigDecimal subtotalItem = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
-    
+
                 ItemVenda itemVenda = new ItemVenda();
                 itemVenda.setVendaId(vendaId);
                 itemVenda.setDesconto(descontoItem);
                 itemVenda.setPrecoUnit(precoUnitario);
                 itemVenda.setQnt(quantidade);
                 itemVenda.setSubtotal(subtotalItem);
-    
+
                 String tipo = ItemVendaDAO.verificarTipoItem(conn, nomeBase);
                 if ("Medicamento".equals(tipo)) {
                     Medicamento medicamento = MedicamentoDAO.buscarPorId(conn, idItem);
@@ -587,13 +589,13 @@ public class PagamentoVenda extends JPanel {
                 } else {
                     throw new SQLException("Item '" + nomeBase + "' não identificado como produto ou medicamento.");
                 }
-    
+
                 ItemVendaDAO.inserirItemVenda(conn, itemVenda, nomeBase);
             }
-    
+
             conn.commit();
             JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
-    
+
             NotaFiscal.exibirNotaFiscal(resumoDaVenda, this);
             Window dialog = SwingUtilities.getWindowAncestor(this);
             if (dialog != null) {
@@ -602,7 +604,7 @@ public class PagamentoVenda extends JPanel {
             if (realizarVenda != null) {
                 realizarVenda.reiniciarVenda();
             }
-    
+
         } catch (SQLException e) {
             try {
                 if (conn != null) {

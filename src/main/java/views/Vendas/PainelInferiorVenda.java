@@ -20,7 +20,7 @@ public class PainelInferiorVenda extends JPanel {
 
     private final Connection conn;
     private final RealizarVenda vendaPrincipal;
-    private final ResumoDaVenda painelDireito;
+    private ResumoDaVenda painelDireito;
     private JTextField txtTotal;
     private JButton btnRemoverItem, btnConfirmarVenda, btnCancelarVenda;
 
@@ -387,7 +387,7 @@ public class PainelInferiorVenda extends JPanel {
     public void atualizarTotalFooter() {
         BigDecimal total = painelDireito.getTotalGeral();
         if (total == null || total.compareTo(BigDecimal.ZERO) <= 0 || painelDireito.itensMap.isEmpty()) {
-            txtTotal.setText("0,00"); // Explicitly set to "0,00" when no items
+            txtTotal.setText("0,00");
         } else {
             txtTotal.setText(total.setScale(2, BigDecimal.ROUND_HALF_UP).toString().replace(".", ","));
         }
@@ -398,5 +398,11 @@ public class PainelInferiorVenda extends JPanel {
         btnRemoverItem.setEnabled(temItens);
         btnConfirmarVenda.setEnabled(temItens);
         btnCancelarVenda.setEnabled(temItens);
+    }
+
+    public void setPainelDireito(ResumoDaVenda novoPainelDireito) {
+        this.painelDireito = novoPainelDireito;
+        atualizarEstadoBotoes();
+        atualizarTotalFooter();
     }
 }

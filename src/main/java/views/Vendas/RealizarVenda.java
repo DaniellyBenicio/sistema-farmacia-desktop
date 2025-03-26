@@ -624,10 +624,9 @@ public class RealizarVenda extends JPanel {
         itensMap.clear();
         lblNomeCliente.setText("Nome do Consumidor: Não Identificado");
         lblCpfCliente.setText("CPF do Consumidor: Não Identificado");
-    
-        // Explicitly clear painelDireito's itensMap and reset it
-        painelDireito.itensMap.clear();  // Ensure the map is cleared
-        painelDireito = createPainelDireito(); // Recreate painelDireito
+
+        painelDireito.itensMap.clear();
+        painelDireito = createPainelDireito();
         JPanel painelMeio = (JPanel) getComponent(1);
         painelMeio.remove(1);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -636,15 +635,15 @@ public class RealizarVenda extends JPanel {
         gbc.weightx = 0.9;
         gbc.fill = GridBagConstraints.BOTH;
         painelMeio.add(painelDireito, gbc);
-    
+
+        painelInferior.setPainelDireito(painelDireito);
+
         popupMenu.setVisible(false);
         popupMenu.removeAll();
-    
-        // Ensure the total is updated after reset
+
         painelInferior.atualizarTotalFooter();
         painelInferior.atualizarEstadoBotoes();
-        
-        // Force UI refresh
+
         revalidate();
         repaint();
     }
