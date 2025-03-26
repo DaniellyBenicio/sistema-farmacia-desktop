@@ -516,55 +516,48 @@ public class PagamentoVenda extends JPanel {
         try {
             conn = ConexaoBD.getConnection();
             conn.setAutoCommit(false);
-
-            String cpfCliente = resumoDaVenda.lblCpfCliente.getText().replace("CPF: ", "").trim();
+    
+            String cpfCliente = resumoDaVenda.lblCpfCliente.getText().replace("CPF do Consumidor: ", "").trim();
             int funcionarioId = PainelSuperior.getIdFuncionarioAtual();
-
+    
             Integer clienteId = null;
-            if (!cpfCliente.isEmpty()) {
+            if (!cpfCliente.equals("Não Identificado")) {
                 clienteId = ClienteDAO.buscarClientePorCpfRetornaId(conn, cpfCliente);
             }
-
+    
             String descontoStr = txtDesconto.getText().replace(",", ".").trim();
             BigDecimal desconto = descontoStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(descontoStr);
             LocalDateTime agora = LocalDateTime.now();
-
+    
             BigDecimal valorTotalVenda = subtotal.subtract(desconto);
-
+    
             BigDecimal totalPagoNaTabela = BigDecimal.ZERO;
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
-                String valorStr = modeloTabela.getValueAt(i, 5).toString().replace(",", ".").trim(); // Coluna "Valor
-                                                                                                     // Pago"
+                String valorStr = modeloTabela.getValueAt(i, 5).toString().replace(",", ".").trim(); // Coluna "Valor Pago"
                 BigDecimal valorPago = new BigDecimal(valorStr);
                 totalPagoNaTabela = totalPagoNaTabela.add(valorPago);
             }
-
-            // Removida a validação de total pago > valor total, pois o troco é tratado em
-            // confirmarPagamento()
+    
             if (totalPagoNaTabela.compareTo(valorTotalVenda) < 0) {
-                throw new SQLException("O total pago (" + totalPagoNaTabela + ") é menor que o valor total da venda ("
-                        + valorTotalVenda + "). Adicione mais pagamentos.");
+                throw new SQLException("O total pago (" + totalPagoNaTabela + ") é menor que o valor total da venda (" + valorTotalVenda + "). Adicione mais pagamentos.");
             }
-
+    
             Venda venda = new Venda(clienteId, funcionarioId, valorTotalVenda, desconto, agora);
             int vendaId = VendaDAO.realizarVenda(conn, venda);
             if (vendaId == -1) {
                 throw new SQLException("Erro ao registrar a venda.");
             }
-
+    
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
                 String formaPagamentoStr = (String) modeloTabela.getValueAt(i, 1);
                 String formaPagamento = converterFormaPagamento(formaPagamentoStr);
-                String valorStr = modeloTabela.getValueAt(i, 5).toString().replace(",", ".").trim(); // Coluna "Valor
-                                                                                                     // Pago"
+                String valorStr = modeloTabela.getValueAt(i, 5).toString().replace(",", ".").trim();
                 BigDecimal valorPago = new BigDecimal(valorStr);
-
-                Pagamento pagamento = new Pagamento(vendaId, Pagamento.FormaPagamento.valueOf(formaPagamento),
-                        valorPago);
+    
+                Pagamento pagamento = new Pagamento(vendaId, Pagamento.FormaPagamento.valueOf(formaPagamento), valorPago);
                 PagamentoDAO.cadastrarPagamento(conn, pagamento);
             }
-
-            // Restante do código (inserção de itens, commit, etc.) permanece igual
+    
             for (String ordem : resumoDaVenda.itensMap.keySet()) {
                 String[] dadosItem = resumoDaVenda.getDadosItemPorOrdem(ordem);
                 int idItem = Integer.parseInt(dadosItem[1].trim());
@@ -574,23 +567,19 @@ public class PagamentoVenda extends JPanel {
                 BigDecimal precoUnitario = new BigDecimal(dadosItem[4].replace(",", ".").trim());
                 BigDecimal descontoItem = new BigDecimal(dadosItem[5].replace(",", ".").trim());
                 BigDecimal subtotalItem = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
-
+    
                 ItemVenda itemVenda = new ItemVenda();
                 itemVenda.setVendaId(vendaId);
                 itemVenda.setDesconto(descontoItem);
                 itemVenda.setPrecoUnit(precoUnitario);
                 itemVenda.setQnt(quantidade);
                 itemVenda.setSubtotal(subtotalItem);
-
+    
                 String tipo = ItemVendaDAO.verificarTipoItem(conn, nomeBase);
                 if ("Medicamento".equals(tipo)) {
                     Medicamento medicamento = MedicamentoDAO.buscarPorId(conn, idItem);
                     itemVenda.setMedicamento(medicamento);
                     itemVenda.setProduto(null);
-                    boolean temReceita = ItemVendaDAO.verificarNecessidadeReceita(conn, nomeBase);
-                    if (temReceita) {
-                        System.out.println("Medicamento '" + nomeBase + "' exige receita.");
-                    }
                 } else if ("Produto".equals(tipo)) {
                     Produto produto = ProdutoDAO.buscarPorId(conn, idItem);
                     itemVenda.setProduto(produto);
@@ -598,22 +587,22 @@ public class PagamentoVenda extends JPanel {
                 } else {
                     throw new SQLException("Item '" + nomeBase + "' não identificado como produto ou medicamento.");
                 }
-
+    
                 ItemVendaDAO.inserirItemVenda(conn, itemVenda, nomeBase);
             }
-
+    
             conn.commit();
             JOptionPane.showMessageDialog(this, "Pagamento concluído e venda registrada!");
     
+            NotaFiscal.exibirNotaFiscal(resumoDaVenda, this);
             Window dialog = SwingUtilities.getWindowAncestor(this);
             if (dialog != null) {
                 dialog.dispose();
             }
             if (realizarVenda != null) {
-                realizarVenda.reiniciarVenda(); // Reset the sale
+                realizarVenda.reiniciarVenda();
             }
-            NotaFiscal.exibirNotaFiscal(resumoDaVenda, this);
-
+    
         } catch (SQLException e) {
             try {
                 if (conn != null) {
