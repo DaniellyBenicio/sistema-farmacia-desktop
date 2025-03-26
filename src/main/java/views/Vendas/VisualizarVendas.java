@@ -114,6 +114,7 @@ public class VisualizarVendas extends JPanel {
 
         JMenuItem itemVendedor = criarMenuItem("Vendedor");
         JMenuItem itemData = criarMenuItem("Data");
+        JMenuItem itemFormaPagamento = criarMenuItem("Forma de Pagamento");
         JMenuItem itemLimparFiltro = criarMenuItem("Limpar Filtro");
 
         itemVendedor.addActionListener(e -> {
@@ -146,6 +147,31 @@ public class VisualizarVendas extends JPanel {
             campoBusca.setForeground(Color.BLACK);
         });
 
+        itemFormaPagamento.addActionListener(e -> {
+            tipoFiltroAtual = "FormaPagamento";
+            btnFiltro = btnFiltrarVenda;
+            btnFiltrarVenda.setText("FILTRAR POR PAGAMENTO");
+            campoBusca.setValue(null);
+            campoBusca.setEditable(false);
+
+            JComboBox<String> comboFormaPagamento = new JComboBox<>(new String[]{
+                    "Dinheiro", "Cartão de Débito", "Cartão de Crédito", "PIX"
+            });
+
+            int result = JOptionPane.showConfirmDialog(this, comboFormaPagamento,
+                    "Selecione a Forma de Pagamento", JOptionPane.OK_CANCEL_OPTION);
+
+            if (result == JOptionPane.OK_OPTION) {
+                String formaSelecionada = (String) comboFormaPagamento.getSelectedItem();
+                switch (formaSelecionada) {
+                    case "Dinheiro": campoBusca.setText("DINHEIRO"); break;
+                    case "Cartão de Débito": campoBusca.setText("CARTAO_DEBITO"); break;
+                    case "Cartão de Crédito": campoBusca.setText("CARTAO_CREDITO"); break;
+                    case "PIX": campoBusca.setText("PIX"); break;
+                }
+            }
+        });
+
         itemLimparFiltro.addActionListener(e -> {
             tipoFiltroAtual = null;
             btnFiltro = btnFiltrarVenda;
@@ -161,6 +187,7 @@ public class VisualizarVendas extends JPanel {
 
         popupMenu.add(itemVendedor);
         popupMenu.add(itemData);
+        popupMenu.add(itemFormaPagamento);
         popupMenu.addSeparator();
         popupMenu.add(itemLimparFiltro);
 
@@ -263,7 +290,7 @@ public class VisualizarVendas extends JPanel {
         tabelaVendas.getColumnModel().getColumn(5).setCellRenderer(new RenderizadorBotoes());
         tabelaVendas.getColumnModel().getColumn(5).setCellEditor(new EditorBotoes(new JTextField()));
 
-        // Ajuste das larguras das colunas
+        
         tabelaVendas.getColumnModel().getColumn(0).setPreferredWidth(150);
         tabelaVendas.getColumnModel().getColumn(1).setPreferredWidth(100);
         tabelaVendas.getColumnModel().getColumn(2).setPreferredWidth(200);
@@ -329,7 +356,7 @@ public class VisualizarVendas extends JPanel {
                         }
                         break;
 
-                    default:
+                    case "FormaPagamento":
                         sql = "SELECT v.id, DATE_FORMAT(v.data, '%d/%m/%Y') as data_venda, " +
                                 "c.nome as cliente, f.nome as vendedor, v.valorTotal, " +
                                 "p.formaPagamento, TIME(v.data) as horario " +
@@ -337,11 +364,13 @@ public class VisualizarVendas extends JPanel {
                                 "LEFT JOIN cliente c ON v.cliente_id = c.id " +
                                 "JOIN funcionario f ON v.funcionario_id = f.id " +
                                 "LEFT JOIN pagamento p ON v.id = p.venda_id " +
-                                "WHERE f.status = true " +
+                                "WHERE p.formaPagamento = ? AND f.status = true " +
                                 "ORDER BY v.data DESC, v.id DESC";
-                        try (PreparedStatement stmt = conn.prepareStatement(sql);
-                             ResultSet rs = stmt.executeQuery()) {
-                            processarResultados(rs);
+                        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                            stmt.setString(1, termoBusca);
+                            try (ResultSet rs = stmt.executeQuery()) {
+                                processarResultados(rs);
+                            }
                         }
                         break;
                 }
