@@ -105,7 +105,7 @@ public class PainelInferiorVenda extends JPanel {
 
     private JPanel ladoDireitoFooter() {
         JPanel ladoDireito = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        ladoDireito.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
+        ladoDireito.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 10));
 
         JLabel lblTotal = new JLabel("Total: ");
         lblTotal.setFont(new Font("Arial", Font.BOLD, 18));
@@ -120,6 +120,7 @@ public class PainelInferiorVenda extends JPanel {
         txtTotal.setForeground(Color.WHITE);
         txtTotal.setEditable(false);
         txtTotal.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+        txtTotal.setHorizontalAlignment(JTextField.RIGHT);
 
         ladoDireito.add(lblTotal);
         ladoDireito.add(txtTotal);
@@ -351,32 +352,48 @@ public class PainelInferiorVenda extends JPanel {
 
         if (resposta == JOptionPane.YES_OPTION) {
             try {
+                boolean sucessoCancelamento = true;
+
                 for (String ordem : painelDireito.itensMap.keySet()) {
                     String[] dadosItem = painelDireito.getDadosItemPorOrdem(ordem);
                     if (dadosItem == null) {
                         JOptionPane.showMessageDialog(vendaPrincipal, "Item com ordem '" + ordem + "' não encontrado.",
                                 "Erro", JOptionPane.ERROR_MESSAGE);
-                        continue;
+                        sucessoCancelamento = false;
+                        break;
                     }
 
-                    int quantidadeRemovida = Integer.parseInt(dadosItem[3].replace(",", ".").trim());
-                    String nomeCompleto = dadosItem[2].trim();
-                    String nomeBase = nomeCompleto.split(" ")[0];
-                    ItemVenda itemVenda = new ItemVenda();
+                    try {
+                        int quantidadeRemovida = Integer.parseInt(dadosItem[3].replace(",", ".").trim());
+                        String nomeCompleto = dadosItem[2].trim();
+                        String nomeBase = nomeCompleto.split(" ")[0];
+                        ItemVenda itemVenda = new ItemVenda();
 
-                    boolean sucesso = ItemVendaDAO.verificarTipoEEstoque(conn, itemVenda, quantidadeRemovida, true,
-                            nomeBase);
-                    if (!sucesso) {
-                        throw new SQLException("Erro ao retornar estoque para o item: " + nomeBase);
+                        boolean sucesso = ItemVendaDAO.verificarTipoEEstoque(conn, itemVenda, quantidadeRemovida, true,
+                                nomeBase);
+                        if (!sucesso) {
+                            throw new SQLException("Erro ao retornar estoque para o item: " + nomeBase);
+                        }
+                    } catch (SQLException | NumberFormatException e) {
+                        JOptionPane.showMessageDialog(vendaPrincipal,
+                                "Erro ao processar item de venda: " + e.getMessage(),
+                                "Erro", JOptionPane.ERROR_MESSAGE);
+                        sucessoCancelamento = false;
+                        break;
                     }
+                }
 
+                if (sucessoCancelamento) {
                     vendaPrincipal.reiniciarVenda();
                     atualizarTotalFooter();
                     atualizarEstadoBotoes();
+                    JOptionPane.showMessageDialog(vendaPrincipal, "Venda cancelada com sucesso e estoque atualizado!",
+                            "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(vendaPrincipal, "Falha no cancelamento da venda.",
+                            "Erro", JOptionPane.ERROR_MESSAGE);
                 }
 
-                JOptionPane.showMessageDialog(vendaPrincipal, "Venda cancelada com sucesso e estoque atualizado!",
-                        "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Erro ao cancelar venda: " + ex.getMessage(),
                         "Erro", JOptionPane.ERROR_MESSAGE);

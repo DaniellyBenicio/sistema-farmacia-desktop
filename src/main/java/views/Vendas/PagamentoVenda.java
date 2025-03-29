@@ -366,8 +366,9 @@ public class PagamentoVenda extends JPanel {
             if (desconto.compareTo(subtotal) > 0) {
                 JOptionPane.showMessageDialog(this, "O desconto não pode ultrapassar o subtotal de " +
                         subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",") + ".");
-                txtDesconto.setText("");
-                txtTotal.setText(subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
+                txtDesconto.requestFocus();
+                txtDesconto.selectAll();
+                return;
             } else {
                 BigDecimal total = subtotal.subtract(desconto);
                 if (total.compareTo(BigDecimal.ZERO) < 0) {
@@ -375,6 +376,7 @@ public class PagamentoVenda extends JPanel {
                 }
                 txtTotal.setText(total.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
             }
+
             atualizarRestanteETroco();
         } catch (NumberFormatException e) {
             txtTotal.setText(subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));

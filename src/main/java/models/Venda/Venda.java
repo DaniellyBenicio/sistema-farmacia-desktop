@@ -4,16 +4,18 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class Venda {
-    private Integer id; 
+    private Integer id;
     private Integer clienteId;
     private Integer funcionarioId;
     private BigDecimal valorTotal;
     private BigDecimal desconto;
     private LocalDateTime data;
 
-    public Venda() {}
+    public Venda() {
+    }
 
-    public Venda(Integer clienteId, Integer funcionarioId, BigDecimal valorTotal, BigDecimal desconto, LocalDateTime data) {
+    public Venda(Integer clienteId, Integer funcionarioId, BigDecimal valorTotal, BigDecimal desconto,
+            LocalDateTime data) {
         this.clienteId = clienteId;
         this.funcionarioId = funcionarioId;
         this.valorTotal = valorTotal;
@@ -72,9 +74,6 @@ public class Venda {
     public void setDesconto(BigDecimal desconto) {
         if (desconto == null || desconto.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Desconto não pode ser nulo ou negativo.");
-        }
-        if (valorTotal != null && desconto.compareTo(valorTotal) > 0) {
-            throw new IllegalArgumentException("Desconto não pode ser maior que o valor total.");
         }
         this.desconto = desconto;
     }

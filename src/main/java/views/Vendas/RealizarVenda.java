@@ -106,11 +106,45 @@ public class RealizarVenda extends JPanel {
         txtItem.setBackground(INPUT_BG_COLOR);
         txtItem.setForeground(INPUT_FG_COLOR);
         txtItem.setOpaque(true);
+        txtItem.setCaretColor(Color.WHITE);
         txtItem.setFont(new Font("Arial", Font.PLAIN, 20));
         txtItem.setMinimumSize(new Dimension(150, 45));
         txtItem.setPreferredSize(new Dimension(150, 45));
         txtItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         txtItem.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+
+        String placeholder = "Buscar";
+        txtItem.setText(placeholder);
+        txtItem.setForeground(Color.GRAY);
+
+        txtItem.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (txtItem.getText().equals(placeholder)) {
+                    txtItem.setText("");
+                    txtItem.setForeground(INPUT_FG_COLOR);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (txtItem.getText().trim().isEmpty()) {
+                    txtItem.setText(placeholder);
+                    txtItem.setForeground(Color.GRAY);
+                }
+            }
+        });
+
+        txtItem.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (txtItem.getText().equals("Buscar")) {
+                    txtItem.setText("");
+                    txtItem.setForeground(INPUT_FG_COLOR);
+                }
+            }
+        });
+
         gbc.gridy = 1;
         gbc.weightx = 1.0;
         painelItem.add(txtItem, gbc);
@@ -295,10 +329,25 @@ public class RealizarVenda extends JPanel {
     }
 
     private void configurarEventosPainelEsquerdo() {
+        txtQuantidade.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                calcularPrecoTotal();
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    confirmarItem();
+                }
+            }
+        });
+
         txtQuantidade.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
                 calcularPrecoTotal();
+                confirmarItem();
             }
         });
 
@@ -306,15 +355,6 @@ public class RealizarVenda extends JPanel {
             @Override
             public void focusLost(FocusEvent e) {
                 calcularPrecoTotal();
-            }
-        });
-
-        txtQuantidade.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    confirmarItem();
-                }
             }
         });
 
@@ -344,87 +384,87 @@ public class RealizarVenda extends JPanel {
                 try {
                     List<Object> itens = get();
                     if (itens == null || itens.isEmpty()) {
-                        popupMenu.setVisible(false);
-                        return;
-                    }
-
-                    int itemCount = 0;
-                    for (Object item : itens) {
-                        if (itemCount >= 10)
-                            break;
-
-                        String textoExibicao;
-                        String nomeBase;
-                        int idItem;
-                        BigDecimal precoUnitario;
-
-                        ItemVenda itemVenda = new ItemVenda();
-
-                        if (item instanceof Produto) {
-                            Produto p = (Produto) item;
-                            textoExibicao = String.format("%s %s %s %s UN", p.getNome().toUpperCase(),
-                                    p.getEmbalagem().toUpperCase(), p.getQntMedida().toUpperCase(),
-                                    p.getQntEmbalagem());
-                            nomeBase = p.getNome().toUpperCase();
-                            idItem = p.getId();
-                            precoUnitario = p.getValor();
-                            itemVenda.setProduto(p);
-                        } else if (item instanceof Medicamento) {
-                            Medicamento m = (Medicamento) item;
-                            textoExibicao = String.format("%s %s %s %s %s UN", m.getNome().toUpperCase(),
-                                    m.getFormaFarmaceutica().toUpperCase(), m.getDosagem().toUpperCase(),
-                                    m.getEmbalagem().toUpperCase(), m.getQntEmbalagem());
-                            nomeBase = m.getNome().toUpperCase();
-                            idItem = m.getId();
-                            precoUnitario = m.getValorUnit();
-                            itemVenda.setMedicamento(m);
-                        } else {
-                            continue;
-                        }
-
-                        itemVenda.setPrecoUnit(precoUnitario);
-                        itemVenda.setQnt(1);
-                        itemVenda.setDesconto(BigDecimal.ZERO);
-
-                        try (Connection conn = ConexaoBD.getConnection()) {
-                            ItemVendaDAO.calcularDescontoAutomatico(conn, itemVenda);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                            JOptionPane.showMessageDialog(null, "Erro ao calcular desconto: " + e.getMessage(), "Erro",
-                                    JOptionPane.ERROR_MESSAGE);
-                            continue;
-                        }
-
-                        BigDecimal descontoCalculado = itemVenda.getDesconto();
-
-                        JMenuItem menuItem = new JMenuItem(textoExibicao);
-                        menuItem.setBackground(INPUT_BG_COLOR);
-                        menuItem.setForeground(Color.WHITE);
-                        menuItem.setOpaque(true);
-                        menuItem.setFont(new Font("Arial", Font.PLAIN, 16));
-                        menuItem.setPreferredSize(new Dimension(painelItem.getWidth(), ITEM_HEIGHT));
-                        menuItem.addActionListener(e -> {
-                            txtItem.setText(textoExibicao);
-                            txtCodigoProduto.setText(String.valueOf(idItem));
-                            txtPrecoUnitario.setText(String.format("%.2f", precoUnitario).replace(".", ","));
-                            txtDesconto.setText(String.format("%.2f", descontoCalculado).replace(".", ",")); // Desconto
-                                                                                                             // unitário
-                                                                                                             // inicial
-                            txtQuantidade.setText("");
-                            txtQuantidade.setEnabled(true);
-                            txtItem.putClientProperty("nomeBase", nomeBase);
-                            txtItem.putClientProperty("descontoUnitario", descontoCalculado);
-                            calcularPrecoTotal();
-                            popupMenu.setVisible(false);
-                            txtItem.requestFocusInWindow();
-                            txtItem.selectAll();
-                        });
-
+                        JMenuItem menuItem = new JMenuItem("Produto indisponível");
+                        menuItem.setEnabled(false);
                         popupMenu.add(menuItem);
-                        itemCount++;
+                    } else {
+                        int itemCount = 0;
+                        for (Object item : itens) {
+                            if (itemCount >= 10)
+                                break;
+
+                            String textoExibicao;
+                            String nomeBase;
+                            int idItem;
+                            BigDecimal precoUnitario;
+
+                            ItemVenda itemVenda = new ItemVenda();
+
+                            if (item instanceof Produto) {
+                                Produto p = (Produto) item;
+                                textoExibicao = String.format("%s %s %s %s UN", p.getNome().toUpperCase(),
+                                        p.getEmbalagem().toUpperCase(), p.getQntMedida().toUpperCase(),
+                                        p.getQntEmbalagem());
+                                nomeBase = p.getNome().toUpperCase();
+                                idItem = p.getId();
+                                precoUnitario = p.getValor();
+                                itemVenda.setProduto(p);
+                            } else if (item instanceof Medicamento) {
+                                Medicamento m = (Medicamento) item;
+                                textoExibicao = String.format("%s %s %s %s %s UN", m.getNome().toUpperCase(),
+                                        m.getFormaFarmaceutica().toUpperCase(), m.getDosagem().toUpperCase(),
+                                        m.getEmbalagem().toUpperCase(), m.getQntEmbalagem());
+                                nomeBase = m.getNome().toUpperCase();
+                                idItem = m.getId();
+                                precoUnitario = m.getValorUnit();
+                                itemVenda.setMedicamento(m);
+                            } else {
+                                continue;
+                            }
+
+                            itemVenda.setPrecoUnit(precoUnitario);
+                            itemVenda.setQnt(1);
+                            itemVenda.setDesconto(BigDecimal.ZERO);
+
+                            try (Connection conn = ConexaoBD.getConnection()) {
+                                ItemVendaDAO.calcularDescontoAutomatico(conn, itemVenda);
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                                JOptionPane.showMessageDialog(null, "Erro ao calcular desconto: " + e.getMessage(),
+                                        "Erro",
+                                        JOptionPane.ERROR_MESSAGE);
+                                continue;
+                            }
+
+                            BigDecimal descontoCalculado = itemVenda.getDesconto();
+
+                            JMenuItem menuItem = new JMenuItem(textoExibicao);
+                            menuItem.setBackground(INPUT_BG_COLOR);
+                            menuItem.setForeground(Color.WHITE);
+                            menuItem.setOpaque(true);
+                            menuItem.setFont(new Font("Arial", Font.PLAIN, 16));
+                            menuItem.setPreferredSize(new Dimension(painelItem.getWidth(), ITEM_HEIGHT));
+                            menuItem.addActionListener(e -> {
+                                txtItem.setText(textoExibicao);
+                                txtCodigoProduto.setText(String.valueOf(idItem));
+                                txtPrecoUnitario.setText(String.format("%.2f", precoUnitario).replace(".", ","));
+                                txtDesconto.setText(String.format("%.2f", descontoCalculado).replace(".", ","));
+                                txtQuantidade.setText("");
+                                txtQuantidade.setEnabled(true);
+                                txtItem.putClientProperty("nomeBase", nomeBase);
+                                txtItem.putClientProperty("descontoUnitario", descontoCalculado);
+                                calcularPrecoTotal();
+                                popupMenu.setVisible(false);
+                                txtItem.requestFocusInWindow();
+                                txtItem.selectAll();
+                            });
+
+                            popupMenu.add(menuItem);
+                            itemCount++;
+                        }
                     }
 
-                    int totalHeight = itemCount * ITEM_HEIGHT;
+                    int totalHeight = popupMenu.getComponentCount() * ITEM_HEIGHT;
                     if (totalHeight < ITEM_HEIGHT)
                         totalHeight = ITEM_HEIGHT;
 
@@ -455,13 +495,11 @@ public class RealizarVenda extends JPanel {
             String quantidadeText = txtQuantidade.getText().replace(",", ".").trim();
             if (quantidadeText.isEmpty()) {
                 txtPrecoTotal.setText("0,00");
-                txtDesconto.setText("0,00");
                 return;
             }
+
             int quantidade = Integer.parseInt(quantidadeText);
             if (quantidade <= 0) {
-                JOptionPane.showMessageDialog(this, "A quantidade deve ser maior que zero.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
                 txtQuantidade.setText("1");
                 calcularPrecoTotal();
                 return;
@@ -470,8 +508,6 @@ public class RealizarVenda extends JPanel {
             String precoUnitarioText = txtPrecoUnitario.getText().replace(",", ".").trim();
             BigDecimal precoUnitario = new BigDecimal(precoUnitarioText);
             if (precoUnitario.compareTo(BigDecimal.ZERO) < 0) {
-                JOptionPane.showMessageDialog(this, "O preço unitário não pode ser negativo.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
                 txtPrecoUnitario.setText("0,00");
                 calcularPrecoTotal();
                 return;
@@ -492,17 +528,9 @@ public class RealizarVenda extends JPanel {
             descontoTotal = descontoUnitario.multiply(new BigDecimal(quantidade));
 
             if (descontoTotal.compareTo(BigDecimal.ZERO) < 0) {
-                JOptionPane.showMessageDialog(this, "O desconto não pode ser negativo.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
                 descontoTotal = BigDecimal.ZERO;
                 txtDesconto.setText("0,00");
             } else if (descontoTotal.compareTo(subtotal) > 0) {
-                JOptionPane.showMessageDialog(this,
-                        "O desconto total ("
-                                + descontoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",")
-                                + ") não pode exceder o valor total do item ("
-                                + subtotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ",") + ").",
-                        "Erro", JOptionPane.ERROR_MESSAGE);
                 descontoTotal = subtotal;
                 txtDesconto.setText(descontoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
             } else {
@@ -512,27 +540,18 @@ public class RealizarVenda extends JPanel {
             BigDecimal precoTotal = subtotal.subtract(descontoTotal);
             txtPrecoTotal.setText(precoTotal.setScale(2, RoundingMode.HALF_UP).toString().replace(".", ","));
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro",
-                    JOptionPane.ERROR_MESSAGE);
             txtPrecoTotal.setText("0,00");
-            txtDesconto.setText("0,00");
         }
     }
 
     private void confirmarItem() {
         try {
             if (txtCodigoProduto.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, selecione um item antes de informar a quantidade.",
-                        "Erro", JOptionPane.ERROR_MESSAGE);
-                txtItem.requestFocusInWindow();
                 return;
             }
 
             String quantidadeText = txtQuantidade.getText().replace(",", ".").trim();
             if (quantidadeText.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, insira a quantidade.", "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                txtQuantidade.requestFocusInWindow();
                 return;
             }
 
@@ -569,26 +588,15 @@ public class RealizarVenda extends JPanel {
                 return;
             }
 
-            int resposta = JOptionPane.showOptionDialog(this,
-                    "Confirmar item?\n" +
-                            "Produto: " + txtItem.getText() + "\n" +
-                            "Quantidade: " + quantidadeText + "\n" +
-                            "Preço Total: " + precoTotalText,
-                    "Confirmação de Item",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null, new Object[] { "Sim", "Não" }, "Sim");
+            painelDireito.adicionarItem(String.valueOf(ordemItem++), txtCodigoProduto.getText(), txtItem.getText(),
+                    txtQuantidade.getText(), txtPrecoUnitario.getText(), txtPrecoTotal.getText(),
+                    txtDesconto.getText());
+            painelInferior.atualizarTotalFooter();
+            limparCampos();
+            popupMenu.setVisible(false);
+            popupMenu.removeAll();
+            painelInferior.atualizarEstadoBotoes();
 
-            if (resposta == JOptionPane.YES_OPTION) {
-                painelDireito.adicionarItem(String.valueOf(ordemItem++), txtCodigoProduto.getText(), txtItem.getText(),
-                        txtQuantidade.getText(), txtPrecoUnitario.getText(), txtPrecoTotal.getText(),
-                        txtDesconto.getText());
-                painelInferior.atualizarTotalFooter();
-                limparCampos();
-                popupMenu.setVisible(false);
-                popupMenu.removeAll();
-                painelInferior.atualizarEstadoBotoes();
-            }
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos.", "Erro",
                     JOptionPane.ERROR_MESSAGE);
