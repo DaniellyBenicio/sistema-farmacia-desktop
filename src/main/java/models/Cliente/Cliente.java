@@ -91,9 +91,9 @@ public class Cliente {
         if (rua == null || rua.isEmpty()) {
             throw new IllegalArgumentException("A rua não pode ser nula ou vazia.");
         }
-        if (!rua.matches("^[a-zA-Z0-9\\s]+$")) {
+       /* if (!rua.matches("^[a-zA-Z0-9\\s]+$")) {
             throw new IllegalArgumentException("Não pode conter caracteres especiais.");
-        }
+        }*/
         this.rua = rua;
     }
 
@@ -102,9 +102,9 @@ public class Cliente {
     }
 
     public void setNumCasa(String numCasa) {
-        if (numCasa == null || !numCasa.matches("^[a-zA-Z0-9]+$")) { 
+       /* if (numCasa == null || !numCasa.matches("^[a-zA-Z0-9]+$")) { 
             throw new IllegalArgumentException("Não pode conter caracteres especiais.");
-        }this.numCasa = numCasa;
+        } */this.numCasa = numCasa;
     }
 
     public String getBairro() {
@@ -115,9 +115,9 @@ public class Cliente {
         if (bairro == null || bairro.trim().isEmpty()) {
             throw new IllegalArgumentException("Bairro não pode ser vazio.");
         }
-        if (!bairro.matches("^[a-zA-Z0-9\\s]+$")){
+        /*if (!bairro.matches("^[a-zA-Z0-9\\s]+$")){
             throw new IllegalArgumentException("O bairro não pode conter caracteres especiais.");
-        }
+        }*/
         this.bairro = bairro;
     }
 
@@ -129,9 +129,9 @@ public class Cliente {
         if (cidade == null || cidade.trim().isEmpty()) {
             throw new IllegalArgumentException("Cidade não pode ser vazia.");
         }
-        if (!cidade.matches("^[a-zA-Z0-9\\s]+$")) { 
+      /*  if (!cidade.matches("^[a-zA-Z0-9\\s]+$")) { 
             throw new IllegalArgumentException("A cidade não pode conter caracteres especiais.");
-        }
+        }*/
         this.cidade = cidade;
     }
 
@@ -151,9 +151,9 @@ public class Cliente {
     }
 
     public void setPontoReferencia(String pontoReferencia) {
-        if (pontoReferencia != null && !pontoReferencia.matches("^[a-zA-Z0-9\\s]*$")) { 
+      /*  if (pontoReferencia != null && !pontoReferencia.matches("^[a-zA-Z0-9\\s]*$")) { 
             throw new IllegalArgumentException("Não pode conter caracteres especiais.");
-        }
+        } */
         this.pontoReferencia = pontoReferencia; 
     }
 
