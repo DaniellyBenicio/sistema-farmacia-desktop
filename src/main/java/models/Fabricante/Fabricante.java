@@ -24,9 +24,6 @@ public class Fabricante {
     }
 
     public void setNome(String nome) {
-        if (nome == null || nome.trim().isEmpty() || !nome.matches("^[\\p{L}\\s]+$")){
-            throw new IllegalArgumentException("O nome deve conter apenas letras e espaços, e não pode estar vazio.");
-        }
         this.nome = nome;
     }
 }

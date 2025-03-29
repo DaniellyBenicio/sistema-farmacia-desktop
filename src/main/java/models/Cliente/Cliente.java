@@ -5,7 +5,7 @@ import utils.Criptografia;
 
 public class Cliente {
     private int id;
-	private String nome;
+    private String nome;
     private String cpf;
     private String telefone;
     private String rua;
@@ -14,11 +14,12 @@ public class Cliente {
     private String cidade;
     private String estado;
     private String pontoReferencia;
-    private Funcionario funcionario; 
- 
-    public Cliente(String nome, String cpf, String telefone, String rua, String numCasa, String bairro, String cidade, String estado, String pontoReferencia, Funcionario funcionario) throws Exception {
-        this.nome = nome;  
-        this.cpf = Criptografia.criptografar(cpf);       
+    private Funcionario funcionario;
+
+    public Cliente(String nome, String cpf, String telefone, String rua, String numCasa, String bairro, String cidade,
+            String estado, String pontoReferencia, Funcionario funcionario) throws Exception {
+        this.nome = nome;
+        this.cpf = Criptografia.criptografar(cpf);
         this.telefone = telefone;
         this.rua = rua;
         this.numCasa = numCasa;
@@ -27,9 +28,10 @@ public class Cliente {
         this.estado = estado;
         this.pontoReferencia = pontoReferencia;
         this.funcionario = funcionario;
-    } 
+    }
 
-    public Cliente(){}
+    public Cliente() {
+    }
 
     public int getId() {
         return id;
@@ -47,21 +49,22 @@ public class Cliente {
     }
 
     public void setNome(String nome) {
-        if (nome == null || nome.trim().isEmpty() || !nome.matches("[a-zA-ZÀ-ÿ\\s]+")) {
-            throw new IllegalArgumentException("Nome inválido! O nome não pode ser vazio e deve conter apenas letras.");
+        if (nome == null || nome.trim().isEmpty() || !nome.matches("[a-zA-ZÀ-ÿ\\s-]+")) {
+            throw new IllegalArgumentException(
+                    "Nome inválido! O nome não pode ser vazio e deve conter apenas letras, espaços e hífens.");
         }
         this.nome = nome;
-    } 
+    }
 
     public String getCpf() {
         try {
             return Criptografia.descriptografar(cpf);
         } catch (Exception e) {
             System.err.println("Erro ao descriptografar CPF: " + e.getMessage());
-            throw new RuntimeException("Erro ao obter CPF: " + e.getMessage(), e); 
+            throw new RuntimeException("Erro ao obter CPF: " + e.getMessage(), e);
         }
     }
-    
+
     public void setCpf(String cpf) throws Exception {
         if (cpf == null || cpf.trim().isEmpty()) {
             throw new IllegalArgumentException("CPF não pode ser vazio.");
@@ -77,7 +80,7 @@ public class Cliente {
         if (telefone == null || telefone.trim().isEmpty()) {
             throw new IllegalArgumentException("Telefone não pode ser vazio.");
         }
-        if (!telefone.matches("\\d{11}")) { 
+        if (!telefone.matches("\\d{11}")) {
             throw new IllegalArgumentException("Telefone inválido. Deve ter 11 números.");
         }
         this.telefone = telefone;
@@ -88,12 +91,12 @@ public class Cliente {
     }
 
     public void setRua(String rua) {
-        if (rua == null || rua.isEmpty()) {
+        if (rua == null || rua.trim().isEmpty()) {
             throw new IllegalArgumentException("A rua não pode ser nula ou vazia.");
         }
-       /* if (!rua.matches("^[a-zA-Z0-9\\s]+$")) {
-            throw new IllegalArgumentException("Não pode conter caracteres especiais.");
-        }*/
+        if (!rua.matches("[a-zA-ZÀ-ÿ0-9\\s-]+")) {
+            throw new IllegalArgumentException("A rua não pode conter caracteres especiais.");
+        }
         this.rua = rua;
     }
 
@@ -102,9 +105,7 @@ public class Cliente {
     }
 
     public void setNumCasa(String numCasa) {
-       /* if (numCasa == null || !numCasa.matches("^[a-zA-Z0-9]+$")) { 
-            throw new IllegalArgumentException("Não pode conter caracteres especiais.");
-        } */this.numCasa = numCasa;
+        this.numCasa = numCasa;
     }
 
     public String getBairro() {
@@ -115,9 +116,9 @@ public class Cliente {
         if (bairro == null || bairro.trim().isEmpty()) {
             throw new IllegalArgumentException("Bairro não pode ser vazio.");
         }
-        /*if (!bairro.matches("^[a-zA-Z0-9\\s]+$")){
+        if (!bairro.matches("[a-zA-ZÀ-ÿ0-9\\s-]+")) {
             throw new IllegalArgumentException("O bairro não pode conter caracteres especiais.");
-        }*/
+        }
         this.bairro = bairro;
     }
 
@@ -129,9 +130,9 @@ public class Cliente {
         if (cidade == null || cidade.trim().isEmpty()) {
             throw new IllegalArgumentException("Cidade não pode ser vazia.");
         }
-      /*  if (!cidade.matches("^[a-zA-Z0-9\\s]+$")) { 
+        if (!cidade.matches("[a-zA-ZÀ-ÿ0-9\\s-]+")) {
             throw new IllegalArgumentException("A cidade não pode conter caracteres especiais.");
-        }*/
+        }
         this.cidade = cidade;
     }
 
@@ -145,16 +146,13 @@ public class Cliente {
         }
         this.estado = estado;
     }
-    
+
     public String getPontoReferencia() {
         return pontoReferencia;
     }
 
     public void setPontoReferencia(String pontoReferencia) {
-      /*  if (pontoReferencia != null && !pontoReferencia.matches("^[a-zA-Z0-9\\s]*$")) { 
-            throw new IllegalArgumentException("Não pode conter caracteres especiais.");
-        } */
-        this.pontoReferencia = pontoReferencia; 
+        this.pontoReferencia = pontoReferencia;
     }
 
     public Funcionario getFuncionario() {
@@ -170,16 +168,16 @@ public class Cliente {
 
     @Override
     public String toString() {
-        return "Cliente [id=" + id + 
-            ", nome=" + nome + 
-            ", cpf=" + cpf + 
-            ", telefone=" + telefone + 
-            ", numCasa=" + numCasa + 
-            ", bairro=" + bairro + 
-            ", cidade=" + cidade + 
-            ", estado=" + estado + 
-            ", pontoReferencia=" + pontoReferencia + 
-            ", funcionario=" + funcionario.getNome() + 
-            "]";
+        return "Cliente [id=" + id +
+                ", nome=" + nome +
+                ", cpf=" + cpf +
+                ", telefone=" + telefone +
+                ", numCasa=" + numCasa +
+                ", bairro=" + bairro +
+                ", cidade=" + cidade +
+                ", estado=" + estado +
+                ", pontoReferencia=" + pontoReferencia +
+                ", funcionario=" + funcionario.getNome() +
+                "]";
     }
 }
