@@ -1,6 +1,5 @@
 package views.Vendas;
 
-
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
 import java.awt.*;
@@ -13,7 +12,7 @@ import java.util.Date;
 public class GerarRelatorio extends JPanel {
     private Connection conn;
     private JComboBox<String> comboData, comboPagamento;
-    private JComboBox<String> comboVendedor;
+    private JComboBox<String> comboVendedor, comboCategoria, comboTipoMedicamento, comboFornecedor;
     private JTextField campoVendedorCustom;
     private JFormattedTextField txtDataInicio, txtDataFim;
     private JPanel painelDatasPersonalizadas;
@@ -56,7 +55,7 @@ public class GerarRelatorio extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 10, 5, 10);
         
-        
+        // Linha 0 - Labels
         JLabel lblData = new JLabel("Data da venda");
         lblData.setFont(new Font("Arial", Font.PLAIN, 14));
         gbc.gridx = 0;
@@ -75,7 +74,7 @@ public class GerarRelatorio extends JPanel {
         gbc.gridy = 0;
         painelFiltros.add(lblPagamento, gbc);
 
-      
+        // Linha 1 - Combos superiores
         comboData = new JComboBox<>(new String[]{"Selecione", "Hoje", "Ontem", "Esta semana", "Este mês", "Personalizado"});
         comboData.setFont(new Font("Arial", Font.PLAIN, 14));
         comboData.setPreferredSize(new Dimension(150, 30));
@@ -83,7 +82,7 @@ public class GerarRelatorio extends JPanel {
         gbc.gridy = 1;
         painelFiltros.add(comboData, gbc);
 
-       
+        // Painel de datas personalizadas
         painelDatasPersonalizadas = new JPanel(new GridLayout(1, 4, 5, 5));
         painelDatasPersonalizadas.setBackground(Color.WHITE);
         painelDatasPersonalizadas.setVisible(false);
@@ -91,7 +90,6 @@ public class GerarRelatorio extends JPanel {
         JLabel lblDe = new JLabel("De:");
         lblDe.setFont(new Font("Arial", Font.PLAIN, 12));
         painelDatasPersonalizadas.add(lblDe);
-        
         
         try {
             MaskFormatter mascaraData = new MaskFormatter("##/##/####");
@@ -108,7 +106,6 @@ public class GerarRelatorio extends JPanel {
         JLabel lblAte = new JLabel("Até:");
         lblAte.setFont(new Font("Arial", Font.PLAIN, 12));
         painelDatasPersonalizadas.add(lblAte);
-        
         
         try {
             MaskFormatter mascaraData = new MaskFormatter("##/##/####");
@@ -127,7 +124,7 @@ public class GerarRelatorio extends JPanel {
         gbc.gridwidth = 1;
         painelFiltros.add(painelDatasPersonalizadas, gbc);
 
-        
+        // Listener para mostrar/ocultar datas personalizadas
         comboData.addActionListener(e -> {
             boolean mostrarDatas = "Personalizado".equals(comboData.getSelectedItem());
             painelDatasPersonalizadas.setVisible(mostrarDatas);
@@ -139,7 +136,7 @@ public class GerarRelatorio extends JPanel {
             }
         });
 
-      
+        // Combo vendedor
         comboVendedor = new JComboBox<>();
         comboVendedor.setFont(new Font("Arial", Font.PLAIN, 14));
         comboVendedor.setPreferredSize(new Dimension(150, 30));
@@ -148,12 +145,10 @@ public class GerarRelatorio extends JPanel {
         preencherVendedores();
         comboVendedor.addItem("Outros");
         
-       
         campoVendedorCustom = new JTextField();
         campoVendedorCustom.setFont(new Font("Arial", Font.PLAIN, 14));
         campoVendedorCustom.setPreferredSize(new Dimension(150, 30));
         campoVendedorCustom.setVisible(false);
-        
         
         JPanel painelVendedor = new JPanel();
         painelVendedor.setLayout(new BoxLayout(painelVendedor, BoxLayout.Y_AXIS));
@@ -165,7 +160,6 @@ public class GerarRelatorio extends JPanel {
         gbc.gridy = 1;
         painelFiltros.add(painelVendedor, gbc);
 
-        
         comboVendedor.addActionListener(e -> {
             boolean mostrarCampo = "Outros".equals(comboVendedor.getSelectedItem());
             campoVendedorCustom.setVisible(mostrarCampo);
@@ -173,13 +167,59 @@ public class GerarRelatorio extends JPanel {
             painelFiltros.repaint();
         });
 
-        
         comboPagamento = new JComboBox<>(new String[]{"Selecione", "Todos", "Dinheiro", "Cartão de Débito", "Cartão de Crédito", "PIX"});
         comboPagamento.setFont(new Font("Arial", Font.PLAIN, 14));
         comboPagamento.setPreferredSize(new Dimension(150, 30));
         gbc.gridx = 2;
         gbc.gridy = 1;
         painelFiltros.add(comboPagamento, gbc);
+
+        // Linha 2 - Labels dos novos filtros
+        JLabel lblCategoria = new JLabel("Categoria");
+        lblCategoria.setFont(new Font("Arial", Font.PLAIN, 14));
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        painelFiltros.add(lblCategoria, gbc);
+
+        JLabel lblTipoMedicamento = new JLabel("Tipo de Medicamento");
+        lblTipoMedicamento.setFont(new Font("Arial", Font.PLAIN, 14));
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        painelFiltros.add(lblTipoMedicamento, gbc);
+
+        JLabel lblFornecedor = new JLabel("Fornecedor");
+        lblFornecedor.setFont(new Font("Arial", Font.PLAIN, 14));
+        gbc.gridx = 2;
+        gbc.gridy = 3;
+        painelFiltros.add(lblFornecedor, gbc);
+
+        // Linha 3 - Novos combos
+        comboCategoria = new JComboBox<>();
+        comboCategoria.setFont(new Font("Arial", Font.PLAIN, 14));
+        comboCategoria.setPreferredSize(new Dimension(150, 30));
+        comboCategoria.addItem("Selecione");
+        comboCategoria.addItem("Todos");
+        preencherCategorias();
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        painelFiltros.add(comboCategoria, gbc);
+
+        comboTipoMedicamento = new JComboBox<>(new String[]{"Selecione", "Todos", "Ético", "Genérico", "Similar"});
+        comboTipoMedicamento.setFont(new Font("Arial", Font.PLAIN, 14));
+        comboTipoMedicamento.setPreferredSize(new Dimension(150, 30));
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        painelFiltros.add(comboTipoMedicamento, gbc);
+
+        comboFornecedor = new JComboBox<>();
+        comboFornecedor.setFont(new Font("Arial", Font.PLAIN, 14));
+        comboFornecedor.setPreferredSize(new Dimension(150, 30));
+        comboFornecedor.addItem("Selecione");
+        comboFornecedor.addItem("Todos");
+        preencherFornecedores();
+        gbc.gridx = 2;
+        gbc.gridy = 4;
+        painelFiltros.add(comboFornecedor, gbc);
 
         return painelFiltros;
     }
@@ -196,6 +236,40 @@ public class GerarRelatorio extends JPanel {
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this,
                     "Erro ao carregar vendedores: " + e.getMessage(),
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void preencherCategorias() {
+        try {
+            String sql = "SELECT nome FROM categoria ORDER BY nome";
+            try (var stmt = conn.createStatement();
+                 var rs = stmt.executeQuery(sql)) {
+                while (rs.next()) {
+                    comboCategoria.addItem(rs.getString("nome"));
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Erro ao carregar categorias: " + e.getMessage(),
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void preencherFornecedores() {
+        try {
+            String sql = "SELECT nome FROM fornecedor ORDER BY nome";
+            try (var stmt = conn.createStatement();
+                 var rs = stmt.executeQuery(sql)) {
+                while (rs.next()) {
+                    comboFornecedor.addItem(rs.getString("nome"));
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Erro ao carregar fornecedores: " + e.getMessage(),
                     "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
@@ -236,6 +310,9 @@ public class GerarRelatorio extends JPanel {
         comboData.setSelectedIndex(0);
         comboVendedor.setSelectedIndex(0);
         comboPagamento.setSelectedIndex(0);
+        comboCategoria.setSelectedIndex(0);
+        comboTipoMedicamento.setSelectedIndex(0);
+        comboFornecedor.setSelectedIndex(0);
         campoVendedorCustom.setText("");
         campoVendedorCustom.setVisible(false);
         painelDatasPersonalizadas.setVisible(false);
@@ -246,8 +323,11 @@ public class GerarRelatorio extends JPanel {
     private void gerarRelatorio() {
         String data = (String) comboData.getSelectedItem();
         String pagamento = (String) comboPagamento.getSelectedItem();
+        String categoria = (String) comboCategoria.getSelectedItem();
+        String tipoMedicamento = (String) comboTipoMedicamento.getSelectedItem();
+        String fornecedor = (String) comboFornecedor.getSelectedItem();
         
-      
+        // Processamento do vendedor
         String vendedorSelecionado = (String) comboVendedor.getSelectedItem();
         String vendedor = vendedorSelecionado;
         
@@ -262,7 +342,7 @@ public class GerarRelatorio extends JPanel {
             }
         }
 
-       
+        // Validação de datas personalizadas
         if ("Personalizado".equals(data)) {
             String dataInicioStr = txtDataInicio.getText().replace("_", "").trim();
             String dataFimStr = txtDataFim.getText().replace("_", "").trim();
@@ -297,7 +377,10 @@ public class GerarRelatorio extends JPanel {
             }
         }
 
-        if (data.equals("Selecione") && vendedorSelecionado.equals("Selecione") && pagamento.equals("Selecione")) {
+        // Verifica se pelo menos um filtro foi selecionado
+        if (data.equals("Selecione") && vendedorSelecionado.equals("Selecione") && 
+            pagamento.equals("Selecione") && categoria.equals("Selecione") && 
+            tipoMedicamento.equals("Selecione") && fornecedor.equals("Selecione")) {
             JOptionPane.showMessageDialog(this,
                     "Selecione pelo menos um filtro para gerar o relatório.",
                     "Aviso",
@@ -305,7 +388,7 @@ public class GerarRelatorio extends JPanel {
             return;
         }
 
-        
+        // Processamento da forma de pagamento
         String formaPagamento = null;
         if (!pagamento.equals("Selecione") && !pagamento.equals("Todos")) {
             switch (pagamento) {
@@ -316,11 +399,30 @@ public class GerarRelatorio extends JPanel {
             }
         }
 
-        // Abrir tela de relatório
+        // Processamento do tipo de medicamento
+        String tipoMedicamentoDB = null;
+        if (!tipoMedicamento.equals("Selecione") && !tipoMedicamento.equals("Todos")) {
+            switch (tipoMedicamento) {
+                case "Ético": tipoMedicamentoDB = "ÉTICO"; break;
+                case "Genérico": tipoMedicamentoDB = "GENÉRICO"; break;
+                case "Similar": tipoMedicamentoDB = "SIMILAR"; break;
+            }
+        }
+
+        // Abrir tela de relatório com todos os parâmetros
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
         frame.getContentPane().removeAll();
-        frame.getContentPane().add(new RelatorioVendas(conn, data, vendedor, formaPagamento, 
-                txtDataInicio.getText(), txtDataFim.getText()));
+        frame.getContentPane().add(new RelatorioVendas(
+            conn, 
+            data, 
+            vendedor, 
+            formaPagamento, 
+            txtDataInicio.getText(), 
+            txtDataFim.getText(),
+            categoria.equals("Todos") ? null : categoria,
+            tipoMedicamentoDB,
+            fornecedor.equals("Todos") ? null : fornecedor
+        ));
         frame.revalidate();
         frame.repaint();
     }

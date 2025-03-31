@@ -20,22 +20,34 @@ public class RelatorioVendas extends JPanel {
     private Connection conn;
     private String dataFiltro, vendedorFiltro, pagamentoFiltro;
     private String dataInicioPersonalizada, dataFimPersonalizada;
+    private String categoriaFiltro, tipoMedicamentoFiltro, fornecedorFiltro;
     private Map<Integer, String> detalhesVendaMap;
 
     // Construtor principal
     public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro, String pagamentoFiltro) {
-        this(conn, dataFiltro, vendedorFiltro, pagamentoFiltro, null, null);
+        this(conn, dataFiltro, vendedorFiltro, pagamentoFiltro, null, null, null, null, null);
     }
 
     // Construtor com datas personalizadas
     public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro, 
                          String pagamentoFiltro, String dataInicioPersonalizada, String dataFimPersonalizada) {
+        this(conn, dataFiltro, vendedorFiltro, pagamentoFiltro, dataInicioPersonalizada, 
+             dataFimPersonalizada, null, null, null);
+    }
+
+    // Construtor completo com todos os filtros
+    public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro, 
+                         String pagamentoFiltro, String dataInicioPersonalizada, String dataFimPersonalizada,
+                         String categoriaFiltro, String tipoMedicamentoFiltro, String fornecedorFiltro) {
         this.conn = conn;
         this.dataFiltro = dataFiltro;
         this.vendedorFiltro = vendedorFiltro;
         this.pagamentoFiltro = pagamentoFiltro;
         this.dataInicioPersonalizada = dataInicioPersonalizada;
         this.dataFimPersonalizada = dataFimPersonalizada;
+        this.categoriaFiltro = categoriaFiltro;
+        this.tipoMedicamentoFiltro = tipoMedicamentoFiltro;
+        this.fornecedorFiltro = fornecedorFiltro;
         this.detalhesVendaMap = new HashMap<>();
 
         initComponents();
@@ -180,33 +192,54 @@ public class RelatorioVendas extends JPanel {
         detalhesVendaMap.clear();
         
         try {
-            String sql = "SELECT v.id, DATE_FORMAT(v.data, '%d/%m/%Y') as data_venda, " +
-                    "f.nome as vendedor, v.valorTotal, " +
-                    "p.formaPagamento, TIME(v.data) as horario " +
-                    "FROM venda v " +
-                    "JOIN funcionario f ON v.funcionario_id = f.id " +
-                    "LEFT JOIN pagamento p ON v.id = p.venda_id " +
-                    "WHERE f.status = true ";
+            StringBuilder sql = new StringBuilder(
+                "SELECT DISTINCT v.id, DATE_FORMAT(v.data, '%d/%m/%Y') as data_venda, " +
+                "f.nome as vendedor, v.valorTotal, " +
+                "GROUP_CONCAT(DISTINCT p.formaPagamento SEPARATOR ', ') as formasPagamento, " +
+                "TIME(v.data) as horario " +
+                "FROM venda v " +
+                "JOIN funcionario f ON v.funcionario_id = f.id " +
+                "LEFT JOIN pagamento p ON v.id = p.venda_id " +
+                "LEFT JOIN itemVenda iv ON iv.venda_id = v.id " +
+                "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
+                "LEFT JOIN produto pr ON iv.produto_id = pr.id " +
+                "LEFT JOIN categoria cat ON (m.categoria_id = cat.id OR pr.categoria_id = cat.id) " +
+                "LEFT JOIN fornecedor forn ON (m.fornecedor_id = forn.id OR pr.fornecedor_id = forn.id) " +
+                "WHERE f.status = true ");
             
+            // Aplicar filtros
             if (!dataFiltro.equals("Selecione")) {
-                sql += aplicarFiltroData();
+                sql.append(aplicarFiltroData());
             }
             
             if (!vendedorFiltro.equals("Selecione") && !vendedorFiltro.equals("Todos")) {
                 if (vendedorFiltro.trim().contains(" ")) {
-                    sql += " AND LOWER(f.nome) = LOWER(?)";
+                    sql.append(" AND LOWER(f.nome) = LOWER(?)");
                 } else {
-                    sql += " AND LOWER(f.nome) LIKE LOWER(?)";
+                    sql.append(" AND LOWER(f.nome) LIKE LOWER(?)");
                 }
             }
             
             if (pagamentoFiltro != null && !pagamentoFiltro.equals("Selecione") && !pagamentoFiltro.equals("Todos")) {
-                sql += " AND p.formaPagamento = ?";
+                sql.append(" AND p.formaPagamento = ?");
             }
             
-            sql += " ORDER BY v.data DESC, v.id DESC";
+            if (categoriaFiltro != null && !categoriaFiltro.equals("Selecione") && !categoriaFiltro.equals("Todos")) {
+                sql.append(" AND cat.nome = ?");
+            }
             
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            if (tipoMedicamentoFiltro != null && !tipoMedicamentoFiltro.equals("Selecione") && !tipoMedicamentoFiltro.equals("Todos")) {
+                sql.append(" AND m.tipo = ?");
+            }
+            
+            if (fornecedorFiltro != null && !fornecedorFiltro.equals("Selecione") && !fornecedorFiltro.equals("Todos")) {
+                sql.append(" AND forn.nome = ?");
+            }
+            
+            sql.append(" GROUP BY v.id, data_venda, vendedor, valorTotal, horario ");
+            sql.append(" ORDER BY v.data DESC, v.id DESC");
+            
+            try (PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
                 int paramIndex = 1;
                 
                 if (!vendedorFiltro.equals("Selecione") && !vendedorFiltro.equals("Todos")) {
@@ -221,12 +254,24 @@ public class RelatorioVendas extends JPanel {
                     stmt.setString(paramIndex++, pagamentoFiltro);
                 }
                 
+                if (categoriaFiltro != null && !categoriaFiltro.equals("Selecione") && !categoriaFiltro.equals("Todos")) {
+                    stmt.setString(paramIndex++, categoriaFiltro);
+                }
+                
+                if (tipoMedicamentoFiltro != null && !tipoMedicamentoFiltro.equals("Selecione") && !tipoMedicamentoFiltro.equals("Todos")) {
+                    stmt.setString(paramIndex++, tipoMedicamentoFiltro);
+                }
+                
+                if (fornecedorFiltro != null && !fornecedorFiltro.equals("Selecione") && !fornecedorFiltro.equals("Todos")) {
+                    stmt.setString(paramIndex++, fornecedorFiltro);
+                }
+                
                 try (ResultSet rs = stmt.executeQuery()) {
                     int rowIndex = 0;
                     while (rs.next()) {
                         int vendaId = rs.getInt("id");
-                        String formaPagamento = rs.getString("formaPagamento");
-                        formaPagamento = formatarFormaPagamento(formaPagamento);
+                        String formasPagamento = rs.getString("formasPagamento");
+                        String formasFormatadas = formatarFormasPagamento(formasPagamento);
 
                         String valorFormatado = String.format("R$ %.2f", rs.getDouble("valorTotal"))
                                 .replace(".", ",");
@@ -239,7 +284,7 @@ public class RelatorioVendas extends JPanel {
                                 rs.getString("horario"),
                                 rs.getString("vendedor"),
                                 valorFormatado,
-                                formaPagamento,
+                                formasFormatadas,
                                 "Detalhes"
                         };
                         modeloTabela.addRow(row);
@@ -252,6 +297,7 @@ public class RelatorioVendas extends JPanel {
                 modeloTabela.addRow(new Object[]{"Nenhuma venda encontrada", "", "", "", "", ""});
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(this,
                     "Erro ao carregar relatório: " + e.getMessage(),
                     "Erro",
@@ -321,7 +367,7 @@ public class RelatorioVendas extends JPanel {
                 }
             }
 
-            String sqlMedicamentos = "SELECT m.nome, iv.qnt, iv.precoUnit, iv.desconto " +
+            String sqlMedicamentos = "SELECT m.nome, iv.qnt, iv.precoUnit, iv.desconto, m.tipo " +
                     "FROM itemVenda iv " +
                     "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
                     "WHERE iv.venda_id = ?";
@@ -333,9 +379,11 @@ public class RelatorioVendas extends JPanel {
                         int quantidade = rsMedicamentos.getInt("qnt");
                         double precoUnit = rsMedicamentos.getDouble("precoUnit");
                         double desconto = rsMedicamentos.getDouble("desconto");
+                        String tipo = rsMedicamentos.getString("tipo");
 
                         if (nomeMedicamento != null) {
                             detalhes.append("Medicamento: ").append(nomeMedicamento)
+                                    .append(" (").append(tipo).append(")")
                                     .append(" | Qtd: ").append(quantidade)
                                     .append(" | Preço Unit.: R$ ").append(String.format("%.2f", precoUnit))
                                     .append(" | Desconto: R$ ").append(String.format("%.2f", desconto))
@@ -352,6 +400,24 @@ public class RelatorioVendas extends JPanel {
         }
 
         return detalhes.length() > 0 ? detalhes.toString() : "Nenhum item encontrado para esta venda.";
+    }
+
+    private String formatarFormasPagamento(String formasPagamento) {
+        if (formasPagamento == null || formasPagamento.isEmpty()) {
+            return "Não informado";
+        }
+        
+        String[] pagamentos = formasPagamento.split(", ");
+        StringBuilder result = new StringBuilder();
+        
+        for (String pagamento : pagamentos) {
+            if (result.length() > 0) {
+                result.append(" / ");
+            }
+            result.append(formatarFormaPagamento(pagamento));
+        }
+        
+        return result.toString();
     }
 
     private String formatarFormaPagamento(String formaPagamento) {
