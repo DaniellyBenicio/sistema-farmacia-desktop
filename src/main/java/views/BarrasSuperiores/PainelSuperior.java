@@ -384,7 +384,7 @@ public class PainelSuperior extends JPanel {
                 layoutAlternativo.show(painelDeVisualizacao, "GerenciamentoDeEstoque");
                 break;
             case "Relatórios":
-                layoutAlternativo.show(painelDeVisualizacao, "VisualizarVendas");
+                layoutAlternativo.show(painelDeVisualizacao, "GerarRelatorio");
                 break;
         }
     }
