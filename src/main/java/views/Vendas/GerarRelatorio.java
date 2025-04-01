@@ -16,9 +16,13 @@ public class GerarRelatorio extends JPanel {
     private JTextField campoVendedorCustom;
     private JFormattedTextField txtDataInicio, txtDataFim;
     private JPanel painelDatasPersonalizadas;
+    private CardLayout layoutCartao;
+    private JPanel painelCentral;
 
-    public GerarRelatorio(Connection conn) {
+    public GerarRelatorio(Connection conn, CardLayout layoutCartao, JPanel painelCentral) {
         this.conn = conn;
+        this.layoutCartao = layoutCartao;
+        this.painelCentral = painelCentral;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
@@ -50,13 +54,12 @@ public class GerarRelatorio extends JPanel {
         JPanel painelFiltros = new JPanel(new GridBagLayout());
         painelFiltros.setBorder(BorderFactory.createEmptyBorder(0, 80, 0, 80));
         painelFiltros.setBackground(Color.WHITE);
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 10, 5, 10);
-        
-        // Linha 0 - Labels
-        JLabel lblData = new JLabel("Data da venda");
+
+        JLabel lblData = new JLabel("Data da Venda");
         lblData.setFont(new Font("Arial", Font.PLAIN, 14));
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -74,23 +77,22 @@ public class GerarRelatorio extends JPanel {
         gbc.gridy = 0;
         painelFiltros.add(lblPagamento, gbc);
 
-        // Linha 1 - Combos superiores
-        comboData = new JComboBox<>(new String[]{"Selecione", "Hoje", "Ontem", "Esta semana", "Este mês", "Personalizado"});
+        comboData = new JComboBox<>(
+                new String[] { "Selecione", "Hoje", "Ontem", "Esta semana", "Este mês", "Personalizado" });
         comboData.setFont(new Font("Arial", Font.PLAIN, 14));
         comboData.setPreferredSize(new Dimension(150, 30));
         gbc.gridx = 0;
         gbc.gridy = 1;
         painelFiltros.add(comboData, gbc);
 
-        // Painel de datas personalizadas
         painelDatasPersonalizadas = new JPanel(new GridLayout(1, 4, 5, 5));
         painelDatasPersonalizadas.setBackground(Color.WHITE);
         painelDatasPersonalizadas.setVisible(false);
-        
+
         JLabel lblDe = new JLabel("De:");
         lblDe.setFont(new Font("Arial", Font.PLAIN, 12));
         painelDatasPersonalizadas.add(lblDe);
-        
+
         try {
             MaskFormatter mascaraData = new MaskFormatter("##/##/####");
             mascaraData.setPlaceholderCharacter('_');
@@ -102,11 +104,11 @@ public class GerarRelatorio extends JPanel {
         txtDataInicio.setColumns(8);
         txtDataInicio.setToolTipText("DD/MM/AAAA");
         painelDatasPersonalizadas.add(txtDataInicio);
-        
+
         JLabel lblAte = new JLabel("Até:");
         lblAte.setFont(new Font("Arial", Font.PLAIN, 12));
         painelDatasPersonalizadas.add(lblAte);
-        
+
         try {
             MaskFormatter mascaraData = new MaskFormatter("##/##/####");
             mascaraData.setPlaceholderCharacter('_');
@@ -118,25 +120,19 @@ public class GerarRelatorio extends JPanel {
         txtDataFim.setColumns(8);
         txtDataFim.setToolTipText("DD/MM/AAAA");
         painelDatasPersonalizadas.add(txtDataFim);
-        
+
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
         painelFiltros.add(painelDatasPersonalizadas, gbc);
 
-        // Listener para mostrar/ocultar datas personalizadas
         comboData.addActionListener(e -> {
             boolean mostrarDatas = "Personalizado".equals(comboData.getSelectedItem());
             painelDatasPersonalizadas.setVisible(mostrarDatas);
             painelFiltros.revalidate();
             painelFiltros.repaint();
-            
-            if (mostrarDatas) {
-                txtDataInicio.requestFocusInWindow();
-            }
         });
 
-        // Combo vendedor
         comboVendedor = new JComboBox<>();
         comboVendedor.setFont(new Font("Arial", Font.PLAIN, 14));
         comboVendedor.setPreferredSize(new Dimension(150, 30));
@@ -144,18 +140,18 @@ public class GerarRelatorio extends JPanel {
         comboVendedor.addItem("Todos");
         preencherVendedores();
         comboVendedor.addItem("Outros");
-        
+
         campoVendedorCustom = new JTextField();
         campoVendedorCustom.setFont(new Font("Arial", Font.PLAIN, 14));
         campoVendedorCustom.setPreferredSize(new Dimension(150, 30));
         campoVendedorCustom.setVisible(false);
-        
+
         JPanel painelVendedor = new JPanel();
         painelVendedor.setLayout(new BoxLayout(painelVendedor, BoxLayout.Y_AXIS));
         painelVendedor.setBackground(Color.WHITE);
         painelVendedor.add(comboVendedor);
         painelVendedor.add(campoVendedorCustom);
-        
+
         gbc.gridx = 1;
         gbc.gridy = 1;
         painelFiltros.add(painelVendedor, gbc);
@@ -167,7 +163,8 @@ public class GerarRelatorio extends JPanel {
             painelFiltros.repaint();
         });
 
-        comboPagamento = new JComboBox<>(new String[]{"Selecione", "Todos", "Dinheiro", "Cartão de Débito", "Cartão de Crédito", "PIX"});
+        comboPagamento = new JComboBox<>(
+                new String[] { "Selecione", "Todos", "Dinheiro", "Cartão de Débito", "Cartão de Crédito", "PIX" });
         comboPagamento.setFont(new Font("Arial", Font.PLAIN, 14));
         comboPagamento.setPreferredSize(new Dimension(150, 30));
         gbc.gridx = 2;
@@ -181,7 +178,7 @@ public class GerarRelatorio extends JPanel {
         try {
             String sql = "SELECT nome FROM funcionario WHERE status = true ORDER BY nome";
             try (var stmt = conn.createStatement();
-                 var rs = stmt.executeQuery(sql)) {
+                    var rs = stmt.executeQuery(sql)) {
                 while (rs.next()) {
                     comboVendedor.addItem(rs.getString("nome"));
                 }
@@ -199,13 +196,12 @@ public class GerarRelatorio extends JPanel {
         painelBotoes.setBorder(BorderFactory.createEmptyBorder(80, 0, 30, 0));
         painelBotoes.setBackground(Color.WHITE);
 
-        JButton btnLimpar = new JButton("Limpar filtro");
+        JButton btnLimpar = new JButton("Limpar Filtros");
         btnLimpar.setFont(new Font("Arial", Font.BOLD, 14));
         btnLimpar.setBackground(new Color(220, 53, 53));
         btnLimpar.setForeground(Color.WHITE);
         btnLimpar.setFocusPainted(false);
         btnLimpar.setPreferredSize(new Dimension(150, 40));
-        btnLimpar.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         btnLimpar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLimpar.addActionListener(e -> limparFiltros());
 
@@ -215,7 +211,6 @@ public class GerarRelatorio extends JPanel {
         btnGerar.setForeground(Color.WHITE);
         btnGerar.setFocusPainted(false);
         btnGerar.setPreferredSize(new Dimension(150, 40));
-        btnGerar.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         btnGerar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnGerar.addActionListener(e -> gerarRelatorio());
 
@@ -239,11 +234,9 @@ public class GerarRelatorio extends JPanel {
     private void gerarRelatorio() {
         String data = (String) comboData.getSelectedItem();
         String pagamento = (String) comboPagamento.getSelectedItem();
-        
-        // Processamento do vendedor
         String vendedorSelecionado = (String) comboVendedor.getSelectedItem();
         String vendedor = vendedorSelecionado;
-        
+
         if ("Outros".equals(vendedorSelecionado)) {
             vendedor = campoVendedorCustom.getText().trim();
             if (vendedor.isEmpty()) {
@@ -255,11 +248,10 @@ public class GerarRelatorio extends JPanel {
             }
         }
 
-        // Validação de datas personalizadas
         if ("Personalizado".equals(data)) {
             String dataInicioStr = txtDataInicio.getText().replace("_", "").trim();
             String dataFimStr = txtDataFim.getText().replace("_", "").trim();
-            
+
             if (dataInicioStr.isEmpty() || dataFimStr.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
                         "Preencha ambas as datas para o período personalizado",
@@ -267,13 +259,13 @@ public class GerarRelatorio extends JPanel {
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            
+
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
                 sdf.setLenient(false);
                 Date dataInicio = sdf.parse(dataInicioStr);
                 Date dataFim = sdf.parse(dataFimStr);
-                
+
                 if (dataInicio.after(dataFim)) {
                     JOptionPane.showMessageDialog(this,
                             "A data inicial não pode ser posterior à data final",
@@ -290,9 +282,8 @@ public class GerarRelatorio extends JPanel {
             }
         }
 
-        // Verifica se pelo menos um filtro foi selecionado
-        if (data.equals("Selecione") && vendedorSelecionado.equals("Selecione") && 
-            pagamento.equals("Selecione")) {
+        if (data.equals("Selecione") && vendedorSelecionado.equals("Selecione") &&
+                pagamento.equals("Selecione")) {
             JOptionPane.showMessageDialog(this,
                     "Selecione pelo menos um filtro para gerar o relatório.",
                     "Aviso",
@@ -300,29 +291,34 @@ public class GerarRelatorio extends JPanel {
             return;
         }
 
-        // Processamento da forma de pagamento
         String formaPagamento = null;
         if (!pagamento.equals("Selecione") && !pagamento.equals("Todos")) {
             switch (pagamento) {
-                case "Dinheiro": formaPagamento = "DINHEIRO"; break;
-                case "Cartão de Débito": formaPagamento = "CARTAO_DEBITO"; break;
-                case "Cartão de Crédito": formaPagamento = "CARTAO_CREDITO"; break;
-                case "PIX": formaPagamento = "PIX"; break;
+                case "Dinheiro":
+                    formaPagamento = "DINHEIRO";
+                    break;
+                case "Cartão de Débito":
+                    formaPagamento = "CARTAO_DEBITO";
+                    break;
+                case "Cartão de Crédito":
+                    formaPagamento = "CARTAO_CREDITO";
+                    break;
+                case "PIX":
+                    formaPagamento = "PIX";
+                    break;
             }
         }
 
-        // Abrir tela de relatório com os parâmetros reduzidos
-        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        frame.getContentPane().removeAll();
-        frame.getContentPane().add(new RelatorioVendas(
-            conn, 
-            data, 
-            vendedor, 
-            formaPagamento, 
-            txtDataInicio.getText(), 
-            txtDataFim.getText()
-        ));
-        frame.revalidate();
-        frame.repaint();
+        RelatorioVendas relatorioVendas = new RelatorioVendas(
+                conn,
+                data,
+                vendedor,
+                formaPagamento,
+                txtDataInicio.getText(),
+                txtDataFim.getText());
+
+        relatorioVendas.setLayoutDetails(layoutCartao, painelCentral);
+        painelCentral.add(relatorioVendas, "RelatorioVendas");
+        layoutCartao.show(painelCentral, "RelatorioVendas");
     }
 }

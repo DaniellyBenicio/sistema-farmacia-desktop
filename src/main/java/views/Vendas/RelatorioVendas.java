@@ -1,7 +1,7 @@
 package views.Vendas;
 
-import controllers.Relatorio.RelatorioVendasController; 
-import dao.Relatorio.RelatorioVendasDAO.VendaRelatorio; 
+import dao.Relatorio.RelatorioVendasDAO;
+import dao.Relatorio.RelatorioVendasDAO.VendaRelatorio;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -18,24 +18,28 @@ public class RelatorioVendas extends JPanel {
     private Connection conn;
     private String dataFiltro, vendedorFiltro, pagamentoFiltro;
     private String dataInicioPersonalizada, dataFimPersonalizada;
-    private List<VendaRelatorio> vendas; 
+    private RelatorioVendasDAO dao;
+    private List<VendaRelatorio> vendas;
+    private CardLayout layoutCartao;
+    private JPanel painelCentral;
 
-    // Construtores
-    public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro, String pagamentoFiltro) {
-        this(conn, dataFiltro, vendedorFiltro, pagamentoFiltro, null, null);
-    }
-
-    public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro, 
-                           String pagamentoFiltro, String dataInicioPersonalizada, String dataFimPersonalizada) {
+    public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro,
+            String pagamentoFiltro, String dataInicioPersonalizada, String dataFimPersonalizada) {
         this.conn = conn;
         this.dataFiltro = dataFiltro;
         this.vendedorFiltro = vendedorFiltro;
         this.pagamentoFiltro = pagamentoFiltro;
         this.dataInicioPersonalizada = dataInicioPersonalizada;
         this.dataFimPersonalizada = dataFimPersonalizada;
+        this.dao = new RelatorioVendasDAO(conn);
 
         initComponents();
         carregarDadosRelatorio();
+    }
+
+    public void setLayoutDetails(CardLayout layoutCartao, JPanel painelCentral) {
+        this.layoutCartao = layoutCartao;
+        this.painelCentral = painelCentral;
     }
 
     private void initComponents() {
@@ -53,7 +57,7 @@ public class RelatorioVendas extends JPanel {
 
         JPanel painelTabela = criarTabela();
         painelConteudo.add(painelTabela, BorderLayout.CENTER);
-        
+
         add(painelConteudo, BorderLayout.CENTER);
 
         JPanel painelExportar = criarBotaoExportar();
@@ -80,11 +84,7 @@ public class RelatorioVendas extends JPanel {
     }
 
     private void voltarTelaAnterior() {
-        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        frame.getContentPane().removeAll();
-        frame.getContentPane().add(new GerarRelatorio(conn)); 
-        frame.revalidate();
-        frame.repaint();
+        layoutCartao.show(painelCentral, "GerarRelatorio");
     }
 
     private JPanel criarTitulo() {
@@ -106,11 +106,11 @@ public class RelatorioVendas extends JPanel {
         painelTabela.setBackground(Color.WHITE);
         painelTabela.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
 
-        String[] colunas = {"DATA", "HORÁRIO", "VENDEDOR", "VALOR TOTAL", "FORMA DE PAGAMENTO", "AÇÕES"};
+        String[] colunas = { "Data", "Horário", "Vendedor", "Valor Total", "Forma de Pagamento", "Ações" };
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 5; // Apenas a coluna de ações é editável
+                return column == 5;
             }
         };
 
@@ -122,13 +122,13 @@ public class RelatorioVendas extends JPanel {
         tabelaRelatorio.getTableHeader().setBackground(Color.WHITE);
         tabelaRelatorio.getTableHeader().setForeground(Color.BLACK);
         tabelaRelatorio.getTableHeader().setPreferredSize(new Dimension(0, 45));
-        
+
         tabelaRelatorio.setShowGrid(true);
         tabelaRelatorio.setGridColor(Color.BLACK);
         tabelaRelatorio.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        
-        ((JComponent)tabelaRelatorio.getTableHeader()).setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        
+
+        ((JComponent) tabelaRelatorio.getTableHeader()).setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         centerRenderer.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -165,7 +165,6 @@ public class RelatorioVendas extends JPanel {
         btnExportar.addActionListener(e -> exportarRelatorio());
 
         painelExportar.add(btnExportar);
-
         return painelExportar;
     }
 
@@ -173,26 +172,23 @@ public class RelatorioVendas extends JPanel {
         modeloTabela.setRowCount(0);
 
         try {
-            // Chamada ajustada para usar o controller
-            vendas = RelatorioVendasController.buscarRelatorioVendas(
-                conn, dataFiltro, vendedorFiltro, pagamentoFiltro, 
-                dataInicioPersonalizada, dataFimPersonalizada
-            );
+            vendas = dao.buscarRelatorioVendas(dataFiltro, vendedorFiltro, pagamentoFiltro,
+                    dataInicioPersonalizada, dataFimPersonalizada);
 
             for (VendaRelatorio venda : vendas) {
                 Object[] row = {
-                    venda.getDataVenda(),
-                    venda.getHorario(),
-                    venda.getVendedor(),
-                    venda.getValorTotal(),
-                    venda.getFormasPagamento(),
-                    "Detalhes"
+                        venda.getDataVenda(),
+                        venda.getHorario(),
+                        venda.getVendedor(),
+                        venda.getValorTotal(),
+                        venda.getFormasPagamento(),
+                        "Detalhes"
                 };
                 modeloTabela.addRow(row);
             }
 
             if (vendas.isEmpty()) {
-                modeloTabela.addRow(new Object[]{"Nenhuma venda encontrada", "", "", "", "", ""});
+                modeloTabela.addRow(new Object[] { "Nenhuma venda encontrada", "", "", "", "", "" });
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -232,7 +228,7 @@ public class RelatorioVendas extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
-                                                      boolean isSelected, boolean hasFocus, int row, int column) {
+                boolean isSelected, boolean hasFocus, int row, int column) {
             return this;
         }
     }
@@ -263,7 +259,7 @@ public class RelatorioVendas extends JPanel {
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
-                                                     boolean isSelected, int row, int column) {
+                boolean isSelected, int row, int column) {
             this.row = row;
             return panel;
         }

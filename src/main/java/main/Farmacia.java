@@ -28,7 +28,6 @@ import views.Medicamentos.ListaDeMedicamentos;
 import views.Produtos.ListaDeProdutos;
 import views.Vendas.RealizarVenda;
 import views.Vendas.GerarRelatorio;
-import views.Vendas.RelatorioVendas;
 
 public class Farmacia extends JFrame {
 
@@ -63,11 +62,9 @@ public class Farmacia extends JFrame {
         principalEstoque = new PrincipalEstoque(conexão, layoutCartao, painelCentral);
         estoqueMedicamento = new EstoqueMedicamento(conexão, principalEstoque, layoutCartao, painelCentral);
         estoqueProduto = new EstoqueProduto(conexão, principalEstoque, layoutCartao, painelCentral);
-        gerarRelatorio = new GerarRelatorio(conexão);
+        gerarRelatorio = new GerarRelatorio(conexão, layoutCartao, painelCentral);
 
-        // Adiciona todos os painéis ao painel central
         painelCentral.add(realizarVenda, "Vendas");
-        painelCentral.add(gerarRelatorio, "GerarRelatorio");
         painelCentral.add(new CadastrarFornecedor(), "CadastrarFornecedor");
         painelCentral.add(new ListaDeFornecedores(conexão), "ListaDeFornecedores");
         painelCentral.add(new CadastrarFuncionario(), "CadastrarFuncionário");
@@ -78,6 +75,7 @@ public class Farmacia extends JFrame {
         painelCentral.add(principalEstoque, "GerenciamentoDeEstoque");
         painelCentral.add(estoqueMedicamento, "EstoqueMedicamento");
         painelCentral.add(estoqueProduto, "EstoqueProduto");
+        painelCentral.add(gerarRelatorio, "GerarRelatorio");
 
         PainelSuperior painelSuperior = new PainelSuperior(layoutCartao, painelCentral, realizarVenda);
         add(painelSuperior, BorderLayout.NORTH);
