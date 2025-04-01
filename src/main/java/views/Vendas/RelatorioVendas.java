@@ -1,7 +1,7 @@
 package views.Vendas;
 
-import dao.Relatorio.RelatorioVendasDAO;
-import dao.Relatorio.RelatorioVendasDAO.VendaRelatorio;
+import controllers.Relatorio.RelatorioVendasController; 
+import dao.Relatorio.RelatorioVendasDAO.VendaRelatorio; 
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -18,8 +18,7 @@ public class RelatorioVendas extends JPanel {
     private Connection conn;
     private String dataFiltro, vendedorFiltro, pagamentoFiltro;
     private String dataInicioPersonalizada, dataFimPersonalizada;
-    private RelatorioVendasDAO dao;
-    private List<VendaRelatorio> vendas; // Armazena os dados retornados pelo DAO
+    private List<VendaRelatorio> vendas; 
 
     // Construtores
     public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro, String pagamentoFiltro) {
@@ -34,7 +33,6 @@ public class RelatorioVendas extends JPanel {
         this.pagamentoFiltro = pagamentoFiltro;
         this.dataInicioPersonalizada = dataInicioPersonalizada;
         this.dataFimPersonalizada = dataFimPersonalizada;
-        this.dao = new RelatorioVendasDAO(conn);
 
         initComponents();
         carregarDadosRelatorio();
@@ -84,7 +82,7 @@ public class RelatorioVendas extends JPanel {
     private void voltarTelaAnterior() {
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
         frame.getContentPane().removeAll();
-        frame.getContentPane().add(new GerarRelatorio(conn)); // Assumindo que GerarRelatorio existe
+        frame.getContentPane().add(new GerarRelatorio(conn)); 
         frame.revalidate();
         frame.repaint();
     }
@@ -175,8 +173,11 @@ public class RelatorioVendas extends JPanel {
         modeloTabela.setRowCount(0);
 
         try {
-            vendas = dao.buscarRelatorioVendas(dataFiltro, vendedorFiltro, pagamentoFiltro, 
-                                               dataInicioPersonalizada, dataFimPersonalizada);
+            // Chamada ajustada para usar o controller
+            vendas = RelatorioVendasController.buscarRelatorioVendas(
+                conn, dataFiltro, vendedorFiltro, pagamentoFiltro, 
+                dataInicioPersonalizada, dataFimPersonalizada
+            );
 
             for (VendaRelatorio venda : vendas) {
                 Object[] row = {
