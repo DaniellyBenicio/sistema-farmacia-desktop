@@ -1,18 +1,16 @@
 package views.Vendas;
 
+import dao.Relatorio.RelatorioVendasDAO;
+import dao.Relatorio.RelatorioVendasDAO.VendaRelatorio;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class RelatorioVendas extends JPanel {
     private JTable tabelaRelatorio;
@@ -20,35 +18,23 @@ public class RelatorioVendas extends JPanel {
     private Connection conn;
     private String dataFiltro, vendedorFiltro, pagamentoFiltro;
     private String dataInicioPersonalizada, dataFimPersonalizada;
-    private String categoriaFiltro, tipoMedicamentoFiltro, fornecedorFiltro;
-    private Map<Integer, String> detalhesVendaMap;
+    private RelatorioVendasDAO dao;
+    private List<VendaRelatorio> vendas; // Armazena os dados retornados pelo DAO
 
-    // Construtor principal
+    // Construtores
     public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro, String pagamentoFiltro) {
-        this(conn, dataFiltro, vendedorFiltro, pagamentoFiltro, null, null, null, null, null);
+        this(conn, dataFiltro, vendedorFiltro, pagamentoFiltro, null, null);
     }
 
-    // Construtor com datas personalizadas
     public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro, 
-                         String pagamentoFiltro, String dataInicioPersonalizada, String dataFimPersonalizada) {
-        this(conn, dataFiltro, vendedorFiltro, pagamentoFiltro, dataInicioPersonalizada, 
-             dataFimPersonalizada, null, null, null);
-    }
-
-    // Construtor completo com todos os filtros
-    public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro, 
-                         String pagamentoFiltro, String dataInicioPersonalizada, String dataFimPersonalizada,
-                         String categoriaFiltro, String tipoMedicamentoFiltro, String fornecedorFiltro) {
+                           String pagamentoFiltro, String dataInicioPersonalizada, String dataFimPersonalizada) {
         this.conn = conn;
         this.dataFiltro = dataFiltro;
         this.vendedorFiltro = vendedorFiltro;
         this.pagamentoFiltro = pagamentoFiltro;
         this.dataInicioPersonalizada = dataInicioPersonalizada;
         this.dataFimPersonalizada = dataFimPersonalizada;
-        this.categoriaFiltro = categoriaFiltro;
-        this.tipoMedicamentoFiltro = tipoMedicamentoFiltro;
-        this.fornecedorFiltro = fornecedorFiltro;
-        this.detalhesVendaMap = new HashMap<>();
+        this.dao = new RelatorioVendasDAO(conn);
 
         initComponents();
         carregarDadosRelatorio();
@@ -58,11 +44,9 @@ public class RelatorioVendas extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
-        // Add back button panel at the very top
         JPanel painelVoltar = criarBotaoVoltar();
         add(painelVoltar, BorderLayout.NORTH);
 
-        // Panel to hold the title and table
         JPanel painelConteudo = new JPanel(new BorderLayout());
         painelConteudo.setBackground(Color.WHITE);
 
@@ -100,7 +84,7 @@ public class RelatorioVendas extends JPanel {
     private void voltarTelaAnterior() {
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
         frame.getContentPane().removeAll();
-        frame.getContentPane().add(new GerarRelatorio(conn));
+        frame.getContentPane().add(new GerarRelatorio(conn)); // Assumindo que GerarRelatorio existe
         frame.revalidate();
         frame.repaint();
     }
@@ -128,7 +112,7 @@ public class RelatorioVendas extends JPanel {
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 5;
+                return column == 5; // Apenas a coluna de ações é editável
             }
         };
 
@@ -189,111 +173,24 @@ public class RelatorioVendas extends JPanel {
 
     private void carregarDadosRelatorio() {
         modeloTabela.setRowCount(0);
-        detalhesVendaMap.clear();
-        
+
         try {
-            StringBuilder sql = new StringBuilder(
-                "SELECT DISTINCT v.id, DATE_FORMAT(v.data, '%d/%m/%Y') as data_venda, " +
-                "f.nome as vendedor, v.valorTotal, " +
-                "GROUP_CONCAT(DISTINCT p.formaPagamento SEPARATOR ', ') as formasPagamento, " +
-                "TIME(v.data) as horario " +
-                "FROM venda v " +
-                "JOIN funcionario f ON v.funcionario_id = f.id " +
-                "LEFT JOIN pagamento p ON v.id = p.venda_id " +
-                "LEFT JOIN itemVenda iv ON iv.venda_id = v.id " +
-                "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
-                "LEFT JOIN produto pr ON iv.produto_id = pr.id " +
-                "LEFT JOIN categoria cat ON (m.categoria_id = cat.id OR pr.categoria_id = cat.id) " +
-                "LEFT JOIN fornecedor forn ON (m.fornecedor_id = forn.id OR pr.fornecedor_id = forn.id) " +
-                "WHERE f.status = true ");
-            
-            // Aplicar filtros
-            if (!dataFiltro.equals("Selecione")) {
-                sql.append(aplicarFiltroData());
-            }
-            
-            if (!vendedorFiltro.equals("Selecione") && !vendedorFiltro.equals("Todos")) {
-                if (vendedorFiltro.trim().contains(" ")) {
-                    sql.append(" AND LOWER(f.nome) = LOWER(?)");
-                } else {
-                    sql.append(" AND LOWER(f.nome) LIKE LOWER(?)");
-                }
-            }
-            
-            if (pagamentoFiltro != null && !pagamentoFiltro.equals("Selecione") && !pagamentoFiltro.equals("Todos")) {
-                sql.append(" AND p.formaPagamento = ?");
-            }
-            
-            if (categoriaFiltro != null && !categoriaFiltro.equals("Selecione") && !categoriaFiltro.equals("Todos")) {
-                sql.append(" AND cat.nome = ?");
-            }
-            
-            if (tipoMedicamentoFiltro != null && !tipoMedicamentoFiltro.equals("Selecione") && !tipoMedicamentoFiltro.equals("Todos")) {
-                sql.append(" AND m.tipo = ?");
-            }
-            
-            if (fornecedorFiltro != null && !fornecedorFiltro.equals("Selecione") && !fornecedorFiltro.equals("Todos")) {
-                sql.append(" AND forn.nome = ?");
-            }
-            
-            sql.append(" GROUP BY v.id, data_venda, vendedor, valorTotal, horario ");
-            sql.append(" ORDER BY v.data DESC, v.id DESC");
-            
-            try (PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
-                int paramIndex = 1;
-                
-                if (!vendedorFiltro.equals("Selecione") && !vendedorFiltro.equals("Todos")) {
-                    if (vendedorFiltro.trim().contains(" ")) {
-                        stmt.setString(paramIndex++, vendedorFiltro.trim());
-                    } else {
-                        stmt.setString(paramIndex++, "%" + vendedorFiltro.trim() + "%");
-                    }
-                }
-                
-                if (pagamentoFiltro != null && !pagamentoFiltro.equals("Selecione") && !pagamentoFiltro.equals("Todos")) {
-                    stmt.setString(paramIndex++, pagamentoFiltro);
-                }
-                
-                if (categoriaFiltro != null && !categoriaFiltro.equals("Selecione") && !categoriaFiltro.equals("Todos")) {
-                    stmt.setString(paramIndex++, categoriaFiltro);
-                }
-                
-                if (tipoMedicamentoFiltro != null && !tipoMedicamentoFiltro.equals("Selecione") && !tipoMedicamentoFiltro.equals("Todos")) {
-                    stmt.setString(paramIndex++, tipoMedicamentoFiltro);
-                }
-                
-                if (fornecedorFiltro != null && !fornecedorFiltro.equals("Selecione") && !fornecedorFiltro.equals("Todos")) {
-                    stmt.setString(paramIndex++, fornecedorFiltro);
-                }
-                
-                try (ResultSet rs = stmt.executeQuery()) {
-                    int rowIndex = 0;
-                    while (rs.next()) {
-                        int vendaId = rs.getInt("id");
-                        String formasPagamento = rs.getString("formasPagamento");
-                        String formasFormatadas = formatarFormasPagamento(formasPagamento);
+            vendas = dao.buscarRelatorioVendas(dataFiltro, vendedorFiltro, pagamentoFiltro, 
+                                               dataInicioPersonalizada, dataFimPersonalizada);
 
-                        String valorFormatado = String.format("R$ %.2f", rs.getDouble("valorTotal"))
-                                .replace(".", ",");
-
-                        String detalhes = obterDetalhesVenda(vendaId);
-                        detalhesVendaMap.put(rowIndex, detalhes);
-
-                        Object[] row = {
-                                rs.getString("data_venda"),
-                                rs.getString("horario"),
-                                rs.getString("vendedor"),
-                                valorFormatado,
-                                formasFormatadas,
-                                "Detalhes"
-                        };
-                        modeloTabela.addRow(row);
-                        rowIndex++;
-                    }
-                }
+            for (VendaRelatorio venda : vendas) {
+                Object[] row = {
+                    venda.getDataVenda(),
+                    venda.getHorario(),
+                    venda.getVendedor(),
+                    venda.getValorTotal(),
+                    venda.getFormasPagamento(),
+                    "Detalhes"
+                };
+                modeloTabela.addRow(row);
             }
-            
-            if (modeloTabela.getRowCount() == 0) {
+
+            if (vendas.isEmpty()) {
                 modeloTabela.addRow(new Object[]{"Nenhuma venda encontrada", "", "", "", "", ""});
             }
         } catch (SQLException e) {
@@ -302,133 +199,6 @@ public class RelatorioVendas extends JPanel {
                     "Erro ao carregar relatório: " + e.getMessage(),
                     "Erro",
                     JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private String aplicarFiltroData() {
-        SimpleDateFormat sdfDB = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat sdfInput = new SimpleDateFormat("dd/MM/yyyy");
-        sdfInput.setLenient(false);
-        
-        switch (dataFiltro) {
-            case "Hoje":
-                return " AND DATE(v.data) = CURDATE()";
-            case "Ontem":
-                return " AND DATE(v.data) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
-            case "Esta semana":
-                return " AND YEARWEEK(v.data, 1) = YEARWEEK(CURDATE(), 1)";
-            case "Este mês":
-                return " AND MONTH(v.data) = MONTH(CURRENT_DATE()) AND YEAR(v.data) = YEAR(CURRENT_DATE())";
-            case "Personalizado":
-                try {
-                    if (dataInicioPersonalizada != null && dataFimPersonalizada != null) {
-                        Date dataInicio = sdfInput.parse(dataInicioPersonalizada);
-                        Date dataFim = sdfInput.parse(dataFimPersonalizada);
-                        return " AND DATE(v.data) BETWEEN '" + sdfDB.format(dataInicio) + 
-                               "' AND '" + sdfDB.format(dataFim) + "'";
-                    }
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(this,
-                            "Formato de data inválido no filtro personalizado",
-                            "Erro",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-                return "";
-            default:
-                return "";
-        }
-    }
-
-    private String obterDetalhesVenda(int vendaId) {
-        StringBuilder detalhes = new StringBuilder();
-
-        try {
-            String sqlProdutos = "SELECT p.nome, iv.qnt, iv.precoUnit, iv.desconto " +
-                    "FROM itemVenda iv " +
-                    "LEFT JOIN produto p ON iv.produto_id = p.id " +
-                    "WHERE iv.venda_id = ?";
-            try (PreparedStatement stmtProdutos = conn.prepareStatement(sqlProdutos)) {
-                stmtProdutos.setInt(1, vendaId);
-                try (ResultSet rsProdutos = stmtProdutos.executeQuery()) {
-                    while (rsProdutos.next()) {
-                        String nomeProduto = rsProdutos.getString("nome");
-                        int quantidade = rsProdutos.getInt("qnt");
-                        double precoUnit = rsProdutos.getDouble("precoUnit");
-                        double desconto = rsProdutos.getDouble("desconto");
-
-                        if (nomeProduto != null) {
-                            detalhes.append("Produto: ").append(nomeProduto)
-                                    .append(" | Qtd: ").append(quantidade)
-                                    .append(" | Preço Unit.: R$ ").append(String.format("%.2f", precoUnit))
-                                    .append(" | Desconto: R$ ").append(String.format("%.2f", desconto))
-                                    .append("\n");
-                        }
-                    }
-                }
-            }
-
-            String sqlMedicamentos = "SELECT m.nome, iv.qnt, iv.precoUnit, iv.desconto, m.tipo " +
-                    "FROM itemVenda iv " +
-                    "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
-                    "WHERE iv.venda_id = ?";
-            try (PreparedStatement stmtMedicamentos = conn.prepareStatement(sqlMedicamentos)) {
-                stmtMedicamentos.setInt(1, vendaId);
-                try (ResultSet rsMedicamentos = stmtMedicamentos.executeQuery()) {
-                    while (rsMedicamentos.next()) {
-                        String nomeMedicamento = rsMedicamentos.getString("nome");
-                        int quantidade = rsMedicamentos.getInt("qnt");
-                        double precoUnit = rsMedicamentos.getDouble("precoUnit");
-                        double desconto = rsMedicamentos.getDouble("desconto");
-                        String tipo = rsMedicamentos.getString("tipo");
-
-                        if (nomeMedicamento != null) {
-                            detalhes.append("Medicamento: ").append(nomeMedicamento)
-                                    .append(" (").append(tipo).append(")")
-                                    .append(" | Qtd: ").append(quantidade)
-                                    .append(" | Preço Unit.: R$ ").append(String.format("%.2f", precoUnit))
-                                    .append(" | Desconto: R$ ").append(String.format("%.2f", desconto))
-                                    .append("\n");
-                        }
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Erro ao buscar detalhes da venda: " + e.getMessage(),
-                    "Erro",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-
-        return detalhes.length() > 0 ? detalhes.toString() : "Nenhum item encontrado para esta venda.";
-    }
-
-    private String formatarFormasPagamento(String formasPagamento) {
-        if (formasPagamento == null || formasPagamento.isEmpty()) {
-            return "Não informado";
-        }
-        
-        String[] pagamentos = formasPagamento.split(", ");
-        StringBuilder result = new StringBuilder();
-        
-        for (String pagamento : pagamentos) {
-            if (result.length() > 0) {
-                result.append(" / ");
-            }
-            result.append(formatarFormaPagamento(pagamento));
-        }
-        
-        return result.toString();
-    }
-
-    private String formatarFormaPagamento(String formaPagamento) {
-        if (formaPagamento == null) return "Não informado";
-
-        switch (formaPagamento) {
-            case "DINHEIRO": return "Dinheiro";
-            case "CARTAO_CREDITO": return "Cartão de Crédito";
-            case "CARTAO_DEBITO": return "Cartão de Débito";
-            case "PIX": return "PIX";
-            default: return formaPagamento;
         }
     }
 
@@ -504,56 +274,63 @@ public class RelatorioVendas extends JPanel {
         }
 
         private void mostrarDetalhesVenda(int row) {
-            String detalhes = detalhesVendaMap.get(row);
-            if (detalhes != null && !detalhes.isEmpty()) {
-                JDialog dialog = new JDialog();
-                dialog.setTitle("Detalhes da Venda");
-                dialog.setModal(true);
-                dialog.setSize(500, 300);
-                dialog.setLocationRelativeTo(RelatorioVendas.this);
+            if (vendas != null && row >= 0 && row < vendas.size()) {
+                String detalhes = vendas.get(row).getDetalhes();
+                if (detalhes != null && !detalhes.isEmpty()) {
+                    JDialog dialog = new JDialog();
+                    dialog.setTitle("Detalhes da Venda");
+                    dialog.setModal(true);
+                    dialog.setSize(500, 300);
+                    dialog.setLocationRelativeTo(RelatorioVendas.this);
 
-                JPanel panel = new JPanel(new BorderLayout());
-                panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-                panel.setBackground(Color.WHITE);
+                    JPanel panel = new JPanel(new BorderLayout());
+                    panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+                    panel.setBackground(Color.WHITE);
 
-                JLabel titleLabel = new JLabel("Itens da Venda");
-                titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
-                titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                panel.add(titleLabel, BorderLayout.NORTH);
+                    JLabel titleLabel = new JLabel("Itens da Venda");
+                    titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+                    titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                    panel.add(titleLabel, BorderLayout.NORTH);
 
-                JTextArea textArea = new JTextArea(detalhes);
-                textArea.setFont(new Font("Arial", Font.PLAIN, 14));
-                textArea.setEditable(false);
-                textArea.setLineWrap(true);
-                textArea.setWrapStyleWord(true);
-                textArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-                textArea.setBackground(Color.WHITE);
+                    JTextArea textArea = new JTextArea(detalhes);
+                    textArea.setFont(new Font("Arial", Font.PLAIN, 14));
+                    textArea.setEditable(false);
+                    textArea.setLineWrap(true);
+                    textArea.setWrapStyleWord(true);
+                    textArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+                    textArea.setBackground(Color.WHITE);
 
-                JScrollPane scrollPane = new JScrollPane(textArea);
-                scrollPane.setBorder(BorderFactory.createLineBorder(new Color(209, 213, 219)));
-                panel.add(scrollPane, BorderLayout.CENTER);
+                    JScrollPane scrollPane = new JScrollPane(textArea);
+                    scrollPane.setBorder(BorderFactory.createLineBorder(new Color(209, 213, 219)));
+                    panel.add(scrollPane, BorderLayout.CENTER);
 
-                JButton closeButton = new JButton("FECHAR");
-                closeButton.setFont(new Font("Arial", Font.BOLD, 14));
-                closeButton.setBackground(new Color(24, 39, 72));
-                closeButton.setForeground(Color.WHITE);
-                closeButton.setFocusPainted(false);
-                closeButton.setBorderPainted(false);
-                closeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                closeButton.addActionListener(e -> dialog.dispose());
+                    JButton closeButton = new JButton("FECHAR");
+                    closeButton.setFont(new Font("Arial", Font.BOLD, 14));
+                    closeButton.setBackground(new Color(24, 39, 72));
+                    closeButton.setForeground(Color.WHITE);
+                    closeButton.setFocusPainted(false);
+                    closeButton.setBorderPainted(false);
+                    closeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    closeButton.addActionListener(e -> dialog.dispose());
 
-                JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-                buttonPanel.setBackground(Color.WHITE);
-                buttonPanel.add(closeButton);
-                panel.add(buttonPanel, BorderLayout.SOUTH);
+                    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                    buttonPanel.setBackground(Color.WHITE);
+                    buttonPanel.add(closeButton);
+                    panel.add(buttonPanel, BorderLayout.SOUTH);
 
-                dialog.add(panel);
-                dialog.setVisible(true);
+                    dialog.add(panel);
+                    dialog.setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(RelatorioVendas.this,
+                            "Nenhum detalhe disponível para esta venda.",
+                            "Informação",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
             } else {
                 JOptionPane.showMessageDialog(RelatorioVendas.this,
-                        "Nenhum detalhe disponível para esta venda.",
-                        "Informação",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        "Erro ao exibir detalhes: venda não encontrada.",
+                        "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }
