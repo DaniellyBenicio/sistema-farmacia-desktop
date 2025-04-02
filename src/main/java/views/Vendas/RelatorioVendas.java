@@ -225,23 +225,38 @@ public class RelatorioVendas extends JPanel {
         }
     }
 
-    private String formatarFormaPagamento(String formaPagamento) {
-        if (formaPagamento == null || formaPagamento.isEmpty()) {
+    private String formatarFormaPagamento(String formasPagamento) {
+        if (formasPagamento == null || formasPagamento.isEmpty()) {
             return "Não informado";
         }
-
-        switch (formaPagamento) {
-            case "DINHEIRO":
-                return "Dinheiro";
-            case "CARTAO_CREDITO":
-                return "Cartão de Crédito";
-            case "CARTAO_DEBITO":
-                return "Cartão de Débito";
-            case "PIX":
-                return "PIX";
-            default:
-                return formaPagamento;
+    
+        String[] pagamentos = formasPagamento.split(", ");
+        StringBuilder resultado = new StringBuilder();
+    
+        for (int i = 0; i < pagamentos.length; i++) {
+            String pagamento = pagamentos[i].trim();
+            switch (pagamento) {
+                case "DINHEIRO":
+                    resultado.append("Dinheiro");
+                    break;
+                case "CARTAO_CREDITO":
+                    resultado.append("Cartão de Crédito");
+                    break;
+                case "CARTAO_DEBITO":
+                    resultado.append("Cartão de Débito");
+                    break;
+                case "PIX":
+                    resultado.append("PIX");
+                    break;
+                default:
+                    resultado.append(pagamento);
+                    break;
+            }
+            if (i < pagamentos.length - 1) {
+                resultado.append(", ");
+            }
         }
+        return resultado.toString();
     }
 
     private void exportarRelatorio() {

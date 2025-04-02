@@ -119,7 +119,8 @@ public class RelatorioVendasDAO {
             }
         }
 
-        if (vendedorFiltro != null && !vendedorFiltro.isEmpty() && !"Selecione".equals(vendedorFiltro)) {
+        if (vendedorFiltro != null && !vendedorFiltro.isEmpty() && !"Selecione".equals(vendedorFiltro)
+                && !"Todos".equals(vendedorFiltro)) {
             sql.append(" AND f.nome = ?");
             params.add(vendedorFiltro);
         }
@@ -201,9 +202,13 @@ public class RelatorioVendasDAO {
                                 .append("Nome do Vendedor: ").append(nomeVendedor).append("\n");
 
                         if (cpfCliente != null && !cpfCliente.isEmpty()) {
-                            // Descriptografamos o CPF do cliente
-                            // String cpfDescriptografado = Criptografia.descriptografar(cpfCliente);
-                            // detalhes.append("CPF do Cliente: ").append(cpfDescriptografado).append("\n");
+                            try {
+                                String cpfDescriptografado = Criptografia.descriptografar(cpfCliente);
+                                String cpfFormatado = formatarCpf(cpfDescriptografado);
+                                detalhes.append("CPF do Cliente: ").append(cpfFormatado).append("\n");
+                            } catch (Exception e) {
+                                detalhes.append("CPF do Cliente: Erro ao descriptografar\n");
+                            }
                         } else {
                             detalhes.append("CPF do Cliente: Não identificado\n");
                         }
@@ -293,5 +298,12 @@ public class RelatorioVendasDAO {
         }
 
         return detalhes.toString();
+    }
+
+    private String formatarCpf(String cpf) {
+        if (cpf == null || cpf.length() != 11) {
+            return cpf;
+        }
+        return "***." + cpf.substring(3, 6) + "." + cpf.substring(6, 9) + "-**";
     }
 }
