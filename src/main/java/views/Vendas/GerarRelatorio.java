@@ -55,29 +55,29 @@ public class GerarRelatorio extends JPanel {
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.insets = new Insets(5, 10, 0, 10);
 
         JLabel lblData = new JLabel("Data da Venda");
-        lblData.setFont(new Font("Arial", Font.PLAIN, 14));
+        lblData.setFont(new Font("Arial", Font.BOLD, 14));
         gbc.gridx = 0;
         gbc.gridy = 0;
         painelFiltros.add(lblData, gbc);
 
         JLabel lblVendedor = new JLabel("Vendedor");
-        lblVendedor.setFont(new Font("Arial", Font.PLAIN, 14));
+        lblVendedor.setFont(new Font("Arial", Font.BOLD, 14));
         gbc.gridx = 1;
         gbc.gridy = 0;
         painelFiltros.add(lblVendedor, gbc);
 
         JLabel lblPagamento = new JLabel("Forma de Pagamento");
-        lblPagamento.setFont(new Font("Arial", Font.PLAIN, 14));
+        lblPagamento.setFont(new Font("Arial", Font.BOLD, 14));
         gbc.gridx = 2;
         gbc.gridy = 0;
         painelFiltros.add(lblPagamento, gbc);
 
         comboData = new JComboBox<>(
                 new String[] { "Selecione", "Hoje", "Ontem", "Últimos 15 dias", "Este mês", "Personalizado" });
-        comboData.setFont(new Font("Arial", Font.PLAIN, 14));
+        estilizarComboBox(comboData, new Font("Arial", Font.PLAIN, 14));
         comboData.setPreferredSize(new Dimension(150, 30));
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -121,7 +121,7 @@ public class GerarRelatorio extends JPanel {
 
         gbc.gridx = 0;
         gbc.gridy = 2;
-        gbc.gridwidth = 1;
+        gbc.gridwidth = 3;
         painelFiltros.add(painelDatasPersonalizadas, gbc);
 
         comboData.addActionListener(e -> {
@@ -138,32 +138,37 @@ public class GerarRelatorio extends JPanel {
         comboVendedor.addItem("Todos");
         preencherVendedores();
         comboVendedor.addItem("Outros");
+        estilizarComboBox(comboVendedor, new Font("Arial", Font.PLAIN, 14));
+
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        painelFiltros.add(comboVendedor, gbc);
 
         campoVendedorCustom = new JTextField();
         campoVendedorCustom.setFont(new Font("Arial", Font.PLAIN, 14));
         campoVendedorCustom.setPreferredSize(new Dimension(150, 30));
         campoVendedorCustom.setVisible(false);
 
-        JPanel painelVendedor = new JPanel();
-        painelVendedor.setLayout(new BoxLayout(painelVendedor, BoxLayout.Y_AXIS));
-        painelVendedor.setBackground(Color.WHITE);
-        painelVendedor.add(comboVendedor);
-        painelVendedor.add(campoVendedorCustom);
-
         gbc.gridx = 1;
         gbc.gridy = 1;
-        painelFiltros.add(painelVendedor, gbc);
+        painelFiltros.add(campoVendedorCustom, gbc);
 
         comboVendedor.addActionListener(e -> {
-            boolean mostrarCampo = "Outros".equals(comboVendedor.getSelectedItem());
-            campoVendedorCustom.setVisible(mostrarCampo);
+            if ("Outros".equals(comboVendedor.getSelectedItem())) {
+                comboVendedor.setVisible(false);
+                campoVendedorCustom.setVisible(true);
+            } else {
+                campoVendedorCustom.setVisible(false);
+                comboVendedor.setVisible(true);
+            }
             painelFiltros.revalidate();
             painelFiltros.repaint();
         });
 
         comboPagamento = new JComboBox<>(
                 new String[] { "Selecione", "Todos", "Dinheiro", "Cartão de Débito", "Cartão de Crédito", "PIX" });
-        comboPagamento.setFont(new Font("Arial", Font.PLAIN, 14));
+        estilizarComboBox(comboPagamento, new Font("Arial", Font.PLAIN, 14));
         comboPagamento.setPreferredSize(new Dimension(150, 30));
         gbc.gridx = 2;
         gbc.gridy = 1;
@@ -218,7 +223,7 @@ public class GerarRelatorio extends JPanel {
         return painelBotoes;
     }
 
-    private void limparFiltros() {
+    public void limparFiltros() {
         comboData.setSelectedIndex(0);
         comboVendedor.setSelectedIndex(0);
         comboPagamento.setSelectedIndex(0);
@@ -306,8 +311,35 @@ public class GerarRelatorio extends JPanel {
                 return "CARTAO_DEBITO";
             case "PIX":
                 return "PIX";
+            case "Todos":
+                return "Todos";
+            case "Selecione":
+                return "";
             default:
                 return null;
         }
+    }
+
+    private void estilizarComboBox(JComboBox<String> comboBox, Font font) {
+        comboBox.setBackground(Color.WHITE);
+
+        comboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
+                Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (isSelected) {
+                    component.setBackground(new Color(24, 39, 55));
+                    component.setForeground(Color.WHITE);
+                } else {
+                    component.setBackground(Color.WHITE);
+                    component.setForeground(Color.BLACK);
+                }
+                return component;
+            }
+        });
+        comboBox.setFont(font);
+        comboBox.setFocusable(false);
+        comboBox.setSelectedIndex(0);
     }
 }

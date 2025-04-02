@@ -70,13 +70,24 @@ public class RelatorioVendas extends JPanel {
         painelVoltar.setBorder(BorderFactory.createEmptyBorder(10, 20, 0, 0));
 
         JButton btnVoltar = new JButton("Voltar");
-        btnVoltar.setFont(new Font("Arial", Font.BOLD, 14));
-        btnVoltar.setBackground(new Color(24, 39, 72));
-        btnVoltar.setForeground(Color.WHITE);
+        btnVoltar.setFont(new Font("Arial", Font.PLAIN, 17));
         btnVoltar.setFocusPainted(false);
         btnVoltar.setBorderPainted(false);
+        btnVoltar.setContentAreaFilled(false);
         btnVoltar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnVoltar.setPreferredSize(new Dimension(100, 30));
+
+        btnVoltar.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnVoltar.setForeground(new Color(50, 100, 150));
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnVoltar.setForeground(Color.BLACK);
+            }
+        });
+
         btnVoltar.addActionListener(e -> voltarTelaAnterior());
 
         painelVoltar.add(btnVoltar);
@@ -84,6 +95,14 @@ public class RelatorioVendas extends JPanel {
     }
 
     private void voltarTelaAnterior() {
+        if (painelCentral instanceof JPanel) {
+            for (Component component : painelCentral.getComponents()) {
+                if (component instanceof GerarRelatorio) {
+                    ((GerarRelatorio) component).limparFiltros();
+                    break;
+                }
+            }
+        }
         layoutCartao.show(painelCentral, "GerarRelatorio");
     }
 
@@ -117,21 +136,14 @@ public class RelatorioVendas extends JPanel {
         tabelaRelatorio = new JTable(modeloTabela);
         tabelaRelatorio.setFillsViewportHeight(true);
         tabelaRelatorio.setRowHeight(45);
-        tabelaRelatorio.setFont(new Font("Arial", Font.PLAIN, 14));
-        tabelaRelatorio.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-        tabelaRelatorio.getTableHeader().setBackground(Color.WHITE);
-        tabelaRelatorio.getTableHeader().setForeground(Color.BLACK);
-        tabelaRelatorio.getTableHeader().setPreferredSize(new Dimension(0, 45));
-
-        tabelaRelatorio.setShowGrid(true);
-        tabelaRelatorio.setGridColor(Color.BLACK);
+        tabelaRelatorio.setFont(new Font("Arial", Font.PLAIN, 12));
+        tabelaRelatorio.getTableHeader().setFont(new Font("Arial", Font.BOLD, 15));
+        tabelaRelatorio.getTableHeader().setReorderingAllowed(false);
+        tabelaRelatorio.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabelaRelatorio.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
-        ((JComponent) tabelaRelatorio.getTableHeader()).setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        centerRenderer.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
         for (int i = 0; i < colunas.length - 1; i++) {
             tabelaRelatorio.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
@@ -140,9 +152,19 @@ public class RelatorioVendas extends JPanel {
         tabelaRelatorio.getColumnModel().getColumn(5).setCellRenderer(new ButtonRenderer());
         tabelaRelatorio.getColumnModel().getColumn(5).setCellEditor(new ButtonEditor(new JTextField()));
 
+        tabelaRelatorio.getColumnModel().getColumn(0).setPreferredWidth(150);
+        tabelaRelatorio.getColumnModel().getColumn(1).setPreferredWidth(100);
+        tabelaRelatorio.getColumnModel().getColumn(2).setPreferredWidth(60);
+        tabelaRelatorio.getColumnModel().getColumn(3).setPreferredWidth(60);
+        tabelaRelatorio.getColumnModel().getColumn(4).setPreferredWidth(80);
+        tabelaRelatorio.getColumnModel().getColumn(5).setPreferredWidth(60);
+
+        tabelaRelatorio.setCellSelectionEnabled(false);
+        tabelaRelatorio.setRowSelectionAllowed(false);
+        tabelaRelatorio.setColumnSelectionAllowed(false);
+
         JScrollPane scrollPane = new JScrollPane(tabelaRelatorio);
-        scrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 57, 30));
 
         painelTabela.add(scrollPane, BorderLayout.CENTER);
 
@@ -223,8 +245,10 @@ public class RelatorioVendas extends JPanel {
     }
 
     private void exportarRelatorio() {
+        ImprimirRelatorioGeral relatorioPrinter = new ImprimirRelatorioGeral(tabelaRelatorio);
+        relatorioPrinter.imprimir();
         JOptionPane.showMessageDialog(this,
-                "Relatório exportado com sucesso!",
+                "Relatório enviado para a impressora com sucesso!",
                 "Sucesso",
                 JOptionPane.INFORMATION_MESSAGE);
     }
@@ -233,20 +257,22 @@ public class RelatorioVendas extends JPanel {
         private final JButton button;
 
         public ButtonRenderer() {
-            setLayout(new FlowLayout(FlowLayout.CENTER, 0, 5));
+            setLayout(new FlowLayout(FlowLayout.CENTER, 0, 10));
             setBackground(Color.WHITE);
-            setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-            button = new JButton("DETALHES");
-            button.setFont(new Font("Arial", Font.BOLD, 12));
-            button.setBackground(new Color(24, 39, 72));
-            button.setForeground(Color.WHITE);
-            button.setBorderPainted(false);
-            button.setFocusPainted(false);
-            button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            button.setPreferredSize(new Dimension(100, 30));
+            button = criarBotao("DETALHES", new Color(24, 39, 55), Color.WHITE);
 
             add(button);
+        }
+
+        private JButton criarBotao(String texto, Color corFundo, Color corTexto) {
+            JButton botao = new JButton(texto);
+            botao.setBackground(corFundo);
+            botao.setForeground(corTexto);
+            botao.setBorderPainted(false);
+            botao.setFocusPainted(false);
+            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            return botao;
         }
 
         @Override
@@ -263,27 +289,32 @@ public class RelatorioVendas extends JPanel {
 
         public ButtonEditor(JTextField textField) {
             super(textField);
-            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5));
+            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
             panel.setBackground(Color.WHITE);
-            panel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-            button = new JButton("DETALHES");
-            button.setFont(new Font("Arial", Font.BOLD, 12));
-            button.setBackground(new Color(24, 39, 72));
-            button.setForeground(Color.WHITE);
-            button.setBorderPainted(false);
-            button.setFocusPainted(false);
-            button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            button.setPreferredSize(new Dimension(100, 30));
+            button = criarBotao("DETALHES", new Color(24, 39, 55), Color.WHITE);
 
             button.addActionListener(e -> fireEditingStopped());
             panel.add(button);
+        }
+
+        private JButton criarBotao(String texto, Color corFundo, Color corTexto) {
+            JButton botao = new JButton(texto);
+            botao.setBackground(corFundo);
+            botao.setForeground(corTexto);
+            botao.setBorderPainted(false);
+            botao.setFocusPainted(false);
+            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            return botao;
         }
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int row, int column) {
             this.row = row;
+            JPanel painel = new JPanel();
+            painel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
+            painel.setBackground(Color.WHITE);
             return panel;
         }
 
