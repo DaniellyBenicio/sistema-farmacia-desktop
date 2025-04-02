@@ -4,9 +4,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.math.BigDecimal;
 import java.awt.print.Printable;
 import java.awt.Graphics;
 import java.awt.print.PageFormat;
+import java.awt.FontMetrics;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.text.DecimalFormat;
+import java.awt.Font;
 
 public class ImprimirRelatorioGeral {
     private JTable tabela;
@@ -41,50 +47,109 @@ public class ImprimirRelatorioGeral {
             }
 
             int startX = (int) pf.getImageableX() + 20;
-            int startY = (int) pf.getImageableY() + 20;
+            int startY = (int) pf.getImageableY() + 40;
             int rowHeight = 20;
-            int colSpacing = 100;
+            int pageWidth = (int) pf.getImageableWidth();
 
-            g.setFont(g.getFont().deriveFont(12f));
+            Font titleFont = new Font("Arial", Font.BOLD, 14);
+            Font headerFont = new Font("Arial", Font.BOLD, 12);
+            Font regularFont = new Font("Arial", Font.PLAIN, 12);
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+            DecimalFormat df2 = new DecimalFormat("#.00");
 
-            g.drawString("Relatório de Vendas", startX, startY);
-            g.drawString("Data: " + java.time.LocalDate.now(), startX, startY + rowHeight);
+            g.setFont(titleFont);
+            FontMetrics fmTitle = g.getFontMetrics();
+            String title = "Relatório Geral de Vendas";
+            int titleWidth = fmTitle.stringWidth(title);
+            g.drawString(title, startX + (pageWidth - titleWidth) / 2, startY);
 
-            int y = startY + 2 * rowHeight;
+            g.setFont(regularFont);
+            FontMetrics fmRegular = g.getFontMetrics();
 
-            for (int i = 0; i < tabela.getColumnCount(); i++) {
-                g.drawString(tabela.getColumnName(i), startX + (i * colSpacing), y);
+            String[] headerLines = {
+                    "Farmácia XYZ - CNPJ: 12.345.678/0001-99",
+                    "Rua Exemplo, 123 - Centro, Cidade - UF",
+                    "Data/Hora: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+            };
+
+            for (int i = 0; i < headerLines.length; i++) {
+                String line = headerLines[i];
+                int lineWidth = fmRegular.stringWidth(line);
+                int x = startX + (pageWidth - lineWidth) / 2;
+                g.drawString(line, x, startY + (i + 1) * rowHeight);
+            }
+
+            int y = startY + (headerLines.length + 2) * rowHeight + 5;
+
+            g.setFont(headerFont);
+            FontMetrics fmHeader = g.getFontMetrics();
+            int tableColumnCount = tabela.getColumnCount();
+            if (tableColumnCount > 0) {
+                tableColumnCount = tableColumnCount - 1;
+            }
+
+            int[] colWidths = new int[tableColumnCount];
+            int totalTableWidth = 0;
+            for (int i = 0; i < tableColumnCount; i++) {
+                colWidths[i] = fmHeader.stringWidth(tabela.getColumnName(i)) + 20;
+                totalTableWidth += colWidths[i];
+            }
+
+            int remainingSpace = pageWidth - totalTableWidth - 40;
+            int extraSpace = remainingSpace / tableColumnCount;
+
+            startX = (int) pf.getImageableX() + 20;
+            for (int i = 0; i < tableColumnCount; i++) {
+                g.drawString(tabela.getColumnName(i), startX, y);
+                startX += colWidths[i] + extraSpace;
+                colWidths[i] += extraSpace;
             }
             y += rowHeight;
 
-            g.drawLine(startX, y - 5, startX + (tabela.getColumnCount() * colSpacing), y - 5);
+            startX = (int) pf.getImageableX() + 20;
+            g.drawLine(startX, y - 17, startX + getTotalColumnWidth(colWidths), y - 17);
+
+            g.setFont(regularFont);
+            y += 5;
+
+            BigDecimal totalVendas = BigDecimal.ZERO;
 
             for (int i = 0; i < tabela.getRowCount(); i++) {
-                for (int j = 0; j < tabela.getColumnCount(); j++) {
+                startX = (int) pf.getImageableX() + 20;
+                for (int j = 0; j < tableColumnCount; j++) {
                     String value = tabela.getValueAt(i, j).toString();
-                    g.drawString(value, startX + (j * colSpacing), y);
+                    g.drawString(value, startX, y);
+                    startX += colWidths[j];
+                }
+
+                try {
+                    String valorString = tabela.getValueAt(i, 3).toString().replaceAll("[^0-9,.]", "").replace(",",
+                            ".");
+                    BigDecimal valorTotal = BigDecimal.valueOf(Double.parseDouble(valorString));
+                    totalVendas = totalVendas.add(valorTotal);
+
+                } catch (NumberFormatException e) {
+                    System.err.println("Erro ao converter valor: " + tabela.getValueAt(i, 3));
+                    e.printStackTrace();
                 }
                 y += rowHeight;
+                g.drawLine((int) pf.getImageableX() + 20, y - 15,
+                        (int) pf.getImageableX() + 20 + getTotalColumnWidth(colWidths), y - 15);
             }
 
-            double totalVendas = calcularTotalVendas();
             y += rowHeight;
-            g.drawString("Total de Vendas: R$ " + String.format("%.2f", totalVendas), startX, y);
+            g.drawString("Total de Vendas: R$ " + df.format(totalVendas.doubleValue()), (int) pf.getImageableX() + 20,
+                    y);
 
             return PAGE_EXISTS;
         }
 
-        private double calcularTotalVendas() {
-            double total = 0.0;
-            for (int i = 0; i < tabela.getRowCount(); i++) {
-                try {
-                    double valorTotal = Double.parseDouble(tabela.getValueAt(i, 3).toString());
-                    total += valorTotal;
-                } catch (NumberFormatException e) {
-                    // Trate possíveis erros de formatação
-                }
+        private int getTotalColumnWidth(int[] colWidths) {
+            int totalWidth = 0;
+            for (int width : colWidths) {
+                totalWidth += width;
             }
-            return total;
+            return totalWidth;
         }
     }
 }

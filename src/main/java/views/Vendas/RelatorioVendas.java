@@ -247,10 +247,6 @@ public class RelatorioVendas extends JPanel {
     private void exportarRelatorio() {
         ImprimirRelatorioGeral relatorioPrinter = new ImprimirRelatorioGeral(tabelaRelatorio);
         relatorioPrinter.imprimir();
-        JOptionPane.showMessageDialog(this,
-                "Relatório enviado para a impressora com sucesso!",
-                "Sucesso",
-                JOptionPane.INFORMATION_MESSAGE);
     }
 
     class ButtonRenderer extends JPanel implements TableCellRenderer {
