@@ -26,8 +26,8 @@ import views.Funcionario.CadastrarFuncionario;
 import views.Funcionario.ListaDeFuncionarios;
 import views.Medicamentos.ListaDeMedicamentos;
 import views.Produtos.ListaDeProdutos;
+import views.Relatorios.GerarRelatorio;
 import views.Vendas.RealizarVenda;
-import views.Vendas.GerarRelatorio;
 
 public class Farmacia extends JFrame {
 

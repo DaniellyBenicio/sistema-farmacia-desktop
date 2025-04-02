@@ -1,4 +1,4 @@
-package views.Vendas;
+package views.Relatorios;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
