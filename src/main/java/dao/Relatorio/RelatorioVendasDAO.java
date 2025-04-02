@@ -196,10 +196,10 @@ public class RelatorioVendasDAO {
                         double valorTotal = rsVenda.getDouble("valorTotal");
                         String formasPagamento = rsVenda.getString("formasPagamento");
 
-                        detalhes.append("ID da Venda: ").append(idVenda).append("\n")
-                                .append("Data da Venda: ").append(dataVenda).append("\n")
-                                .append("Horário da Venda: ").append(horarioVenda).append("\n")
-                                .append("Nome do Vendedor: ").append(nomeVendedor).append("\n");
+                        detalhes.append("Código da Venda: ").append(idVenda).append("\n")
+                                .append("Data: ").append(dataVenda).append("\n")
+                                .append("Horário: ").append(horarioVenda).append("\n")
+                                .append("Vendedor: ").append(nomeVendedor).append("\n");
 
                         if (cpfCliente != null && !cpfCliente.isEmpty()) {
                             try {

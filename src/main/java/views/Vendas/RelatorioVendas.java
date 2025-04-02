@@ -6,7 +6,10 @@ import dao.Relatorio.RelatorioVendasDAO.VendaRelatorio;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -340,7 +343,7 @@ public class RelatorioVendas extends JPanel {
                     JDialog dialog = new JDialog();
                     dialog.setTitle("Detalhes da Venda");
                     dialog.setModal(true);
-                    dialog.setSize(800, 600);
+                    dialog.setSize(1000, 650);
                     dialog.setLocationRelativeTo(RelatorioVendas.this);
 
                     JPanel panel = new JPanel(new BorderLayout());
@@ -348,42 +351,89 @@ public class RelatorioVendas extends JPanel {
                     panel.setBackground(new Color(245, 245, 245));
 
                     JLabel titleLabel = new JLabel("Detalhes da Venda");
-                    titleLabel.setFont(new Font("Roboto", Font.BOLD, 20));
+                    titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
                     titleLabel.setForeground(new Color(51, 51, 51));
                     titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
                     panel.add(titleLabel, BorderLayout.NORTH);
 
                     JPanel contentPanel = new JPanel(new BorderLayout());
 
-                    JTextArea vendaTextArea = new JTextArea();
-                    vendaTextArea.setFont(new Font("Itens da Venda", Font.PLAIN, 14));
-                    vendaTextArea.setEditable(false);
-                    vendaTextArea.setBackground(new Color(245, 245, 245));
+                    JEditorPane vendaEditorPane = new JEditorPane();
+                    vendaEditorPane.setFont(new Font("Itens da Venda", Font.PLAIN, 14));
+                    vendaEditorPane.setEditable(false);
+                    vendaEditorPane.setBackground(new Color(245, 245, 245));
                     StringBuilder vendaText = new StringBuilder();
 
                     List<String[]> itensVenda = new ArrayList<>();
                     String[] linhas = detalhes.split("\n");
                     for (int i = 0; i < linhas.length; i++) {
                         String linha = linhas[i];
-                        if (linha.startsWith("Código do Item")) {
+                        if (linha.startsWith("Código do Medicamento") || linha.startsWith("Código do Produto")) {
                             String[] item = new String[6];
-                            for (int j = 0; j < 6; j++) {
-                                String[] partes = linhas[i + j].split(": ");
-                                if (partes.length == 2) {
-                                    item[j] = partes[1].trim();
-                                }
-                            }
+                            item[0] = linha.split(": ")[1].trim();
+                            item[1] = linhas[i + 1].split(": ")[1].trim();
+                            item[2] = linhas[i + 2].split(": ")[1].trim();
+                            item[3] = linhas[i + 3].split(": ")[1].trim();
+                            item[4] = linhas[i + 4].split(": ")[1].trim();
+                            item[5] = linhas[i + 5].split(": ")[1].trim();
+
                             itensVenda.add(item);
+
                             i += 5;
                         } else {
                             vendaText.append(linha).append("\n");
                         }
                     }
 
-                    vendaTextArea.setText(vendaText.toString());
-                    contentPanel.add(vendaTextArea, BorderLayout.NORTH);
+                    vendaEditorPane.setText(vendaText.toString());
 
-                    DefaultTableModel itensTableModel = new DefaultTableModel();
+                    String text = vendaEditorPane.getText();
+                    String[] parts = text.split("\n");
+                    StringBuilder formattedText = new StringBuilder();
+                    for (String part : parts) {
+                        if (part.contains(":")) {
+                            String[] keyValue = part.split(":", 2);
+                            if (keyValue[0].equals("Formas de Pagamento")) {
+                                String[] formasPagamento = keyValue[1].split(",");
+                                StringBuilder formasFormatadas = new StringBuilder();
+                                for (String forma : formasPagamento) {
+                                    String formaTrimmed = forma.trim();
+                                    if (formaTrimmed.equals("DINHEIRO")) {
+                                        formasFormatadas.append("Dinheiro, ");
+                                    } else if (formaTrimmed.equals("CARTAO_CREDITO")) {
+                                        formasFormatadas.append("Cartão de Crédito, ");
+                                    } else if (formaTrimmed.equals("CARTAO_DEBITO")) {
+                                        formasFormatadas.append("Cartão de Débito, ");
+                                    } else {
+                                        formasFormatadas.append(formaTrimmed).append(", ");
+                                    }
+                                }
+                                if (formasFormatadas.length() > 2) {
+                                    formasFormatadas.delete(formasFormatadas.length() - 2, formasFormatadas.length());
+                                }
+                                formattedText.append("<div style='margin-bottom: 10px;'><b>").append(keyValue[0])
+                                        .append(":</b> ").append(formasFormatadas.toString()).append("</div>");
+                            } else {
+                                formattedText.append("<div style='margin-bottom: 10px;'><b>").append(keyValue[0])
+                                        .append(":</b> ").append(keyValue[1]).append("</div>");
+                            }
+                        } else {
+                            formattedText.append(part).append("<br>");
+                        }
+                    }
+
+                    vendaEditorPane.setContentType("text/html");
+                    vendaEditorPane.setText("<html><body style='font-family: Arial; font-size: 10px;'>"
+                            + formattedText.toString() + "</body></html>");
+
+                    contentPanel.add(vendaEditorPane, BorderLayout.NORTH);
+
+                    DefaultTableModel itensTableModel = new DefaultTableModel() {
+                        @Override
+                        public boolean isCellEditable(int row, int column) {
+                            return false;
+                        }
+                    };
                     itensTableModel.addColumn("Código");
                     itensTableModel.addColumn("Descrição");
                     itensTableModel.addColumn("Quantidade");
@@ -396,26 +446,58 @@ public class RelatorioVendas extends JPanel {
                     }
 
                     JTable itensTable = new JTable(itensTableModel);
+                    itensTable.setFont(new Font("Arial", Font.PLAIN, 14));
+                    itensTable.setRowHeight(itensTable.getRowHeight() + 10);
+
+                    JTableHeader header = itensTable.getTableHeader();
+                    header.setFont(new Font("Arial", Font.BOLD, 14));
+
+                    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+                    centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+
+                    DefaultTableCellRenderer wrapRenderer = new DefaultTableCellRenderer() {
+                        @Override
+                        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                boolean hasFocus, int row, int column) {
+                            JTextArea textArea = new JTextArea();
+                            textArea.setText(((String) value).toUpperCase());
+                            textArea.setWrapStyleWord(true);
+                            textArea.setLineWrap(true);
+                            textArea.setFont(new Font("Arial", Font.PLAIN, 14));
+                            return textArea;
+                        }
+                    };
+
+                    TableColumn descriptionColumn = itensTable.getColumnModel().getColumn(1);
+                    descriptionColumn.setPreferredWidth(300);
+                    descriptionColumn.setCellRenderer(wrapRenderer);
+
+                    for (int i = 0; i < itensTable.getColumnCount(); i++) {
+                        if (i != 1) {
+                            itensTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+                        }
+                    }
+
                     JScrollPane itensScrollPane = new JScrollPane(itensTable);
                     itensScrollPane.setBorder(BorderFactory.createCompoundBorder(
                             BorderFactory.createLineBorder(new Color(220, 220, 220)),
                             BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
                     contentPanel.add(itensScrollPane, BorderLayout.CENTER);
 
                     panel.add(contentPanel, BorderLayout.CENTER);
 
-                    JButton closeButton = new JButton("Fechar");
-                    closeButton.setFont(new Font("Roboto", Font.BOLD, 14));
-                    closeButton.setBackground(new Color(0, 123, 255));
-                    closeButton.setForeground(Color.WHITE);
-                    closeButton.setFocusPainted(false);
-                    closeButton.setBorderPainted(false);
-                    closeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    closeButton.addActionListener(e -> dialog.dispose());
+                    JButton printButton = new JButton("Imprimir");
+                    printButton.setFont(new Font("Arial", Font.BOLD, 14));
+                    printButton.setBackground(new Color(24, 39, 55));
+                    printButton.setForeground(Color.WHITE);
+                    printButton.setFocusPainted(false);
+                    printButton.setBorderPainted(false);
+                    printButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-                    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
                     buttonPanel.setBackground(new Color(245, 245, 245));
-                    buttonPanel.add(closeButton);
+                    buttonPanel.add(printButton);
                     panel.add(buttonPanel, BorderLayout.SOUTH);
 
                     dialog.add(panel);
