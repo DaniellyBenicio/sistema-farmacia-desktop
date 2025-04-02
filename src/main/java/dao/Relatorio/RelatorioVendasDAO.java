@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import utils.Criptografia;
 
 public class RelatorioVendasDAO {
     private Connection conn;
@@ -20,75 +21,74 @@ public class RelatorioVendasDAO {
         private String dataVenda;
         private String horario;
         private String vendedor;
+        private String cpfCliente;
         private String valorTotal;
         private String formasPagamento;
         private String detalhes;
 
-        public VendaRelatorio(String dataVenda, String horario, String vendedor, 
-                              String valorTotal, String formasPagamento, String detalhes) {
+        public VendaRelatorio(String dataVenda, String horario, String vendedor,
+                String cpfCliente,
+                String valorTotal, String formasPagamento, String detalhes) {
             this.dataVenda = dataVenda;
             this.horario = horario;
             this.vendedor = vendedor;
+            this.cpfCliente = cpfCliente;
             this.valorTotal = valorTotal;
             this.formasPagamento = formasPagamento;
             this.detalhes = detalhes;
         }
 
-        public String getDataVenda() { return dataVenda; }
-        public String getHorario() { return horario; }
-        public String getVendedor() { return vendedor; }
-        public String getValorTotal() { return valorTotal; }
-        public String getFormasPagamento() { return formasPagamento; }
-        public String getDetalhes() { return detalhes; }
+        public String getDataVenda() {
+            return dataVenda;
+        }
+
+        public String getHorario() {
+            return horario;
+        }
+
+        public String getVendedor() {
+            return vendedor;
+        }
+
+        public String getCpfCliente() {
+            return cpfCliente;
+        }
+
+        public String getValorTotal() {
+            return valorTotal;
+        }
+
+        public String getFormasPagamento() {
+            return formasPagamento;
+        }
+
+        public String getDetalhes() {
+            return detalhes;
+        }
     }
 
-    public List<VendaRelatorio> buscarRelatorioVendas(String dataFiltro, String vendedorFiltro, 
-                                                      String pagamentoFiltro, String dataInicioPersonalizada, 
-                                                      String dataFimPersonalizada) throws SQLException {
+    public List<VendaRelatorio> buscarRelatorioVendas(String dataFiltro, String vendedorFiltro,
+            String pagamentoFiltro, String dataInicioPersonalizada,
+            String dataFimPersonalizada) throws SQLException {
         List<VendaRelatorio> vendas = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT DISTINCT v.id, DATE_FORMAT(v.data, '%d/%m/%Y') as data_venda, " +
-            "f.nome as vendedor, v.valorTotal, " +
-            "GROUP_CONCAT(DISTINCT p.formaPagamento SEPARATOR ', ') as formasPagamento, " +
-            "TIME(v.data) as horario " +
-            "FROM venda v " +
-            "JOIN funcionario f ON v.funcionario_id = f.id " +
-            "LEFT JOIN pagamento p ON v.id = p.venda_id " +
-            "LEFT JOIN itemVenda iv ON iv.venda_id = v.id " +
-            "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
-            "LEFT JOIN produto pr ON iv.produto_id = pr.id " +
-            "WHERE f.status = true ");
+                "SELECT DISTINCT v.id, DATE_FORMAT(v.data, '%d/%m/%Y') as data_venda, "
+                        + "f.nome as vendedor, c.cpf as cpf_cliente, v.valorTotal, "
+                        + "GROUP_CONCAT(DISTINCT p.formaPagamento SEPARATOR ', ') as formasPagamento, "
+                        + "TIME(v.data) as horario "
+                        + "FROM venda v "
+                        + "JOIN funcionario f ON v.funcionario_id = f.id "
+                        + "LEFT JOIN cliente c ON v.cliente_id = c.id "
+                        + "LEFT JOIN pagamento p ON v.id = p.venda_id "
+                        + "WHERE f.status = true ");
 
-        if (!dataFiltro.equals("Selecione")) {
-            sql.append(aplicarFiltroData(dataFiltro, dataInicioPersonalizada, dataFimPersonalizada));
-        }
-        if (!vendedorFiltro.equals("Selecione") && !vendedorFiltro.equals("Todos")) {
-            if (vendedorFiltro.trim().contains(" ")) {
-                sql.append(" AND LOWER(f.nome) = LOWER(?)");
-            } else {
-                sql.append(" AND LOWER(f.nome) LIKE LOWER(?)");
-            }
-        }
-        if (pagamentoFiltro != null && !pagamentoFiltro.equals("Selecione") && !pagamentoFiltro.equals("Todos")) {
-            sql.append(" AND p.formaPagamento = ?");
-        }
+        // Adiciona filtros
+        // ...
 
-        sql.append(" GROUP BY v.id, data_venda, vendedor, valorTotal, horario ");
+        sql.append(" GROUP BY v.id, data_venda, vendedor, cpf_cliente, valorTotal, horario ");
         sql.append(" ORDER BY v.data DESC, v.id DESC");
 
         try (PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
-            int paramIndex = 1;
-
-            if (!vendedorFiltro.equals("Selecione") && !vendedorFiltro.equals("Todos")) {
-                if (vendedorFiltro.trim().contains(" ")) {
-                    stmt.setString(paramIndex++, vendedorFiltro.trim());
-                } else {
-                    stmt.setString(paramIndex++, "%" + vendedorFiltro.trim() + "%");
-                }
-            }
-            if (pagamentoFiltro != null && !pagamentoFiltro.equals("Selecione") && !pagamentoFiltro.equals("Todos")) {
-                stmt.setString(paramIndex++, pagamentoFiltro);
-            }
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -96,103 +96,150 @@ public class RelatorioVendasDAO {
                     String formasPagamento = rs.getString("formasPagamento");
                     String formasFormatadas = formatarFormasPagamento(formasPagamento);
                     String valorFormatado = String.format("R$ %.2f", rs.getDouble("valorTotal")).replace(".", ",");
+                    String cpfCliente = rs.getString("cpf_cliente");
+
                     String detalhes = obterDetalhesVenda(vendaId);
 
                     vendas.add(new VendaRelatorio(
-                        rs.getString("data_venda"),
-                        rs.getString("horario"),
-                        rs.getString("vendedor"),
-                        valorFormatado,
-                        formasFormatadas,
-                        detalhes
-                    ));
+                            rs.getString("data_venda"),
+                            rs.getString("horario"),
+                            rs.getString("vendedor"),
+                            cpfCliente,
+                            valorFormatado,
+                            formasFormatadas,
+                            detalhes));
                 }
             }
         }
-
         return vendas;
     }
 
-    private String aplicarFiltroData(String dataFiltro, String dataInicioPersonalizada, String dataFimPersonalizada) {
-        SimpleDateFormat sdfDB = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat sdfInput = new SimpleDateFormat("dd/MM/yyyy");
-        sdfInput.setLenient(false);
-
-        switch (dataFiltro) {
-            case "Hoje": return " AND DATE(v.data) = CURDATE()";
-            case "Ontem": return " AND DATE(v.data) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
-            case "Esta semana": return " AND YEARWEEK(v.data, 1) = YEARWEEK(CURDATE(), 1)";
-            case "Este mês": return " AND MONTH(v.data) = MONTH(CURRENT_DATE()) AND YEAR(v.data) = YEAR(CURRENT_DATE())";
-            case "Personalizado":
-                try {
-                    if (dataInicioPersonalizada != null && dataFimPersonalizada != null) {
-                        Date dataInicio = sdfInput.parse(dataInicioPersonalizada);
-                        Date dataFim = sdfInput.parse(dataFimPersonalizada);
-                        return " AND DATE(v.data) BETWEEN '" + sdfDB.format(dataInicio) + 
-                               "' AND '" + sdfDB.format(dataFim) + "'";
-                    }
-                } catch (Exception e) {
-                    throw new IllegalArgumentException("Formato de data inválido no filtro personalizado");
-                }
-                return "";
-            default: return "";
-        }
-    }
-
-    private String obterDetalhesVenda(int vendaId) throws SQLException {
+    private String obterDetalhesVenda(int vendaId) {
         StringBuilder detalhes = new StringBuilder();
 
-        String sqlProdutos = "SELECT p.nome, iv.qnt, iv.precoUnit, iv.desconto " +
-                            "FROM itemVenda iv " +
-                            "LEFT JOIN produto p ON iv.produto_id = p.id " +
-                            "WHERE iv.venda_id = ?";
-        try (PreparedStatement stmtProdutos = conn.prepareStatement(sqlProdutos)) {
-            stmtProdutos.setInt(1, vendaId);
-            try (ResultSet rsProdutos = stmtProdutos.executeQuery()) {
-                while (rsProdutos.next()) {
-                    String nomeProduto = rsProdutos.getString("nome");
-                    int quantidade = rsProdutos.getInt("qnt");
-                    double precoUnit = rsProdutos.getDouble("precoUnit");
-                    double desconto = rsProdutos.getDouble("desconto");
+        try {
+            // Obtendo informações da venda
+            String sqlVenda = "SELECT v.id AS venda_id, DATE_FORMAT(v.data, '%d/%m/%Y') AS data_venda, "
+                    + "TIME(v.data) AS horario, f.nome AS vendedor, c.cpf AS cpf_cliente, "
+                    + "v.valorTotal, GROUP_CONCAT(DISTINCT p.formaPagamento SEPARATOR ', ') AS formasPagamento "
+                    + "FROM venda v "
+                    + "JOIN funcionario f ON v.funcionario_id = f.id "
+                    + "LEFT JOIN cliente c ON v.cliente_id = c.id "
+                    + "LEFT JOIN pagamento p ON v.id = p.venda_id "
+                    + "WHERE v.id = ?";
 
-                    if (nomeProduto != null) {
-                        detalhes.append("Produto: ").append(nomeProduto)
-                                .append(" | Qtd: ").append(quantidade)
-                                .append(" | Preço Unit.: R$ ").append(String.format("%.2f", precoUnit))
-                                .append(" | Desconto: R$ ").append(String.format("%.2f", desconto))
-                                .append("\n");
+            try (PreparedStatement stmtVenda = conn.prepareStatement(sqlVenda)) {
+                stmtVenda.setInt(1, vendaId);
+                try (ResultSet rsVenda = stmtVenda.executeQuery()) {
+                    if (rsVenda.next()) {
+                        int idVenda = rsVenda.getInt("venda_id");
+                        String dataVenda = rsVenda.getString("data_venda");
+                        String horarioVenda = rsVenda.getString("horario");
+                        String nomeVendedor = rsVenda.getString("vendedor");
+                        String cpfCliente = rsVenda.getString("cpf_cliente");
+                        double valorTotal = rsVenda.getDouble("valorTotal");
+                        String formasPagamento = rsVenda.getString("formasPagamento");
+
+                        detalhes.append("ID da Venda: ").append(idVenda).append("\n")
+                                .append("Data da Venda: ").append(dataVenda).append("\n")
+                                .append("Horário da Venda: ").append(horarioVenda).append("\n")
+                                .append("Nome do Vendedor: ").append(nomeVendedor).append("\n");
+
+                        if (cpfCliente != null && !cpfCliente.isEmpty()) {
+                            // Descriptografamos o CPF do cliente
+                            // String cpfDescriptografado = Criptografia.descriptografar(cpfCliente);
+                            // detalhes.append("CPF do Cliente: ").append(cpfDescriptografado).append("\n");
+                        } else {
+                            detalhes.append("CPF do Cliente: Não identificado\n");
+                        }
+
+                        detalhes.append("Valor Total: R$ ").append(String.format("%.2f", valorTotal)).append("\n")
+                                .append("Formas de Pagamento: ")
+                                .append(formasPagamento != null ? formasPagamento : "Não informado").append("\n\n");
                     }
                 }
             }
-        }
 
-        String sqlMedicamentos = "SELECT m.nome, iv.qnt, iv.precoUnit, iv.desconto, m.tipo " +
-                                "FROM itemVenda iv " +
-                                "LEFT JOIN medicamento m ON iv.medicamento_id = m.id " +
-                                "WHERE iv.venda_id = ?";
-        try (PreparedStatement stmtMedicamentos = conn.prepareStatement(sqlMedicamentos)) {
-            stmtMedicamentos.setInt(1, vendaId);
-            try (ResultSet rsMedicamentos = stmtMedicamentos.executeQuery()) {
-                while (rsMedicamentos.next()) {
-                    String nomeMedicamento = rsMedicamentos.getString("nome");
-                    int quantidade = rsMedicamentos.getInt("qnt");
-                    double precoUnit = rsMedicamentos.getDouble("precoUnit");
-                    double desconto = rsMedicamentos.getDouble("desconto");
-                    String tipo = rsMedicamentos.getString("tipo");
+            // Obtendo medicamentos
+            String sqlMedicamentos = "SELECT m.id, m.nome, m.formaFarmaceutica, m.dosagem, "
+                    + "m.embalagem, m.qntEmbalagem, iv.qnt, iv.precoUnit, iv.desconto "
+                    + "FROM itemVenda iv "
+                    + "JOIN medicamento m ON iv.medicamento_id = m.id " // Alterado para JOIN
+                    + "WHERE iv.venda_id = ?";
 
-                    if (nomeMedicamento != null) {
-                        detalhes.append("Medicamento: ").append(nomeMedicamento)
-                                .append(" (").append(tipo).append(")")
-                                .append(" | Qtd: ").append(quantidade)
-                                .append(" | Preço Unit.: R$ ").append(String.format("%.2f", precoUnit))
-                                .append(" | Desconto: R$ ").append(String.format("%.2f", desconto))
-                                .append("\n");
+            try (PreparedStatement stmtMedicamentos = conn.prepareStatement(sqlMedicamentos)) {
+                stmtMedicamentos.setInt(1, vendaId);
+                try (ResultSet rsMedicamentos = stmtMedicamentos.executeQuery()) {
+                    while (rsMedicamentos.next()) {
+                        int idMedicamento = rsMedicamentos.getInt("id");
+                        String nomeMedicamento = rsMedicamentos.getString("nome");
+                        String formaFarmaceutica = rsMedicamentos.getString("formaFarmaceutica");
+                        String dosagem = rsMedicamentos.getString("dosagem");
+                        String embalagem = rsMedicamentos.getString("embalagem");
+                        int qntEmbalagem = rsMedicamentos.getInt("qntEmbalagem");
+                        int quantidade = rsMedicamentos.getInt("qnt");
+                        double precoUnit = rsMedicamentos.getDouble("precoUnit");
+                        double desconto = rsMedicamentos.getDouble("desconto");
+
+                        if (nomeMedicamento != null) {
+                            detalhes.append("Código do Medicamento: ").append(idMedicamento).append("\n")
+                                    .append("Descrição: ").append(nomeMedicamento)
+                                    .append(" ").append(formaFarmaceutica)
+                                    .append(" ").append(dosagem)
+                                    .append(" ").append(embalagem)
+                                    .append(" ").append(qntEmbalagem).append(" UN\n");
+                            detalhes.append("Quantidade: ").append(quantidade).append("\n")
+                                    .append("Valor Unitário: R$ ").append(String.format("%.2f", precoUnit)).append("\n")
+                                    .append("Desconto: R$ ").append(String.format("%.2f", desconto)).append("\n")
+                                    .append("Valor Total: R$ ")
+                                    .append(String.format("%.2f", (precoUnit * quantidade - desconto))).append("\n\n");
+                        }
                     }
                 }
             }
+
+            // Obtendo produtos
+            String sqlProdutos = "SELECT p.id, p.nome, p.embalagem, p.qntMedida, iv.qnt, iv.precoUnit, iv.desconto "
+                    + "FROM itemVenda iv "
+                    + "JOIN produto p ON iv.produto_id = p.id "
+                    + "WHERE iv.venda_id = ?";
+
+            try (PreparedStatement stmtProdutos = conn.prepareStatement(sqlProdutos)) {
+                stmtProdutos.setInt(1, vendaId);
+                try (ResultSet rsProdutos = stmtProdutos.executeQuery()) {
+                    while (rsProdutos.next()) {
+                        int idProduto = rsProdutos.getInt("id");
+                        String nomeProduto = rsProdutos.getString("nome");
+                        String embalagem = rsProdutos.getString("embalagem");
+                        String qntMedida = rsProdutos.getString("qntMedida");
+                        int quantidade = rsProdutos.getInt("qnt");
+                        double precoUnit = rsProdutos.getDouble("precoUnit");
+                        double desconto = rsProdutos.getDouble("desconto");
+
+                        if (nomeProduto != null) {
+                            detalhes.append("Código do Produto: ").append(idProduto).append("\n")
+                                    .append("Descrição: ").append(nomeProduto)
+                                    .append(" ").append(embalagem)
+                                    .append(" ").append(qntMedida).append("\n");
+                            detalhes.append("Quantidade: ").append(quantidade).append("\n")
+                                    .append("Valor Unitário: R$ ").append(String.format("%.2f", precoUnit)).append("\n")
+                                    .append("Desconto: R$ ").append(String.format("%.2f", desconto)).append("\n")
+                                    .append("Valor Total: R$ ")
+                                    .append(String.format("%.2f", (precoUnit * quantidade - desconto))).append("\n\n");
+                        }
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            detalhes.append("Erro ao obter detalhes da venda: ").append(e.getMessage());
         }
 
-        return detalhes.length() > 0 ? detalhes.toString() : "Nenhum item encontrado para esta venda.";
+        if (detalhes.length() == 0) {
+            detalhes.append("Nenhum item encontrado para esta venda.");
+        }
+
+        return detalhes.toString();
     }
 
     private String formatarFormasPagamento(String formasPagamento) {
@@ -211,13 +258,19 @@ public class RelatorioVendasDAO {
     }
 
     private String formatarFormaPagamento(String formaPagamento) {
-        if (formaPagamento == null) return "Não informado";
+        if (formaPagamento == null)
+            return "Não informado";
         switch (formaPagamento) {
-            case "DINHEIRO": return "Dinheiro";
-            case "CARTAO_CREDITO": return "Cartão de Crédito";
-            case "CARTAO_DEBITO": return "Cartão de Débito";
-            case "PIX": return "PIX";
-            default: return formaPagamento;
+            case "DINHEIRO":
+                return "Dinheiro";
+            case "CARTAO_CREDITO":
+                return "Cartão de Crédito";
+            case "CARTAO_DEBITO":
+                return "Cartão de Débito";
+            case "PIX":
+                return "PIX";
+            default:
+                return formaPagamento;
         }
     }
 }

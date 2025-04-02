@@ -272,24 +272,28 @@ public class RelatorioVendas extends JPanel {
 
         private void mostrarDetalhesVenda(int row) {
             if (vendas != null && row >= 0 && row < vendas.size()) {
-                String detalhes = vendas.get(row).getDetalhes();
-                if (detalhes != null && !detalhes.isEmpty()) {
+                VendaRelatorio venda = vendas.get(row);
+                String detalhes = venda.getDetalhes();
+                String cpfCliente = venda.getCpfCliente(); // Obtemos o CPF do cliente
+                // Monta a string para exibir os detalhes
+
+                if (detalhes.length() > 0) {
                     JDialog dialog = new JDialog();
                     dialog.setTitle("Detalhes da Venda");
                     dialog.setModal(true);
-                    dialog.setSize(500, 300);
+                    dialog.setSize(1100, 600);
                     dialog.setLocationRelativeTo(RelatorioVendas.this);
 
                     JPanel panel = new JPanel(new BorderLayout());
                     panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
                     panel.setBackground(Color.WHITE);
 
-                    JLabel titleLabel = new JLabel("Itens da Venda");
+                    JLabel titleLabel = new JLabel("Informações Gerais");
                     titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
                     titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
                     panel.add(titleLabel, BorderLayout.NORTH);
 
-                    JTextArea textArea = new JTextArea(detalhes);
+                    JTextArea textArea = new JTextArea(detalhes.toString());
                     textArea.setFont(new Font("Arial", Font.PLAIN, 14));
                     textArea.setEditable(false);
                     textArea.setLineWrap(true);
