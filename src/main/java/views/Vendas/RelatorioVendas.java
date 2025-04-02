@@ -10,6 +10,7 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RelatorioVendas extends JPanel {
@@ -339,33 +340,73 @@ public class RelatorioVendas extends JPanel {
                     JDialog dialog = new JDialog();
                     dialog.setTitle("Detalhes da Venda");
                     dialog.setModal(true);
-                    dialog.setSize(1100, 600);
+                    dialog.setSize(800, 600);
                     dialog.setLocationRelativeTo(RelatorioVendas.this);
 
                     JPanel panel = new JPanel(new BorderLayout());
                     panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-                    panel.setBackground(Color.WHITE);
+                    panel.setBackground(new Color(245, 245, 245));
 
-                    JLabel titleLabel = new JLabel("Informações Gerais");
-                    titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+                    JLabel titleLabel = new JLabel("Detalhes da Venda");
+                    titleLabel.setFont(new Font("Roboto", Font.BOLD, 20));
+                    titleLabel.setForeground(new Color(51, 51, 51));
                     titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
                     panel.add(titleLabel, BorderLayout.NORTH);
 
-                    JTextArea textArea = new JTextArea(detalhes.toString());
-                    textArea.setFont(new Font("Arial", Font.PLAIN, 14));
-                    textArea.setEditable(false);
-                    textArea.setLineWrap(true);
-                    textArea.setWrapStyleWord(true);
-                    textArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-                    textArea.setBackground(Color.WHITE);
+                    JPanel contentPanel = new JPanel(new BorderLayout());
 
-                    JScrollPane scrollPane = new JScrollPane(textArea);
-                    scrollPane.setBorder(BorderFactory.createLineBorder(new Color(209, 213, 219)));
-                    panel.add(scrollPane, BorderLayout.CENTER);
+                    JTextArea vendaTextArea = new JTextArea();
+                    vendaTextArea.setFont(new Font("Itens da Venda", Font.PLAIN, 14));
+                    vendaTextArea.setEditable(false);
+                    vendaTextArea.setBackground(new Color(245, 245, 245));
+                    StringBuilder vendaText = new StringBuilder();
 
-                    JButton closeButton = new JButton("FECHAR");
-                    closeButton.setFont(new Font("Arial", Font.BOLD, 14));
-                    closeButton.setBackground(new Color(24, 39, 72));
+                    List<String[]> itensVenda = new ArrayList<>();
+                    String[] linhas = detalhes.split("\n");
+                    for (int i = 0; i < linhas.length; i++) {
+                        String linha = linhas[i];
+                        if (linha.startsWith("Código do Item")) {
+                            String[] item = new String[6];
+                            for (int j = 0; j < 6; j++) {
+                                String[] partes = linhas[i + j].split(": ");
+                                if (partes.length == 2) {
+                                    item[j] = partes[1].trim();
+                                }
+                            }
+                            itensVenda.add(item);
+                            i += 5;
+                        } else {
+                            vendaText.append(linha).append("\n");
+                        }
+                    }
+
+                    vendaTextArea.setText(vendaText.toString());
+                    contentPanel.add(vendaTextArea, BorderLayout.NORTH);
+
+                    DefaultTableModel itensTableModel = new DefaultTableModel();
+                    itensTableModel.addColumn("Código");
+                    itensTableModel.addColumn("Descrição");
+                    itensTableModel.addColumn("Quantidade");
+                    itensTableModel.addColumn("Valor Unitário");
+                    itensTableModel.addColumn("Desconto");
+                    itensTableModel.addColumn("Valor Total");
+
+                    for (String[] item : itensVenda) {
+                        itensTableModel.addRow(item);
+                    }
+
+                    JTable itensTable = new JTable(itensTableModel);
+                    JScrollPane itensScrollPane = new JScrollPane(itensTable);
+                    itensScrollPane.setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(new Color(220, 220, 220)),
+                            BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+                    contentPanel.add(itensScrollPane, BorderLayout.CENTER);
+
+                    panel.add(contentPanel, BorderLayout.CENTER);
+
+                    JButton closeButton = new JButton("Fechar");
+                    closeButton.setFont(new Font("Roboto", Font.BOLD, 14));
+                    closeButton.setBackground(new Color(0, 123, 255));
                     closeButton.setForeground(Color.WHITE);
                     closeButton.setFocusPainted(false);
                     closeButton.setBorderPainted(false);
@@ -373,7 +414,7 @@ public class RelatorioVendas extends JPanel {
                     closeButton.addActionListener(e -> dialog.dispose());
 
                     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-                    buttonPanel.setBackground(Color.WHITE);
+                    buttonPanel.setBackground(new Color(245, 245, 245));
                     buttonPanel.add(closeButton);
                     panel.add(buttonPanel, BorderLayout.SOUTH);
 
