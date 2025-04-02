@@ -25,7 +25,6 @@ public class GerarRelatorio extends JPanel {
         this.layoutCartao = layoutCartao;
         this.painelCentral = painelCentral;
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
 
         JPanel painelSuperior = criarTitulo();
         add(painelSuperior, BorderLayout.NORTH);
@@ -41,7 +40,6 @@ public class GerarRelatorio extends JPanel {
         JPanel painelTitulo = new JPanel();
         painelTitulo.setLayout(new BoxLayout(painelTitulo, BoxLayout.Y_AXIS));
         painelTitulo.setBorder(BorderFactory.createEmptyBorder(40, 30, 20, 30));
-        painelTitulo.setBackground(Color.WHITE);
 
         JLabel titulo = new JLabel("Gerar Relatório");
         titulo.setFont(new Font("Arial", Font.BOLD, 25));
@@ -54,7 +52,6 @@ public class GerarRelatorio extends JPanel {
     private JPanel criarFiltros() {
         JPanel painelFiltros = new JPanel(new GridBagLayout());
         painelFiltros.setBorder(BorderFactory.createEmptyBorder(0, 80, 0, 80));
-        painelFiltros.setBackground(Color.WHITE);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -87,7 +84,6 @@ public class GerarRelatorio extends JPanel {
         painelFiltros.add(comboData, gbc);
 
         painelDatasPersonalizadas = new JPanel(new GridBagLayout());
-        painelDatasPersonalizadas.setBackground(Color.WHITE);
         painelDatasPersonalizadas.setVisible(false);
 
         GridBagConstraints gbcDatas = new GridBagConstraints();
@@ -240,7 +236,6 @@ public class GerarRelatorio extends JPanel {
     private JPanel criarBotoes() {
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         painelBotoes.setBorder(BorderFactory.createEmptyBorder(80, 0, 30, 0));
-        painelBotoes.setBackground(Color.WHITE);
 
         JButton btnLimpar = new JButton("Limpar Filtros");
         btnLimpar.setFont(new Font("Arial", Font.BOLD, 16));
@@ -260,7 +255,7 @@ public class GerarRelatorio extends JPanel {
         btnGerar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnGerar.addActionListener(e -> gerarRelatorio());
 
-        btnGerar.setEnabled(false); // Desabilita o botão inicialmente
+        btnGerar.setEnabled(false);
 
         painelBotoes.add(btnLimpar);
         painelBotoes.add(btnGerar);
@@ -329,7 +324,6 @@ public class GerarRelatorio extends JPanel {
             return;
         }
 
-        // Nova verificação: só impede se todos estiverem em "Selecione"
         if ("Selecione".equals(tipoData) && "Selecione".equals(vendedorSelecionado)
                 && "Selecione".equals(pagamentoSelecionado) && campoVendedorCustom.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Selecione pelo menos um filtro para gerar o relatório.", "Aviso",

@@ -44,13 +44,12 @@ public class RelatorioVendas extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
 
         JPanel painelVoltar = criarBotaoVoltar();
         add(painelVoltar, BorderLayout.NORTH);
 
         JPanel painelConteudo = new JPanel(new BorderLayout());
-        painelConteudo.setBackground(Color.WHITE);
+        add(painelConteudo, BorderLayout.CENTER);
 
         JPanel painelTitulo = criarTitulo();
         painelConteudo.add(painelTitulo, BorderLayout.NORTH);
@@ -58,15 +57,12 @@ public class RelatorioVendas extends JPanel {
         JPanel painelTabela = criarTabela();
         painelConteudo.add(painelTabela, BorderLayout.CENTER);
 
-        add(painelConteudo, BorderLayout.CENTER);
-
         JPanel painelExportar = criarBotaoExportar();
         add(painelExportar, BorderLayout.SOUTH);
     }
 
     private JPanel criarBotaoVoltar() {
         JPanel painelVoltar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        painelVoltar.setBackground(Color.WHITE);
         painelVoltar.setBorder(BorderFactory.createEmptyBorder(10, 20, 0, 0));
 
         JButton btnVoltar = new JButton("Voltar");
@@ -74,7 +70,7 @@ public class RelatorioVendas extends JPanel {
         btnVoltar.setFocusPainted(false);
         btnVoltar.setBorderPainted(false);
         btnVoltar.setContentAreaFilled(false);
-        btnVoltar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnVoltar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         btnVoltar.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -109,10 +105,9 @@ public class RelatorioVendas extends JPanel {
     private JPanel criarTitulo() {
         JPanel painelTitulo = new JPanel();
         painelTitulo.setLayout(new BoxLayout(painelTitulo, BoxLayout.Y_AXIS));
-        painelTitulo.setBorder(BorderFactory.createEmptyBorder(10, 30, 20, 30));
-        painelTitulo.setBackground(Color.WHITE);
+        painelTitulo.setBorder(BorderFactory.createEmptyBorder(10, 30, 0, 30));
 
-        JLabel titulo = new JLabel("Relatório");
+        JLabel titulo = new JLabel("Relatório Geral de Vendas");
         titulo.setFont(new Font("Arial", Font.BOLD, 20));
         titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         painelTitulo.add(titulo);
@@ -122,8 +117,7 @@ public class RelatorioVendas extends JPanel {
 
     private JPanel criarTabela() {
         JPanel painelTabela = new JPanel(new BorderLayout());
-        painelTabela.setBackground(Color.WHITE);
-        painelTabela.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
+        painelTabela.setBorder(BorderFactory.createEmptyBorder(40, 30, 30, 30));
 
         String[] colunas = { "Data", "Horário", "Vendedor", "Valor Total", "Forma de Pagamento", "Ações" };
         modeloTabela = new DefaultTableModel(colunas, 0) {
@@ -164,7 +158,9 @@ public class RelatorioVendas extends JPanel {
         tabelaRelatorio.setColumnSelectionAllowed(false);
 
         JScrollPane scrollPane = new JScrollPane(tabelaRelatorio);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 57, 30));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setOpaque(false);
 
         painelTabela.add(scrollPane, BorderLayout.CENTER);
 
@@ -174,16 +170,15 @@ public class RelatorioVendas extends JPanel {
     private JPanel criarBotaoExportar() {
         JPanel painelExportar = new JPanel(new FlowLayout(FlowLayout.CENTER));
         painelExportar.setBorder(BorderFactory.createEmptyBorder(20, 0, 30, 0));
-        painelExportar.setBackground(Color.WHITE);
 
-        JButton btnExportar = new JButton("Exportar relatório");
-        btnExportar.setFont(new Font("Arial", Font.BOLD, 14));
+        JButton btnExportar = new JButton("Exportar Relatório");
+        btnExportar.setFont(new Font("Arial", Font.BOLD, 16));
         btnExportar.setBackground(new Color(24, 39, 72));
         btnExportar.setForeground(Color.WHITE);
         btnExportar.setFocusPainted(false);
-        btnExportar.setPreferredSize(new Dimension(200, 40));
+        btnExportar.setPreferredSize(new Dimension(180, 35));
         btnExportar.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-        btnExportar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnExportar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnExportar.addActionListener(e -> exportarRelatorio());
 
         painelExportar.add(btnExportar);
@@ -229,10 +224,10 @@ public class RelatorioVendas extends JPanel {
         if (formasPagamento == null || formasPagamento.isEmpty()) {
             return "Não informado";
         }
-    
+
         String[] pagamentos = formasPagamento.split(", ");
         StringBuilder resultado = new StringBuilder();
-    
+
         for (int i = 0; i < pagamentos.length; i++) {
             String pagamento = pagamentos[i].trim();
             switch (pagamento) {
