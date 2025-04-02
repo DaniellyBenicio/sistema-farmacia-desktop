@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import utils.Criptografia;
 
@@ -67,58 +67,113 @@ public class RelatorioVendasDAO {
         }
     }
 
-    public List<VendaRelatorio> buscarRelatorioVendas(String dataFiltro, String vendedorFiltro,
+    public List<VendaRelatorio> buscarRelatorioVendas(String tipoDataFiltro, String vendedorFiltro,
             String pagamentoFiltro, String dataInicioPersonalizada,
             String dataFimPersonalizada) throws SQLException {
         List<VendaRelatorio> vendas = new ArrayList<>();
+
         StringBuilder sql = new StringBuilder(
-                "SELECT DISTINCT v.id, DATE_FORMAT(v.data, '%d/%m/%Y') as data_venda, "
-                        + "f.nome as vendedor, c.cpf as cpf_cliente, v.valorTotal, "
-                        + "GROUP_CONCAT(DISTINCT p.formaPagamento SEPARATOR ', ') as formasPagamento, "
-                        + "TIME(v.data) as horario "
+                "SELECT DISTINCT v.id, DATE_FORMAT(v.data, '%d/%m/%Y') AS data_venda, "
+                        + "f.nome AS vendedor, c.cpf AS cpf_cliente, v.valorTotal, "
+                        + "GROUP_CONCAT(DISTINCT p.formaPagamento SEPARATOR ', ') AS formasPagamento, "
+                        + "TIME(v.data) AS horario "
                         + "FROM venda v "
                         + "JOIN funcionario f ON v.funcionario_id = f.id "
                         + "LEFT JOIN cliente c ON v.cliente_id = c.id "
                         + "LEFT JOIN pagamento p ON v.id = p.venda_id "
                         + "WHERE f.status = true ");
 
-        // Adiciona filtros
-        // ...
+        List<Object> params = new ArrayList<>();
+
+        if (tipoDataFiltro != null) {
+            switch (tipoDataFiltro) {
+                case "Hoje":
+                    sql.append(" AND DATE(v.data) = CURDATE()");
+                    break;
+                case "Ontem":
+                    sql.append(" AND DATE(v.data) = CURDATE() - INTERVAL 1 DAY");
+                    break;
+                case "Últimos 15 dias":
+                    sql.append(" AND v.data >= CURDATE() - INTERVAL 15 DAY");
+                    break;
+                case "Este mês":
+                    sql.append(" AND v.data >= DATE_FORMAT(CURDATE(), '%Y-%m-01')");
+                    break;
+                case "Personalizado":
+                    if (dataInicioPersonalizada != null && !dataInicioPersonalizada.isEmpty() &&
+                            dataFimPersonalizada != null && !dataFimPersonalizada.isEmpty()) {
+                        java.util.Date startDate = parseDate(dataInicioPersonalizada);
+                        java.util.Date endDate = parseDate(dataFimPersonalizada);
+
+                        if (startDate != null && endDate != null) {
+                            sql.append(" AND v.data BETWEEN ? AND ?");
+                            params.add(new java.sql.Date(startDate.getTime()));
+                            params.add(new java.sql.Date(endDate.getTime()));
+                        } else {
+                            throw new SQLException("Datas personalizadas são inválidas.");
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (vendedorFiltro != null && !vendedorFiltro.isEmpty() && !"Selecione".equals(vendedorFiltro)) {
+            sql.append(" AND f.nome = ?");
+            params.add(vendedorFiltro);
+        }
+
+        if (pagamentoFiltro != null && !pagamentoFiltro.isEmpty() && !pagamentoFiltro.equals("Selecione")
+                && !pagamentoFiltro.equals("Todos")) {
+            sql.append(" AND p.formaPagamento = ?");
+            params.add(pagamentoFiltro);
+        }
 
         sql.append(" GROUP BY v.id, data_venda, vendedor, cpf_cliente, valorTotal, horario ");
         sql.append(" ORDER BY v.data DESC, v.id DESC");
 
+        System.out.println("Consulta SQL: " + sql.toString());
+        System.out.println("Parâmetros: " + params);
+
         try (PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    int vendaId = rs.getInt("id");
-                    String formasPagamento = rs.getString("formasPagamento");
-                    String formasFormatadas = formatarFormasPagamento(formasPagamento);
-                    String valorFormatado = String.format("R$ %.2f", rs.getDouble("valorTotal")).replace(".", ",");
-                    String cpfCliente = rs.getString("cpf_cliente");
-
-                    String detalhes = obterDetalhesVenda(vendaId);
-
                     vendas.add(new VendaRelatorio(
                             rs.getString("data_venda"),
                             rs.getString("horario"),
                             rs.getString("vendedor"),
-                            cpfCliente,
-                            valorFormatado,
-                            formasFormatadas,
-                            detalhes));
+                            rs.getString("cpf_cliente"),
+                            String.format("R$ %.2f", rs.getDouble("valorTotal")).replace(".", ","),
+                            rs.getString("formasPagamento"),
+                            obterDetalhesVenda(rs.getInt("id"))));
                 }
             }
         }
+
+        System.out.println("Vendas encontradas: " + vendas.size());
         return vendas;
+    }
+
+    private java.util.Date parseDate(String dateString) {
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        format.setLenient(false);
+        try {
+            return format.parse(dateString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private String obterDetalhesVenda(int vendaId) {
         StringBuilder detalhes = new StringBuilder();
 
         try {
-            // Obtendo informações da venda
             String sqlVenda = "SELECT v.id AS venda_id, DATE_FORMAT(v.data, '%d/%m/%Y') AS data_venda, "
                     + "TIME(v.data) AS horario, f.nome AS vendedor, c.cpf AS cpf_cliente, "
                     + "v.valorTotal, GROUP_CONCAT(DISTINCT p.formaPagamento SEPARATOR ', ') AS formasPagamento "
@@ -160,11 +215,10 @@ public class RelatorioVendasDAO {
                 }
             }
 
-            // Obtendo medicamentos
             String sqlMedicamentos = "SELECT m.id, m.nome, m.formaFarmaceutica, m.dosagem, "
                     + "m.embalagem, m.qntEmbalagem, iv.qnt, iv.precoUnit, iv.desconto "
                     + "FROM itemVenda iv "
-                    + "JOIN medicamento m ON iv.medicamento_id = m.id " // Alterado para JOIN
+                    + "JOIN medicamento m ON iv.medicamento_id = m.id "
                     + "WHERE iv.venda_id = ?";
 
             try (PreparedStatement stmtMedicamentos = conn.prepareStatement(sqlMedicamentos)) {
@@ -198,7 +252,6 @@ public class RelatorioVendasDAO {
                 }
             }
 
-            // Obtendo produtos
             String sqlProdutos = "SELECT p.id, p.nome, p.embalagem, p.qntMedida, iv.qnt, iv.precoUnit, iv.desconto "
                     + "FROM itemVenda iv "
                     + "JOIN produto p ON iv.produto_id = p.id "
@@ -240,37 +293,5 @@ public class RelatorioVendasDAO {
         }
 
         return detalhes.toString();
-    }
-
-    private String formatarFormasPagamento(String formasPagamento) {
-        if (formasPagamento == null || formasPagamento.isEmpty()) {
-            return "Não informado";
-        }
-        String[] pagamentos = formasPagamento.split(", ");
-        StringBuilder result = new StringBuilder();
-        for (String pagamento : pagamentos) {
-            if (result.length() > 0) {
-                result.append(" / ");
-            }
-            result.append(formatarFormaPagamento(pagamento));
-        }
-        return result.toString();
-    }
-
-    private String formatarFormaPagamento(String formaPagamento) {
-        if (formaPagamento == null)
-            return "Não informado";
-        switch (formaPagamento) {
-            case "DINHEIRO":
-                return "Dinheiro";
-            case "CARTAO_CREDITO":
-                return "Cartão de Crédito";
-            case "CARTAO_DEBITO":
-                return "Cartão de Débito";
-            case "PIX":
-                return "PIX";
-            default:
-                return formaPagamento;
-        }
     }
 }

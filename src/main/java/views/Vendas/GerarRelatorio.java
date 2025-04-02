@@ -6,8 +6,6 @@ import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class GerarRelatorio extends JPanel {
     private Connection conn;
@@ -78,7 +76,7 @@ public class GerarRelatorio extends JPanel {
         painelFiltros.add(lblPagamento, gbc);
 
         comboData = new JComboBox<>(
-                new String[] { "Selecione", "Hoje", "Ontem", "Esta semana", "Este mês", "Personalizado" });
+                new String[] { "Selecione", "Hoje", "Ontem", "Últimos 15 dias", "Este mês", "Personalizado" });
         comboData.setFont(new Font("Arial", Font.PLAIN, 14));
         comboData.setPreferredSize(new Dimension(150, 30));
         gbc.gridx = 0;
@@ -232,10 +230,14 @@ public class GerarRelatorio extends JPanel {
     }
 
     private void gerarRelatorio() {
-        String data = (String) comboData.getSelectedItem();
-        String pagamento = (String) comboPagamento.getSelectedItem();
+        String tipoData = (String) comboData.getSelectedItem();
+        String pagamentoSelecionado = (String) comboPagamento.getSelectedItem();
         String vendedorSelecionado = (String) comboVendedor.getSelectedItem();
         String vendedor = vendedorSelecionado;
+
+        System.out.println("Tipo de Data: " + tipoData);
+        System.out.println("Pagamento: " + pagamentoSelecionado);
+        System.out.println("Vendedor Selecionado: " + vendedorSelecionado);
 
         if ("Outros".equals(vendedorSelecionado)) {
             vendedor = campoVendedorCustom.getText().trim();
@@ -248,9 +250,14 @@ public class GerarRelatorio extends JPanel {
             }
         }
 
-        if ("Personalizado".equals(data)) {
-            String dataInicioStr = txtDataInicio.getText().replace("_", "").trim();
-            String dataFimStr = txtDataFim.getText().replace("_", "").trim();
+        String dataInicioStr = null;
+        String dataFimStr = null;
+        if ("Personalizado".equals(tipoData)) {
+            dataInicioStr = txtDataInicio.getText().replace("_", "").trim();
+            dataFimStr = txtDataFim.getText().replace("_", "").trim();
+
+            System.out.println("Data Início: " + dataInicioStr);
+            System.out.println("Data Fim: " + dataFimStr);
 
             if (dataInicioStr.isEmpty() || dataFimStr.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
@@ -259,66 +266,48 @@ public class GerarRelatorio extends JPanel {
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                sdf.setLenient(false);
-                Date dataInicio = sdf.parse(dataInicioStr);
-                Date dataFim = sdf.parse(dataFimStr);
-
-                if (dataInicio.after(dataFim)) {
-                    JOptionPane.showMessageDialog(this,
-                            "A data inicial não pode ser posterior à data final",
-                            "Aviso",
-                            JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this,
-                        "Formato de data inválido. Use DD/MM/AAAA",
-                        "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
         }
 
-        if (data.equals("Selecione") && vendedorSelecionado.equals("Selecione") &&
-                pagamento.equals("Selecione")) {
+        String formaPagamento = mapearFormaPagamento(pagamentoSelecionado);
+
+        if (formaPagamento == null) {
             JOptionPane.showMessageDialog(this,
-                    "Selecione pelo menos um filtro para gerar o relatório.",
+                    "Forma de pagamento inválida.",
                     "Aviso",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        String formaPagamento = null;
-        if (!pagamento.equals("Selecione") && !pagamento.equals("Todos")) {
-            switch (pagamento) {
-                case "Dinheiro":
-                    formaPagamento = "DINHEIRO";
-                    break;
-                case "Cartão de Débito":
-                    formaPagamento = "CARTAO_DEBITO";
-                    break;
-                case "Cartão de Crédito":
-                    formaPagamento = "CARTAO_CREDITO";
-                    break;
-                case "PIX":
-                    formaPagamento = "PIX";
-                    break;
-            }
-        }
-
         RelatorioVendas relatorioVendas = new RelatorioVendas(
                 conn,
-                data,
+                tipoData,
                 vendedor,
                 formaPagamento,
-                txtDataInicio.getText(),
-                txtDataFim.getText());
+                dataInicioStr,
+                dataFimStr);
 
         relatorioVendas.setLayoutDetails(layoutCartao, painelCentral);
         painelCentral.add(relatorioVendas, "RelatorioVendas");
         layoutCartao.show(painelCentral, "RelatorioVendas");
+
+        System.out.println("Relatório gerado com sucesso.");
+    }
+
+    private String mapearFormaPagamento(String formaPagamento) {
+        if (formaPagamento == null) {
+            return null;
+        }
+        switch (formaPagamento) {
+            case "Dinheiro":
+                return "DINHEIRO";
+            case "Cartão de Crédito":
+                return "CARTAO_CREDITO";
+            case "Cartão de Débito":
+                return "CARTAO_DEBITO";
+            case "PIX":
+                return "PIX";
+            default:
+                return null;
+        }
     }
 }

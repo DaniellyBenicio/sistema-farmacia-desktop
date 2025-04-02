@@ -172,8 +172,12 @@ public class RelatorioVendas extends JPanel {
         modeloTabela.setRowCount(0);
 
         try {
-            vendas = dao.buscarRelatorioVendas(dataFiltro, vendedorFiltro, pagamentoFiltro,
-                    dataInicioPersonalizada, dataFimPersonalizada);
+            vendas = dao.buscarRelatorioVendas(
+                    dataFiltro,
+                    vendedorFiltro,
+                    pagamentoFiltro,
+                    dataInicioPersonalizada,
+                    dataFimPersonalizada);
 
             for (VendaRelatorio venda : vendas) {
                 Object[] row = {
@@ -181,7 +185,7 @@ public class RelatorioVendas extends JPanel {
                         venda.getHorario(),
                         venda.getVendedor(),
                         venda.getValorTotal(),
-                        venda.getFormasPagamento(),
+                        formatarFormaPagamento(venda.getFormasPagamento()),
                         "Detalhes"
                 };
                 modeloTabela.addRow(row);
@@ -196,6 +200,25 @@ public class RelatorioVendas extends JPanel {
                     "Erro ao carregar relatório: " + e.getMessage(),
                     "Erro",
                     JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String formatarFormaPagamento(String formaPagamento) {
+        if (formaPagamento == null || formaPagamento.isEmpty()) {
+            return "Não informado";
+        }
+
+        switch (formaPagamento) {
+            case "DINHEIRO":
+                return "Dinheiro";
+            case "CARTAO_CREDITO":
+                return "Cartão de Crédito";
+            case "CARTAO_DEBITO":
+                return "Cartão de Débito";
+            case "PIX":
+                return "PIX";
+            default:
+                return formaPagamento;
         }
     }
 
@@ -274,8 +297,6 @@ public class RelatorioVendas extends JPanel {
             if (vendas != null && row >= 0 && row < vendas.size()) {
                 VendaRelatorio venda = vendas.get(row);
                 String detalhes = venda.getDetalhes();
-                String cpfCliente = venda.getCpfCliente(); // Obtemos o CPF do cliente
-                // Monta a string para exibir os detalhes
 
                 if (detalhes.length() > 0) {
                     JDialog dialog = new JDialog();
