@@ -1,6 +1,5 @@
 package views.Relatorios;
 
-import javax.print.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -8,16 +7,18 @@ import java.awt.print.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.text.DecimalFormat;
-import java.math.BigDecimal;
 
 public class ImprimirRelatorioIndividual implements Printable {
 
     private String detalhesVenda;
     private DefaultTableModel itensTableModel;
+    private String informacoesVenda;
 
-    public ImprimirRelatorioIndividual(String detalhesVenda, DefaultTableModel itensTableModel) {
+    public ImprimirRelatorioIndividual(String detalhesVenda, DefaultTableModel itensTableModel,
+            String informacoesVenda) {
         this.detalhesVenda = detalhesVenda;
         this.itensTableModel = itensTableModel;
+        this.informacoesVenda = informacoesVenda;
     }
 
     public void imprimir() {
@@ -28,7 +29,8 @@ public class ImprimirRelatorioIndividual implements Printable {
             try {
                 job.print();
             } catch (PrinterException e) {
-                JOptionPane.showMessageDialog(null, "Erro ao imprimir relatório: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Erro ao imprimir relatório: " + e.getMessage() + "\n"
+                        + java.util.Arrays.toString(e.getStackTrace()), "Erro", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
         }
@@ -48,6 +50,7 @@ public class ImprimirRelatorioIndividual implements Printable {
         Font titleFont = new Font("Arial", Font.BOLD, 14);
         Font headerFont = new Font("Arial", Font.BOLD, 12);
         Font regularFont = new Font("Arial", Font.PLAIN, 12);
+        Font boldFont = new Font("Arial", Font.BOLD, 12);
         DecimalFormat df = new DecimalFormat("#,##0.00");
 
         g.setFont(titleFont);
@@ -72,7 +75,63 @@ public class ImprimirRelatorioIndividual implements Printable {
             g.drawString(line, x, startY + (i + 1) * rowHeight);
         }
 
-        int y = startY + (headerLines.length + 2) * rowHeight + 5;
+        int yInformacoes = startY + (headerLines.length + 2) * rowHeight + 5;
+        String[] vendaDetails = detalhesVenda.split("\n");
+
+        for (String detail : vendaDetails) {
+            if (detail.startsWith("Código da Venda:") || detail.startsWith("Data:") ||
+                    detail.startsWith("Horário:") || detail.startsWith("Vendedor:") ||
+                    detail.startsWith("CPF do Cliente:") || detail.startsWith("Valor Total:")) {
+
+                String[] keyValue = detail.split(":", 2);
+                if (keyValue.length == 2) {
+                    String label = keyValue[0] + ":";
+                    String value = keyValue[1].trim();
+
+                    g.setFont(boldFont);
+                    g.drawString(label, startX, yInformacoes);
+                    g.setFont(regularFont);
+                    g.drawString(value, startX + g.getFontMetrics(boldFont).stringWidth(label) + 5, yInformacoes);
+                    yInformacoes += rowHeight;
+                }
+            } else if (detail.startsWith("Formas de Pagamento:")) {
+                String[] keyValue = detail.split(":", 2);
+                if (keyValue.length == 2) {
+                    String label = keyValue[0] + ":";
+                    String[] formasPagamento = keyValue[1].split(",");
+                    StringBuilder formasFormatadas = new StringBuilder();
+
+                    for (String forma : formasPagamento) {
+                        String formaTrimmed = forma.trim();
+                        if (formaTrimmed.equals("DINHEIRO")) {
+                            formasFormatadas.append("Dinheiro, ");
+                        } else if (formaTrimmed.equals("CARTAO_CREDITO")) {
+                            formasFormatadas.append("Cartão de Crédito, ");
+                        } else if (formaTrimmed.equals("CARTAO_DEBITO")) {
+                            formasFormatadas.append("Cartão de Débito, ");
+                        } else {
+                            formasFormatadas.append(formaTrimmed).append(", ");
+                        }
+                    }
+
+                    if (formasFormatadas.length() > 2) {
+                        formasFormatadas.delete(formasFormatadas.length() - 2, formasFormatadas.length());
+                    }
+
+                    g.setFont(boldFont);
+                    g.drawString(label, startX, yInformacoes);
+                    g.setFont(regularFont);
+                    g.drawString(formasFormatadas.toString(),
+                            startX + g.getFontMetrics(boldFont).stringWidth(label) + 5, yInformacoes);
+                    yInformacoes += rowHeight;
+                }
+            } else if (!detail.startsWith("Código do Medicamento") && !detail.startsWith("Código do Produto")) {
+                g.drawString(detail, startX, yInformacoes);
+                yInformacoes += rowHeight;
+            }
+        }
+
+        int yTabela = yInformacoes + rowHeight + 10;
 
         g.setFont(headerFont);
         FontMetrics fmHeader = g.getFontMetrics();
@@ -80,53 +139,86 @@ public class ImprimirRelatorioIndividual implements Printable {
 
         int[] colWidths = new int[tableColumnCount];
         int totalTableWidth = 0;
+        int descricaoColumnIndex = 1;
+        colWidths[descricaoColumnIndex] = pageWidth / 3;
+
         for (int i = 0; i < tableColumnCount; i++) {
-            colWidths[i] = fmHeader.stringWidth(itensTableModel.getColumnName(i)) + 20;
+            if (i != descricaoColumnIndex) {
+                String columnName = itensTableModel.getColumnName(i);
+                if (columnName.equals("Quantidade")) {
+                    columnName = "Qnt.";
+                } else if (columnName.equals("Valor Uni.")) {
+                    columnName = "Valor Uni.";
+                }
+                colWidths[i] = fmHeader.stringWidth(columnName) + 20;
+            }
             totalTableWidth += colWidths[i];
         }
 
         int remainingSpace = pageWidth - totalTableWidth - 40;
-        int extraSpace = remainingSpace / tableColumnCount;
+        int extraSpace = remainingSpace / (tableColumnCount - 1);
 
         startX = (int) pf.getImageableX() + 20;
         for (int i = 0; i < tableColumnCount; i++) {
-            g.drawString(itensTableModel.getColumnName(i), startX, y);
-            startX += colWidths[i] + extraSpace;
-            colWidths[i] += extraSpace;
+            String columnName = itensTableModel.getColumnName(i);
+            if (columnName.equals("Quantidade")) {
+                columnName = "Qnt.";
+            } else if (columnName.equals("Valor Uni.")) {
+                columnName = "Valor Uni.";
+            }
+            g.drawString(columnName, startX, yTabela);
+            startX += colWidths[i];
+            if (i != descricaoColumnIndex) {
+                colWidths[i] += extraSpace;
+            }
         }
-        y += rowHeight;
+        yTabela += rowHeight;
 
         startX = (int) pf.getImageableX() + 20;
-        g.drawLine(startX, y - 17, startX + getTotalColumnWidth(colWidths), y - 17);
+        g.drawLine(startX, yTabela - 17, startX + getTotalColumnWidth(colWidths), yTabela - 17);
 
         g.setFont(regularFont);
-        y += 5;
-
-        BigDecimal totalVendas = BigDecimal.ZERO;
+        yTabela += 5;
 
         for (int i = 0; i < itensTableModel.getRowCount(); i++) {
             startX = (int) pf.getImageableX() + 20;
+            int initialY = yTabela;
+            int initialStartX = startX;
+            int maxDescricaoY = yTabela;
+
             for (int j = 0; j < tableColumnCount; j++) {
                 String value = itensTableModel.getValueAt(i, j).toString();
-                g.drawString(value, startX, y);
-                startX += colWidths[j];
+                if (j == descricaoColumnIndex) {
+                    int maxLineWidth = colWidths[j];
+                    String[] words = value.toUpperCase().split(" ");
+                    String currentLine = "";
+                    for (String word : words) {
+                        if (fmRegular.stringWidth(currentLine + word) < maxLineWidth) {
+                            currentLine += word + " ";
+                        } else {
+                            g.drawString(currentLine, startX, yTabela);
+                            yTabela += rowHeight;
+                            currentLine = word + " ";
+                        }
+                    }
+                    g.drawString(currentLine, startX, yTabela);
+                    if (yTabela > maxDescricaoY) {
+                        maxDescricaoY = yTabela;
+                    }
+                    startX += colWidths[j];
+                    yTabela = initialY;
+                } else {
+                    int valueWidth = fmRegular.stringWidth(value);
+                    int x = startX + (colWidths[j] - valueWidth) / 2;
+                    g.drawString(value, x, yTabela);
+                    startX += colWidths[j];
+                }
             }
-
-            try {
-                String valorString = itensTableModel.getValueAt(i, 5).toString().replaceAll("[^0-9,.]", "").replace(",", ".");
-                BigDecimal valorTotal = BigDecimal.valueOf(Double.parseDouble(valorString));
-                totalVendas = totalVendas.add(valorTotal);
-            } catch (NumberFormatException e) {
-                System.err.println("Erro ao converter valor: " + itensTableModel.getValueAt(i, 5));
-                e.printStackTrace();
-            }
-            y += rowHeight;
-            g.drawLine((int) pf.getImageableX() + 20, y - 15,
-                    (int) pf.getImageableX() + 20 + getTotalColumnWidth(colWidths), y - 15);
+            yTabela = maxDescricaoY + rowHeight;
+            g.drawLine((int) pf.getImageableX() + 20, yTabela - 15,
+                    (int) pf.getImageableX() + 20 + getTotalColumnWidth(colWidths), yTabela - 15);
+            startX = initialStartX;
         }
-
-        y += rowHeight;
-        g.drawString("Total de Vendas: R$ " + df.format(totalVendas.doubleValue()), (int) pf.getImageableX() + 20, y);
 
         return PAGE_EXISTS;
     }

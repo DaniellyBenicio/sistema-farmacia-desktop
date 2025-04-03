@@ -499,7 +499,9 @@ public class RelatorioVendas extends JPanel {
 
                     printButton.addActionListener(e -> {
                         PrinterJob printerJob = PrinterJob.getPrinterJob();
-                        printerJob.setPrintable(new ImprimirRelatorioIndividual(detalhes, itensTableModel));
+                        String informacoesVenda = vendaText.toString();
+                        printerJob.setPrintable(
+                                new ImprimirRelatorioIndividual(informacoesVenda, itensTableModel, informacoesVenda));
 
                         Window owner = SwingUtilities.getWindowAncestor(RelatorioVendas.this);
                         JDialog aguardeDialog;
@@ -517,11 +519,13 @@ public class RelatorioVendas extends JPanel {
                         aguardeDialog.setLayout(new BorderLayout());
                         aguardeDialog.setSize(300, 150);
                         aguardeDialog.setLocationRelativeTo(RelatorioVendas.this);
-                        JLabel mensagem = new JLabel("Aguarde, imprimindo relatório...", SwingConstants.CENTER);
+                        JLabel mensagem = new JLabel("Aguarde, imprimindo relatório individual da venda...",
+                                SwingConstants.CENTER);
                         mensagem.setFont(new Font("Arial", Font.BOLD, 14));
                         aguardeDialog.add(mensagem, BorderLayout.CENTER);
                         aguardeDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
+                        // Executa a impressão em uma thread separada para não travar a UI
                         new Thread(() -> {
                             SwingUtilities.invokeLater(() -> aguardeDialog.setVisible(true));
                             try {
