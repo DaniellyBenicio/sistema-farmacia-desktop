@@ -13,6 +13,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.text.DecimalFormat;
 import java.awt.Font;
+import javax.swing.JDialog;
+import java.awt.Window;
+import javax.swing.SwingUtilities;
+import java.awt.Frame;
+import java.awt.Dialog;
+import javax.swing.JLabel;
+import java.awt.BorderLayout;
+import javax.swing.SwingConstants;
 
 public class ImprimirRelatorioGeral {
     private JTable tabela;
@@ -25,18 +33,52 @@ public class ImprimirRelatorioGeral {
         PrinterJob printerJob = PrinterJob.getPrinterJob();
         printerJob.setPrintable(new TabelaPrintable());
 
-        boolean doPrint = printerJob.printDialog();
-        if (doPrint) {
-            try {
-                printerJob.print();
-                JOptionPane.showMessageDialog(null, "Relatório enviado para a impressora com sucesso!", "Sucesso",
-                        JOptionPane.INFORMATION_MESSAGE);
-            } catch (PrinterException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Erro ao imprimir o relatório: " + e.getMessage(), "Erro",
-                        JOptionPane.ERROR_MESSAGE);
-            }
+        Window owner = SwingUtilities.getWindowAncestor(tabela);
+        JDialog aguardeDialog;
+
+        if (owner instanceof Frame) {
+            aguardeDialog = new JDialog((Frame) owner, "Imprimindo...", true);
+        } else if (owner instanceof Dialog) {
+            aguardeDialog = new JDialog((Dialog) owner, "Imprimindo...", true);
+        } else {
+            aguardeDialog = new JDialog();
+            aguardeDialog.setTitle("Imprimindo...");
+            aguardeDialog.setModal(true);
         }
+
+        aguardeDialog.setLayout(new BorderLayout());
+        aguardeDialog.setSize(300, 150);
+        aguardeDialog.setLocationRelativeTo(tabela);
+        JLabel mensagem = new JLabel("Aguarde, imprimindo relatório geral...", SwingConstants.CENTER);
+        mensagem.setFont(new Font("Arial", Font.BOLD, 14));
+        aguardeDialog.add(mensagem, BorderLayout.CENTER);
+        aguardeDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+        new Thread(() -> {
+            SwingUtilities.invokeLater(() -> aguardeDialog.setVisible(true));
+            try {
+                Thread.sleep(3000);
+
+                boolean doPrint = printerJob.printDialog();
+                if (doPrint) {
+                    printerJob.print();
+                    SwingUtilities.invokeLater(() -> {
+                        aguardeDialog.dispose();
+                        JOptionPane.showMessageDialog(tabela, "Relatório pronto!", "Sucesso",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    });
+                } else {
+                    SwingUtilities.invokeLater(() -> aguardeDialog.dispose());
+                }
+            } catch (PrinterException | InterruptedException e) {
+                SwingUtilities.invokeLater(() -> {
+                    aguardeDialog.dispose();
+                    JOptionPane.showMessageDialog(tabela, "Erro ao imprimir o relatório: " + e.getMessage(), "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                });
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private class TabelaPrintable implements Printable {

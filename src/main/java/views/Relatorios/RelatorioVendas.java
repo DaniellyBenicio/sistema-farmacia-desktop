@@ -28,6 +28,7 @@ public class RelatorioVendas extends JPanel {
     private List<VendaRelatorio> vendas;
     private CardLayout layoutCartao;
     private JPanel painelCentral;
+    private JButton btnExportar;
 
     public RelatorioVendas(Connection conn, String dataFiltro, String vendedorFiltro,
             String pagamentoFiltro, String dataInicioPersonalizada, String dataFimPersonalizada) {
@@ -177,7 +178,7 @@ public class RelatorioVendas extends JPanel {
         JPanel painelExportar = new JPanel(new FlowLayout(FlowLayout.CENTER));
         painelExportar.setBorder(BorderFactory.createEmptyBorder(20, 0, 30, 0));
 
-        JButton btnExportar = new JButton("Exportar Relatório");
+        btnExportar = new JButton("Imprimir Relatório");
         btnExportar.setFont(new Font("Arial", Font.BOLD, 16));
         btnExportar.setBackground(new Color(24, 39, 72));
         btnExportar.setForeground(Color.WHITE);
@@ -202,20 +203,31 @@ public class RelatorioVendas extends JPanel {
                     dataInicioPersonalizada,
                     dataFimPersonalizada);
 
-            for (VendaRelatorio venda : vendas) {
-                Object[] row = {
-                        venda.getDataVenda(),
-                        venda.getHorario(),
-                        venda.getVendedor(),
-                        venda.getValorTotal(),
-                        formatarFormaPagamento(venda.getFormasPagamento()),
-                        "Detalhes"
-                };
-                modeloTabela.addRow(row);
-            }
-
             if (vendas.isEmpty()) {
-                modeloTabela.addRow(new Object[] { "Nenhuma venda encontrada", "", "", "", "", "" });
+                modeloTabela.addRow(new Object[] { "Nenhuma venda encontrada", "", "", "", "" });
+                btnExportar.setEnabled(false);
+
+                if (modeloTabela.getColumnCount() > 5) {
+                    modeloTabela.setColumnCount(5);
+                }
+            } else {
+                btnExportar.setEnabled(true);
+
+                if (modeloTabela.getColumnCount() < 6) {
+                    modeloTabela.addColumn("Ações");
+                }
+
+                for (VendaRelatorio venda : vendas) {
+                    Object[] row = {
+                            venda.getDataVenda(),
+                            venda.getHorario(),
+                            venda.getVendedor(),
+                            venda.getValorTotal(),
+                            formatarFormaPagamento(venda.getFormasPagamento()),
+                            "Detalhes"
+                    };
+                    modeloTabela.addRow(row);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -525,7 +537,6 @@ public class RelatorioVendas extends JPanel {
                         aguardeDialog.add(mensagem, BorderLayout.CENTER);
                         aguardeDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
-                        // Executa a impressão em uma thread separada para não travar a UI
                         new Thread(() -> {
                             SwingUtilities.invokeLater(() -> aguardeDialog.setVisible(true));
                             try {
@@ -538,6 +549,7 @@ public class RelatorioVendas extends JPanel {
                                         JOptionPane.showMessageDialog(RelatorioVendas.this, "Relatório pronto!",
                                                 "Sucesso",
                                                 JOptionPane.INFORMATION_MESSAGE);
+                                        dialog.dispose();
                                     });
                                 } else {
                                     SwingUtilities.invokeLater(() -> aguardeDialog.dispose());
