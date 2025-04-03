@@ -531,7 +531,7 @@ public class RelatorioVendas extends JPanel {
                         aguardeDialog.setLayout(new BorderLayout());
                         aguardeDialog.setSize(300, 150);
                         aguardeDialog.setLocationRelativeTo(RelatorioVendas.this);
-                        JLabel mensagem = new JLabel("Aguarde, imprimindo relatório individual da venda...",
+                        JLabel mensagem = new JLabel("Aguarde, imprimindo relatório...",
                                 SwingConstants.CENTER);
                         mensagem.setFont(new Font("Arial", Font.BOLD, 14));
                         aguardeDialog.add(mensagem, BorderLayout.CENTER);
