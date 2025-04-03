@@ -11,6 +11,8 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import java.awt.*;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -494,6 +496,59 @@ public class RelatorioVendas extends JPanel {
                     printButton.setFocusPainted(false);
                     printButton.setBorderPainted(false);
                     printButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+                    printButton.addActionListener(e -> {
+                        PrinterJob printerJob = PrinterJob.getPrinterJob();
+                        printerJob.setPrintable(new ImprimirRelatorioIndividual(detalhes, itensTableModel));
+
+                        Window owner = SwingUtilities.getWindowAncestor(RelatorioVendas.this);
+                        JDialog aguardeDialog;
+
+                        if (owner instanceof Frame) {
+                            aguardeDialog = new JDialog((Frame) owner, "Imprimindo...", true);
+                        } else if (owner instanceof Dialog) {
+                            aguardeDialog = new JDialog((Dialog) owner, "Imprimindo...", true);
+                        } else {
+                            aguardeDialog = new JDialog();
+                            aguardeDialog.setTitle("Imprimindo...");
+                            aguardeDialog.setModal(true);
+                        }
+
+                        aguardeDialog.setLayout(new BorderLayout());
+                        aguardeDialog.setSize(300, 150);
+                        aguardeDialog.setLocationRelativeTo(RelatorioVendas.this);
+                        JLabel mensagem = new JLabel("Aguarde, imprimindo relatório...", SwingConstants.CENTER);
+                        mensagem.setFont(new Font("Arial", Font.BOLD, 14));
+                        aguardeDialog.add(mensagem, BorderLayout.CENTER);
+                        aguardeDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+                        new Thread(() -> {
+                            SwingUtilities.invokeLater(() -> aguardeDialog.setVisible(true));
+                            try {
+                                Thread.sleep(3000);
+
+                                if (printerJob.printDialog()) {
+                                    printerJob.print();
+                                    SwingUtilities.invokeLater(() -> {
+                                        aguardeDialog.dispose();
+                                        JOptionPane.showMessageDialog(RelatorioVendas.this, "Relatório pronto!",
+                                                "Sucesso",
+                                                JOptionPane.INFORMATION_MESSAGE);
+                                    });
+                                } else {
+                                    SwingUtilities.invokeLater(() -> aguardeDialog.dispose());
+                                }
+                            } catch (PrinterException | InterruptedException ex) {
+                                SwingUtilities.invokeLater(() -> {
+                                    aguardeDialog.dispose();
+                                    JOptionPane.showMessageDialog(RelatorioVendas.this,
+                                            "Erro ao imprimir: Impressora não encontrada ou ocorreu um problema. Verifique a conexão e tente novamente.",
+                                            "Erro de Impressão",
+                                            JOptionPane.ERROR_MESSAGE);
+                                });
+                            }
+                        }).start();
+                    });
 
                     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
                     buttonPanel.setBackground(new Color(245, 245, 245));
