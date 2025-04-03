@@ -28,7 +28,6 @@ public class PrincipalEstoque extends JPanel {
         this.layoutCartao = layoutCartao;
         this.painelCentral = painelCentral;
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
 
         JPanel painelSuperior = criarTitulo();
         JPanel painelBotoes = criarBotoes();
@@ -41,7 +40,6 @@ public class PrincipalEstoque extends JPanel {
         JPanel painelTitulo = new JPanel();
         painelTitulo.setLayout(new BoxLayout(painelTitulo, BoxLayout.Y_AXIS));
         painelTitulo.setBorder(BorderFactory.createEmptyBorder(100, 0, 35, 0));
-        painelTitulo.setBackground(Color.WHITE);
 
         JLabel titulo = new JLabel("GERENCIAMENTO DE ESTOQUE");
         titulo.setFont(new Font("Arial", Font.BOLD, 20));
@@ -56,7 +54,6 @@ public class PrincipalEstoque extends JPanel {
     private JPanel criarBotoes() {
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 80, 0));
         painelBotoes.setBorder(BorderFactory.createEmptyBorder(90, 10, 0, 50));
-        painelBotoes.setBackground(Color.WHITE);
 
         JButton btnMedicamento = criarBotao("ESTOQUE DE MEDICAMENTOS");
         JButton btnProduto = criarBotao("ESTOQUE DE PRODUTOS");
