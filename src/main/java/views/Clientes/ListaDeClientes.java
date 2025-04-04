@@ -43,6 +43,7 @@ public class ListaDeClientes extends JPanel {
     private DefaultTableModel modeloTabela;
     private List<Cliente> clientes;
     private List<Object[]> clientesFiltrados;
+    private List<Integer> clientesIds;
     private JScrollPane tabelaScrollPane;
     private Connection conn;
 
@@ -80,8 +81,6 @@ public class ListaDeClientes extends JPanel {
         }
     }
 
-    private List<Integer> clientesIds;
-
     private void atualizarClientesFiltrados(List<Cliente> clientes) {
         clientesFiltrados.clear();
         clientesIds.clear();
@@ -104,15 +103,9 @@ public class ListaDeClientes extends JPanel {
     private String formatarTelefone(String telefone) {
         String numero = telefone.replaceAll("\\D", "");
         if (numero.length() == 11) {
-            return String.format("(%s) %s-%s",
-                    numero.substring(0, 2),
-                    numero.substring(2, 7),
-                    numero.substring(7));
+            return String.format("(%s) %s-%s", numero.substring(0, 2), numero.substring(2, 7), numero.substring(7));
         } else if (numero.length() == 10) {
-            return String.format("(%s) %s-%s",
-                    numero.substring(0, 2),
-                    numero.substring(2, 6),
-                    numero.substring(6));
+            return String.format("(%s) %s-%s", numero.substring(0, 2), numero.substring(2, 6), numero.substring(6));
         }
         return telefone;
     }
@@ -275,30 +268,15 @@ public class ListaDeClientes extends JPanel {
     }
 
     private void filtrarClientes(String filtro) {
+        List<Cliente> clientesFiltradosTemp;
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
-            clientesFiltrados = clientes.stream()
-                    .map(cliente -> new Object[] {
-                            cliente.getNome(),
-                            formatarTelefone(cliente.getTelefone()),
-                            cliente.getRua() + " Nº " + cliente.getNumCasa(),
-                            cliente.getBairro(),
-                            cliente.getCidade(),
-                            cliente.getEstado(),
-                    })
-                    .collect(Collectors.toList());
+            clientesFiltradosTemp = clientes;
         } else {
-            clientesFiltrados = clientes.stream()
+            clientesFiltradosTemp = clientes.stream()
                     .filter(cliente -> cliente.getNome().toLowerCase().startsWith(filtro.toLowerCase()))
-                    .map(cliente -> new Object[] {
-                            cliente.getNome(),
-                            formatarTelefone(cliente.getTelefone()),
-                            cliente.getRua() + " Nº " + cliente.getNumCasa(),
-                            cliente.getBairro(),
-                            cliente.getCidade(),
-                            cliente.getEstado(),
-                    })
                     .collect(Collectors.toList());
         }
+        atualizarClientesFiltrados(clientesFiltradosTemp);
         carregarDados();
     }
 
@@ -340,8 +318,8 @@ public class ListaDeClientes extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(JTable tabela, Object valor, boolean isSelected,
-                boolean hasFocus,
-                int linha, int coluna) {
+                                                       boolean hasFocus,
+                                                       int linha, int coluna) {
             setBackground(Color.WHITE);
 
             if (clientesFiltrados.isEmpty()) {
@@ -364,7 +342,6 @@ public class ListaDeClientes extends JPanel {
             super(campoTexto);
             botaoEditar = criarBotao("DETALHES", new Color(24, 39, 55), Color.WHITE);
             botaoExcluir = criarBotao("EXCLUIR", Color.RED, Color.WHITE);
-
             configurarAcoes();
         }
 
@@ -429,8 +406,7 @@ public class ListaDeClientes extends JPanel {
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable tabela, Object valor, boolean isSelected, int linha,
-                int coluna) {
+        public Component getTableCellEditorComponent(JTable tabela, Object valor, boolean isSelected, int linha, int coluna) {
             JPanel painel = new JPanel();
             painel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
             painel.setBackground(Color.WHITE);

@@ -248,24 +248,29 @@ public class ListaDeProdutos extends JPanel {
     }
 
     private void filtrarProdutos(String filtro) {
+        List<Produto> produtosFiltradosTemp = new ArrayList<>();
 
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
-            atualizarProdutosFiltrados(produtos);
+            produtosFiltradosTemp.addAll(produtos);
         } else {
-            produtosFiltrados = produtos.stream()
-                    .filter(produto -> produto.getNome().contains(filtro))
-                    .map(produto -> new Object[] {
-                            produto.getNome(),
-                            produto.getCategoria().getNome(),
-                            formatarData(produto.getDataValidade()),
-                            produto.getValor(),
-                            formatarEstoque(produto.getQntEstoque()),
-                            produto.getEmbalagem(),
-                            produto.getQntEmbalagem(),
-                            produto.getQntMedida()
-                    })
+            produtosFiltradosTemp = produtos.stream()
+                    .filter(produto -> produto.getNome().toLowerCase().contains(filtro.toLowerCase()))
                     .collect(Collectors.toList());
         }
+
+        produtosFiltrados = produtosFiltradosTemp.stream()
+                .map(produto -> new Object[] {
+                        produto.getNome(),
+                        produto.getCategoria().getNome(),
+                        formatarData(produto.getDataValidade()),
+                        produto.getValor(),
+                        formatarEstoque(produto.getQntEstoque()),
+                        produto.getEmbalagem(),
+                        produto.getQntEmbalagem(),
+                        produto.getQntMedida()
+                })
+                .collect(Collectors.toList());
+
         carregarDados();
     }
 
@@ -273,7 +278,7 @@ public class ListaDeProdutos extends JPanel {
         modeloTabela.setRowCount(0);
 
         if (produtosFiltrados.isEmpty()) {
-            modeloTabela.addRow(new Object[] { "Produto não encontrado.", "", "", "" });
+            modeloTabela.addRow(new Object[] { "Produto não encontrado.", "", "", "", "", "", "", "", "" });
         } else {
             for (Object[] produto : produtosFiltrados) {
                 modeloTabela.addRow(produto);
@@ -351,30 +356,37 @@ public class ListaDeProdutos extends JPanel {
 
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
-                    int produtoId = produtos.get(indiceLinha).getId();
+                    Produto produtoSelecionado = produtos.stream()
+                            .filter(produto -> produto.getNome().equals(tabela.getValueAt(indiceLinha, 0)))
+                            .findFirst()
+                            .orElse(null);
 
-                    JDialog dialogoEditar = new JDialog();
-                    dialogoEditar.setTitle("Editar Produto");
-                    dialogoEditar.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                    dialogoEditar.setSize(1200, 650);
-                    dialogoEditar.setLocationRelativeTo(null);
-                    dialogoEditar.setModal(true);
+                    if (produtoSelecionado != null) {
+                        int produtoId = produtoSelecionado.getId();
 
-                    Point localizacao = dialogoEditar.getLocation();
-                    localizacao.y = 150;
-                    dialogoEditar.setLocation(localizacao);
+                        JDialog dialogoEditar = new JDialog();
+                        dialogoEditar.setTitle("Editar Produto");
+                        dialogoEditar.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                        dialogoEditar.setSize(1200, 650);
+                        dialogoEditar.setLocationRelativeTo(null);
+                        dialogoEditar.setModal(true);
 
-                    EditarProduto painelEditar = new EditarProduto(produtoId);
-                    dialogoEditar.add(painelEditar);
+                        Point localizacao = dialogoEditar.getLocation();
+                        localizacao.y = 150;
+                        dialogoEditar.setLocation(localizacao);
 
-                    dialogoEditar.addWindowListener(new java.awt.event.WindowAdapter() {
-                        @Override
-                        public void windowClosed(java.awt.event.WindowEvent evento) {
-                            atualizarTabela();
-                        }
-                    });
+                        EditarProduto painelEditar = new EditarProduto(produtoId);
+                        dialogoEditar.add(painelEditar);
 
-                    dialogoEditar.setVisible(true);
+                        dialogoEditar.addWindowListener(new java.awt.event.WindowAdapter() {
+                            @Override
+                            public void windowClosed(java.awt.event.WindowEvent evento) {
+                                atualizarTabela();
+                            }
+                        });
+
+                        dialogoEditar.setVisible(true);
+                    }
                 }
             });
 
@@ -387,10 +399,16 @@ public class ListaDeProdutos extends JPanel {
 
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
+                    Produto produtoSelecionado = produtos.stream()
+                            .filter(produto -> produto.getNome().equals(tabela.getValueAt(indiceLinha, 0)))
+                            .findFirst()
+                            .orElse(null);
 
-                    int produto_id = produtos.get(indiceLinha).getId();
-                    ExcluirProduto.excluirProduto(produto_id);
-                    atualizarTabela();
+                    if (produtoSelecionado != null) {
+                        int produto_id = produtoSelecionado.getId();
+                        ExcluirProduto.excluirProduto(produto_id);
+                        atualizarTabela();
+                    }
                 }
             });
         }

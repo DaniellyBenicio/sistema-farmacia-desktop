@@ -49,7 +49,6 @@ public class ListaDeFuncionarios extends JPanel {
         add(tabelaScrollPane);
     }
 
-    // Atualiza a lista de funcionários
     public void atualizarTabela() {
         try {
             funcionarios = FuncionarioDAO.listarTodosFuncionarios(conn);
@@ -61,7 +60,6 @@ public class ListaDeFuncionarios extends JPanel {
         }
     }
 
-    // Atualiza a lista filtrada
     private void atualizarFuncionariosFiltrados(List<Funcionario> funcionarios) {
         funcionariosFiltrados.clear();
 
@@ -127,7 +125,6 @@ public class ListaDeFuncionarios extends JPanel {
         campoBusca.setText("Buscar");
         campoBusca.setForeground(Color.GRAY);
 
-        // Implementa o listener de foca para limpeza de texto
         campoBusca.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -250,7 +247,6 @@ public class ListaDeFuncionarios extends JPanel {
             tabela.getColumnModel().getColumn(i).setResizable(false);
         }
 
-        // ScrollPane para a tabela
         JScrollPane scrollPane = new JScrollPane(tabela);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 56, 30));
 

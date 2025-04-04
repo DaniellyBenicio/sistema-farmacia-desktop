@@ -44,6 +44,7 @@ public class ListaDeFornecedores extends JPanel {
     private DefaultTableModel modeloTabela;
     private List<Fornecedor> fornecedores;
     private List<Object[]> fornecedoresFiltrados;
+    private List<Integer> fornecedoresIds;
     private JScrollPane tabelaScrollPane;
     private Connection conn;
 
@@ -81,8 +82,6 @@ public class ListaDeFornecedores extends JPanel {
         }
     }
 
-    private List<Integer> fornecedoresIds;
-
     private void atualizarFornecedoresFiltrados(List<Fornecedor> fornecedores) {
         fornecedoresFiltrados.clear();
         fornecedoresIds.clear();
@@ -94,11 +93,8 @@ public class ListaDeFornecedores extends JPanel {
             dadosFornecedor[2] = fornecedor.getEmail();
             dadosFornecedor[3] = formatarTelefone(fornecedor.getTelefone());
             String representante = fornecedor.getNomeRepresentante();
-            dadosFornecedor[4] = (representante != null && !representante.isEmpty()) ? representante
-                    : "Sem Representante";
-            dadosFornecedor[5] = fornecedor.getTelefoneRepresentante() != null
-                    ? formatarTelefone(fornecedor.getTelefoneRepresentante())
-                    : "Sem Telefone";
+            dadosFornecedor[4] = (representante != null && !representante.isEmpty()) ? representante : "Sem Representante";
+            dadosFornecedor[5] = fornecedor.getTelefoneRepresentante() != null ? formatarTelefone(fornecedor.getTelefoneRepresentante()) : "Sem Telefone";
             dadosFornecedor[6] = "";
 
             fornecedoresFiltrados.add(dadosFornecedor);
@@ -286,7 +282,6 @@ public class ListaDeFornecedores extends JPanel {
             tabela.getColumnModel().getColumn(i).setResizable(false);
         }
 
-        // ScrollPane para a tabela
         JScrollPane scrollPane = new JScrollPane(tabela);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 30, 57, 30));
 
@@ -294,38 +289,39 @@ public class ListaDeFornecedores extends JPanel {
     }
 
     private void filtrarFornecedores(String filtro) {
+        List<Fornecedor> fornecedoresFiltradosTemp = new ArrayList<>();
+        List<Integer> fornecedoresIdsTemp = new ArrayList<>();
+
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
-            fornecedoresFiltrados = fornecedores.stream()
-                    .map(fornecedor -> new Object[] {
-                            fornecedor.getNome(),
-                            formatarCNPJ(fornecedor.getCnpj()),
-                            fornecedor.getEmail(),
-                            formatarTelefone(fornecedor.getTelefone()),
-                            fornecedor.getNomeRepresentante() != null && !fornecedor.getNomeRepresentante().isEmpty()
-                                    ? fornecedor.getNomeRepresentante()
-                                    : "Sem Representante",
-                            fornecedor.getTelefoneRepresentante() != null
-                                    ? formatarTelefone(fornecedor.getTelefoneRepresentante())
-                                    : "Sem Telefone",
-                    })
-                    .collect(Collectors.toList());
+            for (Fornecedor fornecedor : fornecedores) {
+                fornecedoresFiltradosTemp.add(fornecedor);
+                fornecedoresIdsTemp.add(fornecedor.getId());
+            }
         } else {
-            fornecedoresFiltrados = fornecedores.stream()
-                    .filter(fornecedor -> fornecedor.getNome().toLowerCase().startsWith(filtro.toLowerCase()))
-                    .map(fornecedor -> new Object[] {
-                            fornecedor.getNome(),
-                            formatarCNPJ(fornecedor.getCnpj()),
-                            fornecedor.getEmail(),
-                            formatarTelefone(fornecedor.getTelefone()),
-                            fornecedor.getNomeRepresentante() != null && !fornecedor.getNomeRepresentante().isEmpty()
-                                    ? fornecedor.getNomeRepresentante()
-                                    : "Sem Representante",
-                            fornecedor.getTelefoneRepresentante() != null
-                                    ? formatarTelefone(fornecedor.getTelefoneRepresentante())
-                                    : "Sem Telefone",
-                    })
-                    .collect(Collectors.toList());
+            for (Fornecedor fornecedor : fornecedores) {
+                if (fornecedor.getNome().toLowerCase().startsWith(filtro.toLowerCase())) {
+                    fornecedoresFiltradosTemp.add(fornecedor);
+                    fornecedoresIdsTemp.add(fornecedor.getId());
+                }
+            }
         }
+
+        fornecedoresFiltrados = fornecedoresFiltradosTemp.stream()
+                .map(fornecedor -> new Object[] {
+                        fornecedor.getNome(),
+                        formatarCNPJ(fornecedor.getCnpj()),
+                        fornecedor.getEmail(),
+                        formatarTelefone(fornecedor.getTelefone()),
+                        fornecedor.getNomeRepresentante() != null && !fornecedor.getNomeRepresentante().isEmpty()
+                                ? fornecedor.getNomeRepresentante()
+                                : "Sem Representante",
+                        fornecedor.getTelefoneRepresentante() != null
+                                ? formatarTelefone(fornecedor.getTelefoneRepresentante())
+                                : "Sem Telefone",
+                })
+                .collect(Collectors.toList());
+
+        fornecedoresIds = fornecedoresIdsTemp;
         carregarDados();
     }
 

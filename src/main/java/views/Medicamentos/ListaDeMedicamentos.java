@@ -251,24 +251,30 @@ public class ListaDeMedicamentos extends JPanel {
 
     private void filtrarMedicamentos(String filtro) {
         NumberFormat numberFormat = NumberFormat.getInstance();
+        List<Medicamento> medicamentosFiltradosTemp = new ArrayList<>();
+
         if (filtro.isEmpty() || filtro.equals("Buscar")) {
-            atualizarMedicamentosFiltrados(medicamentos);
+            medicamentosFiltradosTemp.addAll(medicamentos);
         } else {
-            medicamentosFiltrados = medicamentos.stream()
-                    .filter(medicamento -> medicamento.getNome().contains(filtro))
-                    .map(medicamento -> new Object[] {
-                            medicamento.getNome(),
-                            medicamento.getCategoria().getNome(),
-                            medicamento.getFormaFarmaceutica(),
-                            medicamento.getEmbalagem(),
-                            medicamento.getQntEmbalagem(),
-                            medicamento.getDosagem(),
-                            formatarData(medicamento.getDataValidade()),
-                            numberFormat.format(medicamento.getQnt()),
-                            medicamento.getValorUnit(),
-                    })
+            medicamentosFiltradosTemp = medicamentos.stream()
+                    .filter(medicamento -> medicamento.getNome().toLowerCase().contains(filtro.toLowerCase()))
                     .collect(Collectors.toList());
         }
+
+        medicamentosFiltrados = medicamentosFiltradosTemp.stream()
+                .map(medicamento -> new Object[] {
+                        medicamento.getNome(),
+                        medicamento.getCategoria().getNome(),
+                        medicamento.getFormaFarmaceutica(),
+                        medicamento.getEmbalagem(),
+                        medicamento.getQntEmbalagem(),
+                        medicamento.getDosagem(),
+                        formatarData(medicamento.getDataValidade()),
+                        numberFormat.format(medicamento.getQnt()),
+                        medicamento.getValorUnit()
+                })
+                .collect(Collectors.toList());
+
         carregarDados();
     }
 
@@ -276,7 +282,7 @@ public class ListaDeMedicamentos extends JPanel {
         modeloTabela.setRowCount(0);
 
         if (medicamentosFiltrados.isEmpty()) {
-            modeloTabela.addRow(new Object[] { "Medicamento não encontrado.", "", "", "", "", "", "", "", "" });
+            modeloTabela.addRow(new Object[] { "Medicamento não encontrado.", "", "", "", "", "", "", "", "", "" });
         } else {
             for (Object[] medicamento : medicamentosFiltrados) {
                 modeloTabela.addRow(medicamento);
@@ -354,31 +360,37 @@ public class ListaDeMedicamentos extends JPanel {
 
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
+                    Medicamento medicamentoSelecionado = medicamentos.stream()
+                            .filter(medicamento -> medicamento.getNome().equals(tabela.getValueAt(indiceLinha, 0)))
+                            .findFirst()
+                            .orElse(null);
 
-                    int medicamentoId = medicamentos.get(indiceLinha).getId();
+                    if (medicamentoSelecionado != null) {
+                        int medicamentoId = medicamentoSelecionado.getId();
 
-                    JDialog dialogoEditar = new JDialog();
-                    dialogoEditar.setTitle("Editar Medicamento");
-                    dialogoEditar.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                    dialogoEditar.setSize(1200, 650);
-                    dialogoEditar.setLocationRelativeTo(null);
-                    dialogoEditar.setModal(true);
+                        JDialog dialogoEditar = new JDialog();
+                        dialogoEditar.setTitle("Editar Medicamento");
+                        dialogoEditar.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                        dialogoEditar.setSize(1200, 650);
+                        dialogoEditar.setLocationRelativeTo(null);
+                        dialogoEditar.setModal(true);
 
-                    Point localizacao = dialogoEditar.getLocation();
-                    localizacao.y = 150;
-                    dialogoEditar.setLocation(localizacao);
+                        Point localizacao = dialogoEditar.getLocation();
+                        localizacao.y = 150;
+                        dialogoEditar.setLocation(localizacao);
 
-                    EditarMedicamento painelEditar = new EditarMedicamento(medicamentoId);
-                    dialogoEditar.add(painelEditar);
+                        EditarMedicamento painelEditar = new EditarMedicamento(medicamentoId);
+                        dialogoEditar.add(painelEditar);
 
-                    dialogoEditar.addWindowListener(new java.awt.event.WindowAdapter() {
-                        @Override
-                        public void windowClosed(java.awt.event.WindowEvent evento) {
-                            atualizarTabela();
-                        }
-                    });
+                        dialogoEditar.addWindowListener(new java.awt.event.WindowAdapter() {
+                            @Override
+                            public void windowClosed(java.awt.event.WindowEvent evento) {
+                                atualizarTabela();
+                            }
+                        });
 
-                    dialogoEditar.setVisible(true);
+                        dialogoEditar.setVisible(true);
+                    }
                 }
             });
 
@@ -391,10 +403,16 @@ public class ListaDeMedicamentos extends JPanel {
 
                 indiceLinha = tabela.getSelectedRow();
                 if (indiceLinha >= 0) {
+                    Medicamento medicamentoSelecionado = medicamentos.stream()
+                            .filter(medicamento -> medicamento.getNome().equals(tabela.getValueAt(indiceLinha, 0)))
+                            .findFirst()
+                            .orElse(null);
 
-                    int medicamentoId = medicamentos.get(indiceLinha).getId();
-                    ExcluirMedicamento.excluirMedicamento(medicamentoId);
-                    atualizarTabela();
+                    if (medicamentoSelecionado != null) {
+                        int medicamentoId = medicamentoSelecionado.getId();
+                        ExcluirMedicamento.excluirMedicamento(medicamentoId);
+                        atualizarTabela();
+                    }
                 }
             });
         }
